@@ -21,6 +21,7 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
 
   object Singleton {
     import Shallow._
+    // TODO needs some fixes in YY for ScopeInjection to be able to use composibility
     val q = shallow {
       Queryable[Coffee].toSeq
     }
@@ -98,19 +99,19 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       val inMem = coffees_data.map { case (name, sales, flavor) => Coffee(name, sales, flavor) }
       import Shallow._
       val query = shallow {
-        Queryable[Coffee].toSeq
+        Queryable[Coffee]
       }
 
       // test framework sanity checks
-      assertNoMatch(inMem ++ inMem, query)
-      assertNoMatch(Vector(), query)
+      assertNoMatch(inMem ++ inMem, shallow { query.toSeq })
+      assertNoMatch(Vector(), shallow { query.toSeq })
 
       // fetch whole table
-      assertMatchCaseClass(inMem, query)
+      assertMatchCaseClass(inMem, shallow { query.toSeq })
       // FIXME: make this test less artificial
       class MyQuerycollection {
         def findUserByName(name: String) = shallow {
-          Queryable[Coffee].filter(_.name == name).toSeq
+          query.filter(_.name == name).toSeq
         }
       }
       val qc = new MyQuerycollection
@@ -145,7 +146,7 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         inMem.map((_: Coffee).sales + 5),
         shallow {
-          Queryable[Coffee].map(_.sales + 5).toSeq
+          query.map(_.sales + 5).toSeq
         })
 
       /*
@@ -160,28 +161,28 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         inMem.map(_.name + "."),
         shallow {
-          Queryable[Coffee].map(_.name + ".").toSeq
+          query.map(_.name + ".").toSeq
         })
 
       // filter with more complex condition
       assertMatchCaseClass(
         inMem.filter(c => c.sales > 5 || "Chris" == c.name),
         shallow {
-          Queryable[Coffee].filter(c => c.sales > 5 || "Chris" == c.name).toSeq
+          query.filter(c => c.sales > 5 || "Chris" == c.name).toSeq
         })
 
       // type annotations FIXME canBuildFrom
       assertMatch(
         inMem.map((_: Coffee).name: String),
         shallow {
-          Queryable[Coffee].map[String](_.name: String).toSeq
+          query.map[String](_.name: String).toSeq
         })
 
       // chaining
       assertMatch(
         inMem.map(_.name).filter(_ == ""),
         shallow {
-          Queryable[Coffee].map(_.name).filter(_ == "").toSeq
+          query.map(_.name).filter(_ == "").toSeq
         })
 
       // referenced values are inlined as constants using reflection
@@ -189,14 +190,14 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       assertMatchCaseClass(
         inMem.filter(_.sales > o),
         shallow {
-          Queryable[Coffee].filter(_.sales > o).toSeq
+          query.filter(_.sales > o).toSeq
         })
 
       // nesting (not supported yet: query.map(e1 => query.map(e2=>e1))) 
       assertMatchCaseClass(
         inMem.flatMap(e1 => inMem.map(e2 => e1)),
         shallow {
-          Queryable[Coffee].flatMap(e1 => Queryable[Coffee].map(e2 => e1)).toSeq
+          query.flatMap(e1 => query.map(e2 => e1)).toSeq
         })
 
       // query scope
@@ -204,11 +205,11 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
         val inMemResult = inMem.filter(_.sales > 5)
         List(
           shallow {
-            Queryable[Coffee].filter(_.sales > 5).toSeq
+            query.filter(_.sales > 5).toSeq
           },
           // Queryable( query.filter( _.sales > 5 ) ),
           shallow {
-            val foo = Queryable[Coffee]
+            val foo = query
             val bar = foo.filter(_.sales > 5)
             bar.toSeq
           }).foreach {
@@ -220,7 +221,7 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         for (c <- inMem) yield c.name,
         shallow {
-          (for (c <- Queryable[Coffee]) yield c.name).toSeq
+          (for (c <- query) yield c.name).toSeq
         })
 
       // nesting with flatMap
@@ -228,11 +229,11 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
         val inMemResult = for (o <- inMem; i <- inMem) yield i.name
         List(
           shallow {
-            Queryable[Coffee].flatMap(o => Queryable[Coffee].map(i => i.name)).toSeq
+            query.flatMap(o => query.map(i => i.name)).toSeq
           },
           // Queryable(for (o <- query; i <- query) yield i.name), 
           shallow {
-            (for (o <- Queryable[Coffee]; i <- Queryable[Coffee]) yield i.name).toSeq
+            (for (o <- query; i <- query) yield i.name).toSeq
           }).foreach {
             query_ => assertMatch(inMemResult, query_)
           }
@@ -241,7 +242,7 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       assertMatchCaseClass(
         inMem.flatMap(e1 => inMem.map(e2 => e1).map(e2 => e1)),
         shallow {
-          Queryable[Coffee].flatMap(e1 => Queryable[Coffee].map(e2 => e1).map(e2 => e1)).toSeq
+          query.flatMap(e1 => query.map(e2 => e1).map(e2 => e1)).toSeq
         })
 
       // nesting with outer macro reference
@@ -249,11 +250,11 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
         val inMemResult = for (o <- inMem; i <- inMem) yield o.name
         List(
           shallow {
-            Queryable[Coffee].flatMap(o => Queryable[Coffee].map(i => o.name)).toSeq
+            query.flatMap(o => query.map(i => o.name)).toSeq
           },
           // Queryable(for (o <- query; i <- query) yield o.name),
           shallow {
-            (for (o <- Queryable[Coffee]; i <- Queryable[Coffee]) yield o.name).toSeq
+            (for (o <- query; i <- query) yield o.name).toSeq
           }).foreach {
             query_ => assertMatch(inMemResult, query_)
           }
@@ -264,11 +265,11 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
         val inMemResult = for (o <- inMem; i <- inMem; if i.sales == o.sales) yield i.name
         List(
           shallow {
-            Queryable[Coffee].flatMap(o => Queryable[Coffee].filter(i => i.sales == o.sales).map(i => i.name)).toSeq
+            query.flatMap(o => query.filter(i => i.sales == o.sales).map(i => i.name)).toSeq
           },
           // Queryable(for (o <- query; i <- query; if i.sales == o.sales) yield i.name),
           shallow {
-            (for (o <- Queryable[Coffee]; i <- Queryable[Coffee]; if i.sales == o.sales) yield i.name).toSeq
+            (for (o <- query; i <- query; if i.sales == o.sales) yield i.name).toSeq
           }).foreach {
             query_ => assertMatch(inMemResult, query_)
           }
@@ -278,7 +279,7 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         inMem.map(c => (c.name, c.sales)),
         shallow {
-          Queryable[Coffee].map(c => (c.name, c.sales)).toSeq
+          query.map(c => (c.name, c.sales)).toSeq
         })
 
       // nested structures (here tuples and case classes)
@@ -289,37 +290,37 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       //        })
       // length
       assertEquals(inMem.length, shallow {
-        Query(Queryable[Coffee].length).first
+        Query(query.length).first
       })
 
       assertMatchCaseClass(
         inMem.map(c => c),
         shallow {
-          Queryable[Coffee].map(c => c).toSeq
+          query.map(c => c).toSeq
         })
 
       assertMatch(for (v1 <- inMem; v2 <- inMem; if !(v1.name == v2.name)) yield (v1.name, v2.name),
         shallow {
-          (for (v1 <- Queryable[Coffee]; v2 <- Queryable[Coffee]; if !(v1.name == v2.name)) yield (v1.name, v2.name)).toSeq
+          (for (v1 <- query; v2 <- query; if !(v1.name == v2.name)) yield (v1.name, v2.name)).toSeq
         })
 
       assertMatchCaseClass(inMem.take(2),
-        shallow { Queryable[Coffee].take(2).toSeq })
+        shallow { query.take(2).toSeq })
 
       assertMatchCaseClass(inMem.drop(2),
-        shallow { Queryable[Coffee].drop(2).toSeq })
+        shallow { query.drop(2).toSeq })
 
       assertMatchOrdered(inMem.sortBy(_.name),
-        shallow { Queryable[Coffee].sortBy(_.name).toSeq })
+        shallow { query.sortBy(_.name).toSeq })
 
       assertMatchOrdered(inMem.sortBy(c => (c.name, c.sales)),
-        shallow { Queryable[Coffee].sortBy(c => (c.name, c.sales)).toSeq })
+        shallow { query.sortBy(c => (c.name, c.sales)).toSeq })
 
       assertMatchOrdered(inMem.sortBy(c => c.name)(Ordering[String].reverse),
-        shallow { Queryable[Coffee].sortBy(c => c.name)(Ordering[String].reverse).toSeq })
+        shallow { query.sortBy(c => c.name)(Ordering[String].reverse).toSeq })
 
       assertMatchOrdered(inMem.sortBy(c => (c.name, c.sales))(Ordering.Tuple2(Ordering[String], Ordering[Int].reverse)),
-        shallow { Queryable[Coffee].sortBy(c => (c.name, c.sales))(Ordering.Tuple2(Ordering[String], Ordering[Int].reverse)).toSeq })
+        shallow { query.sortBy(c => (c.name, c.sales))(Ordering.Tuple2(Ordering[String], Ordering[Int].reverse)).toSeq })
 
       def nullOrdering(x: Int, y: Int) = new scala.math.Ordering[Option[String]] {
         def compare(a: Option[String], b: Option[String]) = {
@@ -333,25 +334,25 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       stringOptionOrdering = nullOrdering(-1, 1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         shallow {
-          Queryable[Coffee].sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast[String], Ordering.String)).toSeq
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast[String], Ordering.String)).toSeq
         })
 
       stringOptionOrdering = nullOrdering(1, 1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         shallow {
-          Queryable[Coffee].sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst[String], Ordering.String)).toSeq
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst[String], Ordering.String)).toSeq
         })
 
       stringOptionOrdering = nullOrdering(-1, -1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         shallow {
-          Queryable[Coffee].sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast.reverse, Ordering.String)).toSeq
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast.reverse, Ordering.String)).toSeq
         })
 
       stringOptionOrdering = nullOrdering(1, -1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         shallow {
-          Queryable[Coffee].sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst.reverse, Ordering.String)).toSeq
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst.reverse, Ordering.String)).toSeq
         })
 
       import scala.slick.direct.order.reversed
@@ -360,7 +361,7 @@ class ShallowTest(val tdb: TestDB) extends DBTest {
       assertMatchOrdered(inMem.sortBy(c => (
         c.name, reversed(c.sales), reversed(c.flavor))),
         shallow {
-          Queryable[Coffee].sortBy(c => (
+          query.sortBy(c => (
             c.name, c.sales, c.flavor))(Ordering.Tuple3(Ordering[String], Ordering[Int].reverse, nonesFirst.reverse)).toSeq
         })
     }
