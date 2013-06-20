@@ -215,44 +215,6 @@ class YYTest {
   //  }
 
   @Test
-  def composabilityTest {
-    initCoffeeTable()
-    import Shallow._
-    import Shallow.TestH2._
-
-    val q = shallow {
-      Queryable[Coffee1] filter (x => x.id == 3)
-    }
-    val r7 = shallow {
-      q.toSeq
-    }
-    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r7.head)
-
-    val qq = shallow {
-      Queryable[Coffee1] map (x => x.id)
-    }
-    val r8 = shallow {
-      (qq filter (x => x < 3)).toSeq
-    }
-    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", List(1, 2), r8.toList)
-
-    val q0 = shallow {
-      Queryable[Coffee1]
-    }
-    val q1 = shallow {
-      q0 filter (x => x.id == 3)
-    }
-    val r9 = shallow {
-      q1.toSeq
-    }
-    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r9.head)
-    //    shallowDebug {
-    //      val t = CoffeeNested2(3, "three")
-    //    }
-    DatabaseHandler.closeSession
-  }
-
-  @Test
   def sortTest {
     initSortTable()
     import Shallow._
@@ -677,6 +639,153 @@ class YYTest {
     assertEquals(inMemT3 map {
       case (_1, _2) => (Some(0), _2.getOrElse(0))
     }, r4.toList)
+    DatabaseHandler.closeSession
+  }
+
+  @Test
+  def composabilityTest {
+    initCoffeeTable()
+    import Shallow._
+    import Shallow.TestH2._
+
+    {
+      import scala.slick.driver.H2Driver.simple._
+      object Categories extends Table[(Int, String)]("cat_j") {
+        def id = column[Int]("id")
+        def name = column[String]("name")
+        def * = id ~ name
+      }
+
+      object Posts extends Table[(Int, String, Int)]("posts_j") {
+        def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+        def title = column[String]("title")
+        def category = column[Int]("category")
+        def * = id ~ title ~ category
+      }
+
+      (Categories.ddl ++ Posts.ddl).create
+
+      Categories insertAll (
+        (1, "Scala"),
+        (2, "ScalaQuery"),
+        (3, "Windows"),
+        (4, "Software"))
+      Posts.title ~ Posts.category insertAll (
+        ("Test Post", -1),
+        ("Formal Language Processing in Scala, Part 5", 1),
+        ("Efficient Parameterized Queries in ScalaQuery", 2),
+        ("Removing Libraries and HomeGroup icons from the Windows 7 desktop", 3),
+        ("A ScalaQuery Update", 2))
+
+      object T extends Table[(Int, Int)]("t3") {
+        def a = column[Int]("a")
+        def b = column[Int]("b")
+        def * = a ~ b
+      }
+      T.ddl.create
+      T.insertAll((1, 1), (1, 2), (1, 3))
+      T.insertAll((2, 1), (2, 2), (2, 5))
+      T.insertAll((3, 1), (3, 9))
+    }
+
+    val q = shallow {
+      Queryable[Coffee1] filter (x => x.id == 3)
+    }
+    val r7 = shallow {
+      q.toSeq
+    }
+    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r7.head)
+
+    val qq = shallow {
+      Queryable[Coffee1] map (x => x.id)
+    }
+    val r8 = shallow {
+      (qq filter (x => x < 3)).toSeq
+    }
+    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", List(1, 2), r8.toList)
+
+    val q0 = shallow {
+      Queryable[Coffee1]
+    }
+    val q1 = shallow {
+      q0 filter (x => x.id == 3)
+    }
+    val r9 = shallow {
+      q1.toSeq
+    }
+    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r9.head)
+
+    val categories = shallow {
+      Queryable[Categories]
+    }
+    val posts = shallow {
+      Queryable[Posts]
+    }
+
+    val cpImplicitJoin = shallow {
+      for {
+        c <- Queryable[Categories]
+        p <- Queryable[Posts] if c.id == p.category
+      } yield (p.id, c.id, c.name, p.title)
+    }
+
+    val cp1 = shallow {
+      (cpImplicitJoin).sortBy(_._1).map(x => (x._1, x._2)).toSeq
+    }
+    assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), cp1.toList)
+
+    val cpInnerJoin = shallow {
+      categories innerJoin posts on (_.id == _.category)
+    }
+    val cpInnerJoinSorted = shallow {
+      cpInnerJoin.sortBy(_._2.id)
+    }
+    val cpInnerJoinMapped = shallow {
+      cpInnerJoinSorted.map(x => (x._2.id, x._1.id))
+    }
+    val cp2 = shallow {
+      cpInnerJoinMapped.toSeq
+    }
+    assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), cp2.toList)
+
+    val cpRightJoin = shallow {
+      categories rightJoin posts on (_.id == _.category)
+    }
+    val cpRightJoinMapped = shallow {
+      for {
+        (c, p) <- cpRightJoin
+      } yield (p.id, c.id.?.getOrElse(0), c.name.?.getOrElse(""), p.title)
+    }
+    val cpRightJoinSorted = shallow {
+      cpRightJoinMapped.sortBy(_._1)
+    }
+    val cpRightJoinSortedMapped = shallow {
+      cpRightJoinSorted.map(x => (x._1, x._2))
+    }
+    val cp3 = shallow {
+      cpRightJoinSortedMapped.toSeq
+    }
+    assertEquals(List((1, 0), (2, 1), (3, 2), (4, 3), (5, 2)), cp3.toList)
+
+    val t3Query = shallow {
+      Queryable[T3]
+    }
+    val t3GroupBy = shallow {
+      t3Query.groupBy(t => t.a)
+    }
+    val t3GroupByMapped = shallow {
+      for {
+        (k, v) <- t3GroupBy
+      } yield (k, v.length, v.map(_.a).sum, v.map(_.b).sum)
+    }
+    val t3GroupBySorted = shallow {
+      t3GroupByMapped.sortBy(_._1)
+    }
+    val t3r = shallow {
+      t3GroupBySorted.toSeq
+    }
+    val t3result: List[(Int, Int, Option[Int], Option[Int])] = t3r.toList
+    assertEquals(List((1, 3, Some(3), Some(6)), (2, 3, Some(6), Some(8)), (3, 2, Some(6), Some(10))), t3result)
     DatabaseHandler.closeSession
   }
 
