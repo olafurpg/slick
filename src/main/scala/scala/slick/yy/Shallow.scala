@@ -39,6 +39,10 @@ object Shallow {
     def drop(i: Int): Query[T] = ???
     def toSeq: Seq[T] = ???
     def first: T = ???
+    def toSeqTemplate: Seq[T] = ???
+    def firstTemplate: T = ???
+    def getQueryTemplate[P]: QueryTemplate[P, T] = ???
+    def funcTemplate: QueryTemplate[Any, T] = ???
     def getInvoker: Invoker[T] = ???
     def firstImplicit: (JdbcDriver => JdbcBackend#Session => T) = ???
     def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[T]) = ???
@@ -71,6 +75,9 @@ object Shallow {
   }
   implicit class OptMaker[T](val value: T) {
     def ? : Option[T] = ???
+  }
+  class QueryTemplate[-P, R] {
+    def apply(param: P): Seq[R] = ???
   }
   object TestH2 {
     implicit val h2Driver = H2Driver

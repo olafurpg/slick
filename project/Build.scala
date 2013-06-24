@@ -51,6 +51,7 @@ object SlickBuild extends Build {
     scalacOptions ++= List("-deprecation", "-feature"),
     libraryDependencies ++= Seq("org.slf4j" % "slf4j-api" % "1.6.4",
       "ch.epfl.lamp" %% "yinyang" % "0.1-SNAPSHOT"),
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
     logBuffered := false,
     repoKind <<= (version)(v => if(v.trim.endsWith("SNAPSHOT")) "snapshots" else "releases"),
     //publishTo <<= (repoKind)(r => Some(Resolver.file("test", file("c:/temp/repo/"+r)))),
@@ -135,7 +136,8 @@ object SlickBuild extends Build {
         "org.hsqldb" % "hsqldb" % "2.2.8" % "test",
         "postgresql" % "postgresql" % "9.1-901.jdbc4" % "test",
         "mysql" % "mysql-connector-java" % "5.1.13" % "test",
-        "net.sourceforge.jtds" % "jtds" % "1.2.4" % "test"
+        "net.sourceforge.jtds" % "jtds" % "1.2.4" % "test",
+        "com.github.axel22" %% "scalameter" % "0.4-M2" % "test"
       ),
       ivyConfigurations += config("test-config").hide.extend(Compile),
       unmanagedClasspath in config("test-config") <++= fullClasspath in (slickProject, Compile),

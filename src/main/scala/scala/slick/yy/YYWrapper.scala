@@ -184,7 +184,7 @@ object YYShape {
   def apply[U] = ident[U]
 }
 
-trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] {
+trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] with YYQueryTemplateComponent[U] {
   val query: Query[Rep[U], U]
   def repValue: Rep[U] = YYValue.valueOfQuery(query)
   type E <: YYRep[U]
@@ -193,9 +193,11 @@ trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] {
   object BooleanRepCanBeQueryCondition extends CanBeQueryCondition[Rep[Boolean]] {
     def apply(value: Rep[Boolean]) = value.asInstanceOf[Column[Boolean]]
   }
-  private def invoker(implicit driver: JdbcProfile): UnitInvoker[U] = driver.Implicit.queryToQueryInvoker(query)
-  def first(implicit driver: JdbcProfile, session: JdbcBackend#Session): U = invoker.first
-  def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): Seq[U] = invoker.list.toSeq
+  private[yy] def invoker(implicit driver: JdbcProfile): UnitInvoker[U] = driver.Implicit.queryToQueryInvoker(query)
+  //  def first(implicit driver: JdbcProfile, session: JdbcBackend#Session): U = invoker.first
+  //  def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): Seq[U] = invoker.list.toSeq
+  def first(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.First, driver, session)
+  def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.List, driver, session)
   def firstImplicit: (JdbcDriver => JdbcBackend#Session => U) =
     (driver: JdbcDriver) => (session: JdbcBackend#Session) => invoker(driver).first()(session)
   def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[U]) =

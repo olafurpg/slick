@@ -133,7 +133,7 @@ class YYTest {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < 3) "Low" else x.name))
       q1.toSeq
     }
-    assertEquals("Query map (_1, _2) of Virtualized++ Table + if", List((1, "Low"), (2, "Low"), (3, "three"), (10, "ten")), r3.toList);
+    assertEquals("Query map (_1, _2) of Virtualized++ Table + if", List((1, "Low"), (2, "Low"), (3, "three"), (10, "ten")), r3.toList)
     val r4 = shallow {
       val q1 = Queryable[Coff] map (x => (x.idNumber, x.name))
       q1.toSeq
@@ -688,7 +688,7 @@ class YYTest {
       T.insertAll((3, 1), (3, 9))
     }
 
-    val q = shallow {
+    val q: Query[Coffee1] = shallow {
       Queryable[Coffee1] filter (x => x.id == 3)
     }
     val r7 = shallow {
@@ -786,6 +786,57 @@ class YYTest {
     }
     val t3result: List[(Int, Int, Option[Int], Option[Int])] = t3r.toList
     assertEquals(List((1, 3, Some(3), Some(6)), (2, 3, Some(6), Some(8)), (3, 2, Some(6), Some(10))), t3result)
+    DatabaseHandler.closeSession
+  }
+
+  @Test
+  def queryTemplateTest {
+    initCoffeeTable()
+    import Shallow._
+    import Shallow.TestH2._
+
+    val inMem = List((1, "one"), (2, "two"), (3, "three"), (10, "ten"))
+
+    for (threshold <- 1 to 10) {
+      val r3 = shallowTemplate {
+        val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
+        q1.toSeq
+      }
+      assertEquals("Template implicitly!", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
+    }
+
+    val templ = templateMaker { (param: Long) =>
+      (Queryable[Coffee1] map (x => (x.id, if (x.id < param) "Low" else x.name))).funcTemplate
+    }
+
+    //    println(templ: Shallow.QueryTemplate[String, (Int, String)])
+
+    for (threshold <- 1 to 10) {
+      val r3 = shallowTemplate {
+        templ(threshold)
+      }
+      assertEquals("Template by using templateMaker", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
+    }
+
+    def template(threshold: Long) = shallowTemplate {
+      val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
+      q1.toSeq
+    }
+
+    for (threshold <- 1 to 10) {
+      val r3 = template(threshold)
+      assertEquals("Template by invoking function", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
+    }
+    //    val r = (a: Int) => shallowTemplateDebug {
+    //      a
+    //    }
+    //    val threshold = 1
+    //    val r3 = shallow {
+    //      val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
+    //      q1.toSeq
+    //    }
+    //    assertEquals("Query map (_1, _2) of Virtualized++ Table + if", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
+
     DatabaseHandler.closeSession
   }
 
