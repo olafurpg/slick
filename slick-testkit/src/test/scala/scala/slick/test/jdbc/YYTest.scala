@@ -790,6 +790,56 @@ class YYTest {
   }
 
   @Test
+  def insersionTest {
+    initCoffeeTable()
+    import Shallow._
+    import Shallow.TestH2._
+
+    val cId = 1989
+    val cName = "Amir"
+    val coffee = Coffee1(cId, cName)
+
+    val r = shallowTemplate {
+      val c = Coffee1(1989, "Amir")
+      c
+    }
+    assertEquals("Creating case class object inside block", coffee, r)
+
+    val r1Before = shallowTemplate {
+      Queryable[Coffee1].toSeq
+    }
+
+    shallowTemplate {
+      val c = Coffee1(1989, "Amir")
+      Queryable[Coffee1].insert(c)
+    }
+
+    shallowTemplate {
+      val c = Coffee1(1989, "Amir")
+      Queryable[Coffee1].insert(c)
+    }
+
+    val r1After = shallowTemplate {
+      Queryable[Coffee1].toSeq
+    }
+
+    assertEquals("Inserting a constant element", r1Before ++ List(coffee, coffee), r1After)
+
+    shallowTemplate {
+      val c = Coffee1(cId, cName)
+      Queryable[Coffee1].insert(c)
+    }
+
+    val r2After = shallowTemplate {
+      Queryable[Coffee1].toSeq
+    }
+
+    assertEquals("Inserting an element using captured variables", r1After ++ List(coffee), r2After)
+
+    DatabaseHandler.closeSession
+  }
+
+  @Test
   def queryTemplateTest {
     initCoffeeTable()
     import Shallow._

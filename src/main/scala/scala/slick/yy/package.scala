@@ -83,7 +83,7 @@ package object yy {
             postProcessing = Some(new PostProcessing[c.type](c)(virtualStatements)),
             Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate"), "noInterpretParams" -> true)
           )(c.Expr[Shallow.QueryTemplate[P, R]](body))
-          val shallowQueryType = Select(Select(Select(Select(Ident("scala"), newTermName("slick")), newTermName("yy")), newTermName("Shallow")), newTypeName("QueryTemplate"))
+          val shallowQueryType = Select(Select(Select(Select(Ident(newTermName("scala")), newTermName("slick")), newTermName("yy")), newTermName("Shallow")), newTypeName("QueryTemplate"))
           val shallowQueryTemplateType = TypeTree().setOriginal(AppliedTypeTree(shallowQueryType, List(TypeTree(vparams.head.tpt.tpe), TypeTree(body.tpe.asInstanceOf[TypeRef].args(1)))))
           val newBody = TypeApply(Select(result.tree, newTermName("asInstanceOf")), List(shallowQueryTemplateType))
           c.Expr[Shallow.QueryTemplate[P, R]](c.resetAllAttrs(newBody))

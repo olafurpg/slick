@@ -46,6 +46,7 @@ object Shallow {
     def getInvoker: Invoker[T] = ???
     def firstImplicit: (JdbcDriver => JdbcBackend#Session => T) = ???
     def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[T]) = ???
+    def insert(value: T): Int = ???
   }
   class JoinQuery[T1, T2] extends Query[(T1, T2)] {
     def on(pred: (T1, T2) => Boolean): Query[(T1, T2)] = ???

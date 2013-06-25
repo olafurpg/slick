@@ -16,6 +16,11 @@ trait YYRep[T] {
   def underlying: Rep[T]
 }
 
+trait YYValue[T] {
+  def getValue: T
+  def getValue(params: IndexedSeq[Any]): T
+}
+
 object YYValue {
   def fromLifted[T](rep: Any): YYRep[T] = rep match {
     case lifted: Rep[T] => applyUntyped(lifted)
@@ -53,12 +58,13 @@ object YYOption {
 }
 
 trait YYColumn[T] extends ColumnExtensionOps[T] with ColumnNumericExtensionOps[T]
-  with ColumnStringExtensionOps[T] with ColumnBooleanExtensionOps[T] with YYRep[T] {
+  with ColumnStringExtensionOps[T] with ColumnBooleanExtensionOps[T] with YYRep[T] with YYValue[T] {
   val column: Column[T]
   override def underlying = column
   def n = Node(column)
   implicit def om[T2, TR] = OptionMapper2.plain.asInstanceOf[OptionMapper2[T, T, TR, T, T2, TR]]
   def getValue: T = throw new SlickException("Accessing YYColumn value!")
+  def getValue(params: IndexedSeq[Any]): T = throw new SlickException("Accessing YYColumn value!")
 }
 
 class YYOrdering[T](val ordering: LOrdering = LOrdering()) { self =>
@@ -123,6 +129,7 @@ object YYTable {
 class YYConstColumn[T](val constColumn: ConstColumn[T]) extends YYColumn[T] {
   override val column = constColumn
   override def getValue: T = constColumn.value
+  override def getValue(params: IndexedSeq[Any]): T = getValue
 }
 
 object YYConstColumn {
@@ -198,6 +205,8 @@ trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] with YYQueryTemplateComp
   //  def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): Seq[U] = invoker.list.toSeq
   def first(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.First, driver, session)
   def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.List, driver, session)
+  def insert(value: YYRep[U])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInsertInvoker[U] = YYInsertInvoker(this, value, driver, session)
+  //  def update(value: YYRep[U])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYUpdateInvoker[U] = YYUpdateInvoker(this, value, driver, session)
   def firstImplicit: (JdbcDriver => JdbcBackend#Session => U) =
     (driver: JdbcDriver) => (session: JdbcBackend#Session) => invoker(driver).first()(session)
   def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[U]) =
@@ -205,6 +214,14 @@ trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] with YYQueryTemplateComp
   def getInvoker: (JdbcDriver => UnitInvoker[U]) =
     (driver: JdbcDriver) => invoker(driver)
 }
+
+case class YYInsertInvoker[T](query: YYQuery[T], value: YYRep[T], driver: JdbcProfile, session: JdbcBackend#Session) extends YYColumn[Int] /* necessary for type checking */ {
+  override val column = null
+}
+
+//case class YYUpdateInvoker[T](query: YYQuery[T], value: YYRep[T], driver: JdbcProfile, session: JdbcBackend#Session) extends YYColumn[Int] /* necessary for type checking */ {
+//  override val column = null
+//}
 
 trait YYJoinQuery[U1, U2] extends YYQuery[(U1, U2)] {
   def on(pred: (YYRep[U1], YYRep[U2]) => YYColumn[Boolean]): YYQuery[(U1, U2)] = {

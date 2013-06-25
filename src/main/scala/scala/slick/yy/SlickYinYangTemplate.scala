@@ -6,7 +6,7 @@ import scala.reflect.runtime.{ universe => ru }
 import scala.slick.jdbc.{ JdbcBackend }
 import scala.slick.driver.{ JdbcProfile }
 import scala.slick.lifted.{ Query }
-import scala.slick.jdbc.UnitInvoker
+import scala.slick.jdbc.{ UnitInvoker }
 
 trait SlickYinYangTemplate extends SlickConstYinYangTemplate with YYSlickCake with Interpreted with HoleTypeAnalyser {
   //  def stagingAnalyze(allHoles: List[scala.Int]): List[scala.Int] = allHoles
@@ -20,6 +20,7 @@ trait SlickYinYangTemplate extends SlickConstYinYangTemplate with YYSlickCake wi
   var previousResult: Any = _
   var cachedInvoker: UnitInvoker[_] = _
   var cachedTemplate: JdbcProfile#QueryTemplate[Any, Any] = _
+  var cachedInsertInvoker: JdbcProfile#CountingInsertInvoker[Any] = _
 
   def reset() {
     alreadyInterpreted = false
@@ -44,6 +45,7 @@ trait SlickYinYangTemplate extends SlickConstYinYangTemplate with YYSlickCake wi
               if (!alreadyInterpreted) {
                 cachedTemplate = driver.queryToQueryTemplate[Any, Any](q.query)
               }
+              // TODO support more than 1 parameter
               cachedTemplate(params(0))
             } // Query
             else {
@@ -54,6 +56,17 @@ trait SlickYinYangTemplate extends SlickConstYinYangTemplate with YYSlickCake wi
             }
           inv.invoke(Some(invoker))
         }
+        case YYInsertInvoker(query, value: YYValue[_], driver, session) => {
+          val invoker = {
+            if (!alreadyInterpreted) {
+              cachedInsertInvoker = driver.Implicit.columnBaseToInsertInvoker(query.repValue.asInstanceOf[scala.slick.lifted.ColumnBase[Any]])
+            }
+            cachedInsertInvoker
+          }
+          invoker.insert(value.getValue(params.toIndexedSeq))(session)
+        }
+        case caseRep @ YYCaseRep(const, fields) =>
+          caseRep.getValue(params.toIndexedSeq)
         case _ => result
       }
     }
@@ -113,6 +126,20 @@ case class YYQueryTemplateWrapper[P, R](val underlying: JdbcProfile#QueryTemplat
   //  def apply(param: YYColumn[P])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYRep[R] = YYConstColumn(underlying(param.getValue).first())(null)
 }
 
+trait YYHole
+
+object YYHole {
+  import scala.slick.ast.TypedType
+  import scala.slick.lifted.{ Column }
+  import scala.slick.ast.{ QueryParameter }
+  def apply[T](implicit tpe: TypedType[T]): YYHole = {
+    val c = Column.forNode[T](new QueryParameter((x: Any) => x, tpe))(tpe)
+    new YYColumn[T] with YYHole {
+      val column = c
+    }
+  }
+}
+
 trait TransferCakeTemplate { self: YYSlickCake =>
   class TransferQueryTemplate[P, R](val underlying: YYQueryTemplateWrapper[P, R]) extends OShallow.QueryTemplate[P, R]
 }
@@ -126,9 +153,7 @@ trait SlickConstYinYangTemplate extends scala.slick.driver.JdbcDriver.ImplicitJd
   implicit def LiftConst[T, S](implicit cstTpe: YYConstantType[T, S], ttag: ru.TypeTag[T], tpe: TypedType[T]): LiftEvidence[T, S] = new LiftEvidence[T, S] {
     def lift(v: T): S = YYConstColumn(v).asInstanceOf[S]
     def hole(tptag: ru.TypeTag[T], symbolId: scala.Int): S = {
-      import scala.slick.lifted.{ Column }
-      import scala.slick.ast.{ QueryParameter }
-      YYColumn(Column.forNode[T](new QueryParameter((x: Any) => x, tpe))(tpe)).asInstanceOf[S]
+      YYHole[T].asInstanceOf[S]
     }
   }
   implicit def liftQuery[T](implicit ttag: ru.TypeTag[OShallow.Query[T]]): LiftEvidence[OShallow.Query[T], Query[T]] = new LiftEvidence[OShallow.Query[T], Query[T]] {

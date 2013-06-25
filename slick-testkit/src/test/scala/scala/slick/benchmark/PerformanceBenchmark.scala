@@ -31,6 +31,8 @@ object PerformanceBenchmark extends PerformanceTest {
   //  val directSizes = Gen.range("size")(1, 10, 1)
   val directSizes = Gen.range("size")(1, 2, 1)
 
+  val insertionSizes = Gen.range("size")(10, 5000, 200)
+
   val ranges = for {
     size <- sizes
     //  } yield size to size
@@ -38,6 +40,11 @@ object PerformanceBenchmark extends PerformanceTest {
 
   val directRanges = for {
     size <- directSizes
+    //  } yield size to size
+  } yield 0 until size
+
+  val insertionRenges = for {
+    size <- insertionSizes
     //  } yield size to size
   } yield 0 until size
 
@@ -171,6 +178,7 @@ object PerformanceBenchmark extends PerformanceTest {
     }
   }
 */
+  /*
   performance of "Templates simple" in {
     import Shallow.TestH2.h2Session
     measure method "Select * where id == 1" in {
@@ -268,6 +276,104 @@ object PerformanceBenchmark extends PerformanceTest {
         }
       }
     }
+  }*/
+
+  performance of "Insertion" in {
+    import Shallow.TestH2.h2Session
+    /*
+    measure method "constantValue" in {
+      {
+        import scala.slick.driver.H2Driver.simple._
+        import LiftedEmbeddingDefs._
+        {
+          using(insertionRenges) curve ("lifted embedding") in { r =>
+            for (i <- r) {
+              val c = Cf(1989, "Amir")
+              Coffee.insert(c)
+            }
+          }
+        }
+      }
+      {
+        import Shallow.TestH2.h2Driver
+        import Shallow._
+        //        import ShallowEmbeddingDefs._
+        import scala.slick.yy.test.YYDefinitions.Coffee1
+        {
+          using(insertionRenges) curve ("shallow embedding") in { r =>
+            for (i <- r) {
+              val r0 = shallowTemplate {
+                val c = Coffee1(1989, "Amir")
+                Queryable[Coffee1].insert(c)
+              }
+            }
+          }
+        }
+      }
+      {
+        import PlainSqlDefs._
+        import scala.slick.jdbc.GetResult
+        implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
+        import Q.interpolation
+        {
+          using(insertionRenges) curve ("plain sql") in { r =>
+            for (i <- r) {
+              val c = Coffee(1989, "Amir")
+              sqlu"insert into Coffee values (${c.id}, ${c.name})"
+            }
+          }
+        }
+      }
+    }
+    */
+    measure method "capturedValue" in {
+      {
+        import scala.slick.driver.H2Driver.simple._
+        import LiftedEmbeddingDefs._
+        {
+          using(insertionRenges) curve ("lifted embedding") in { r =>
+            for (i <- r) {
+              val cId = i
+              val cName = s"$i"
+              val c = Cf(cId, cName)
+              Coffee.insert(c)
+            }
+          }
+        }
+      }
+      {
+        import Shallow.TestH2.h2Driver
+        import Shallow._
+        //        import ShallowEmbeddingDefs._
+        import scala.slick.yy.test.YYDefinitions.Coffee1
+        {
+          using(insertionRenges) curve ("shallow embedding") in { r =>
+            for (i <- r) {
+              val cId = i
+              val cName = s"$i"
+              val r0 = shallowTemplate {
+                val c = Coffee1(cId, cName)
+                Queryable[Coffee1].insert(c)
+              }
+            }
+          }
+        }
+      }
+      {
+        import PlainSqlDefs._
+        import Q.interpolation
+        {
+          using(insertionRenges) curve ("plain sql") in { r =>
+            for (i <- r) {
+              val cId = i
+              val cName = s"$i"
+              val c = Coffee(cId, cName)
+              sqlu"insert into Coffee values (${c.id}, ${c.name})"
+            }
+          }
+        }
+      }
+    }
   }
 
   def initCoffeeTable() {
@@ -279,7 +385,7 @@ object PerformanceBenchmark extends PerformanceTest {
     (Coffee.ddl).create
 
     for (i <- 1 to 3000) {
-      Coffee.insert((i, s"$i"))
+      Coffee.insert(Cf(i, s"$i"))
     }
   }
 
@@ -290,10 +396,12 @@ object PerformanceBenchmark extends PerformanceTest {
   object LiftedEmbeddingDefs {
     import scala.slick.driver.H2Driver.simple._
 
-    object Coffee extends Table[(Int, String)]("COFFEE") {
+    case class Cf(id: Int, name: String)
+
+    object Coffee extends Table[Cf]("COFFEE") {
       def id = column[Int]("ID")
       def name = column[String]("NAME")
-      def * = id ~ name
+      def * = id ~ name <> (Cf, Cf.unapply _)
     }
   }
   object ShallowEmbeddingDefs {
