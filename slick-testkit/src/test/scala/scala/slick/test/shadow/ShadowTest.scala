@@ -1,4 +1,4 @@
-package scala.slick.test.jdbc
+package scala.slick.test.shadow
 
 import scala.language.implicitConversions
 import org.junit.Test
@@ -15,43 +15,43 @@ import scala.slick.jdbc.JdbcBackend
 //  }
 //}
 
-class YYTest {
+class ShadowTest {
   import scala.slick.yy.test.YYDefinitions._
 
   @Test def simpleTest() {
     import Shallow._
     import Shallow.TestH2._
     val y = 5.3
-    val r1 = shallow {
+    val r1 = stage {
       val q = Query(y)
       q.toSeq
     }
     assertEquals("Query of int", y, r1.head, 0.1)
-    val r2 = shallow {
+    val r2 = stage {
       Query(y).map(x => x).toSeq
     }
     assertEquals("Query identity map", y, r2.head, 0.1)
-    val r3 = shallow {
+    val r3 = stage {
       Query(y).map(x => false).toSeq
     }
     assertEquals("Query dummy map", false, r3.head)
-    val r4 = shallow {
+    val r4 = stage {
       Query(y).filter(x => x < 1).toSeq
     }
     assertEquals("Query filter", 0, r4.length)
 
     val z = 3
-    val r5 = shallow {
+    val r5 = stage {
       Query(z).filter(x => x > 2.5).toSeq
     }
     assertEquals("Query filter + captured var", z, r5.head)
     val a = 1
-    val r6 = shallow {
+    val r6 = stage {
       val b = 1
       Query(a).filter(x => x == b).toSeq
     }
     assertEquals("Query filter + Column ==", a, r6.head)
-    val r7 = shallow {
+    val r7 = stage {
       val b = 1
       Query(2 > b).filter(x => x == true).toSeq
     }
@@ -61,39 +61,39 @@ class YYTest {
   def tuple2Test() {
     import Shallow._
     import Shallow.TestH2._
-    val r1 = shallow {
+    val r1 = stage {
       val x = (1, 2)
       val q = Query(x)
       q.first
     }
     assertEquals("Query of tuple2", (1, 2), r1)
-    val r2 = shallow {
+    val r2 = stage {
       val x = (1, 2.5)
       Query(x).map(x => x._2).first
     }
     assertEquals("Query map _2 of tuple", 2.5, r2, 0.1)
-    val r3 = shallow {
+    val r3 = stage {
       val x = (1, 2)
       val q = Query(x).map(x => x._2)
       val q2 = q.filter(x => x == 1)
       q2.toSeq
     }
     assertEquals("Query filter of tuple2 + Column ==", 0, r3.length)
-    val r4 = shallow {
+    val r4 = stage {
       val x = (1, 2)
       Query(x).map(x => x._2).filter(x => x == 2).toSeq
     }
     assertEquals("Query filter of tuple2 + Column == (2)", 1, r4.length)
-    val r5 = shallow {
+    val r5 = stage {
       val x = (1, 2)
       Query(x).map(x => x._2).filter(x => x > 1).toSeq
     }
     assertEquals("Query filter of tuple2 + Column >", 1, r5.length)
-    val r6 = shallow {
+    val r6 = stage {
       Query((1, 2)).map(x => (x._2, if (x._2 == 2) false else true)).toSeq
     }
     assertEquals("Query map of tuple 2 + Column > + if true", (2, false), r6.head)
-    val r7 = shallow {
+    val r7 = stage {
       Query((1, 2)).map(x => (x._2, if (x._2 == 1) false else true)).toSeq
     }
     assertEquals("Query map of tuple 2 + Column > + if false", (2, true), r7.head)
@@ -103,7 +103,7 @@ class YYTest {
   def tuple22Test() {
     import Shallow._
     import Shallow.TestH2._
-    val r1 = shallow {
+    val r1 = stage {
       val x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
       val q = Query(x)
       q.first
@@ -117,40 +117,40 @@ class YYTest {
     import Shallow._
     import Shallow.TestH2._
 
-    val r1 = shallow {
+    val r1 = stage {
       val tbl = Table.getTable[Coffee1]
       val q = Query.ofTable(tbl)
       val q1 = q map (x => x.id)
       q1.toSeq
     }
     assertEquals("Query map _1 of Virtualized++ Table", 4, r1.length)
-    val r2 = shallow {
+    val r2 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name))
       q1.toSeq
     }
     assertEquals("Query map (_1, _2) of Virtualized++ Table", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r2.toList)
-    val r3 = shallow {
+    val r3 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < 3) "Low" else x.name))
       q1.toSeq
     }
     assertEquals("Query map (_1, _2) of Virtualized++ Table + if", List((1, "Low"), (2, "Low"), (3, "three"), (10, "ten")), r3.toList)
-    val r4 = shallow {
+    val r4 = stage {
       val q1 = Queryable[Coff] map (x => (x.idNumber, x.name))
       q1.toSeq
     }
     assertEquals("Query map (_1, _2) of Virtualized++ Table + Annotation", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r4.toList)
-    val r5 = shallow {
+    val r5 = stage {
       val q1 = Queryable[Coff] map (x => x.idNumber) filter (x => x < 3)
       q1.toSeq
     }
     assertEquals("Query map _1 filter of Virtualized++ Table + Annotation", List(1, 2), r5.toList)
-    val r6 = shallow {
+    val r6 = stage {
       val q1 = Queryable[Coff] map (x => (x.idNumber, x.name)) filter (x => x._1 < 3)
       q1.toSeq
     }
     assertEquals("Query map (_1, _2) filter of Virtualized++ Table + Annotation", List((1, "one"), (2, "two")), r6.toList)
 
-    val r7 = shallow {
+    val r7 = stage {
       val q1 = Queryable[Coffn] filter (x => x.idNumber == 3) map (x => (x.idNumber, x._2))
       q1.toSeq
     }
@@ -163,12 +163,12 @@ class YYTest {
   //    initCoffeeTable()
   //    import Shallow._
   //    import Shallow.TestH2._
-  //    val r1 = shallow {
+  //    val r1 = stage {
   //      val q1 = Queryable[CoffeeNotNested] filter (x => x.idNumber == 3)
   //      q1.first
   //    }
   //    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", CoffeeNotNested(3, "three"), r1)
-  //    val r2 = shallow {
+  //    val r2 = stage {
   //      val q1 = Queryable[CoffeeNotNested] filter (x => x.idNumber == 3)
   //      q1.toSeq
   //    }
@@ -176,12 +176,12 @@ class YYTest {
   //
   //    import NestingObject.CoffeeNested1
   //
-  //    val r3 = shallow {
+  //    val r3 = stage {
   //      val q1 = Queryable[CoffeeNested1] filter (x => x.idNumber == 3)
   //      q1.first
   //    }
   //    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", CoffeeNested1(3, "three"), r3)
-  //    val r4 = shallow {
+  //    val r4 = stage {
   //      val q1 = Queryable[CoffeeNested1] filter (x => x.idNumber == 3)
   //      q1.toSeq
   //    }
@@ -189,23 +189,23 @@ class YYTest {
   //
   //    import NestingObject.Level2.CoffeeNested2
   //
-  //    val r5 = shallow {
+  //    val r5 = stage {
   //      val q1 = Queryable[CoffeeNested2] filter (x => x.idNumber == 3)
   //      q1.first
   //    }
   //    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", CoffeeNested2(3, "three"), r5)
-  //    val r6 = shallow {
+  //    val r6 = stage {
   //      val q1 = Queryable[CoffeeNested2] filter (x => x.idNumber == 3)
   //      q1.toSeq
   //    }
   //    assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", CoffeeNested2(3, "three"), r6.head)
   //
   //    //    @Entity("COFFEE") case class CoffeeNested3(@Entity("ID") idNumber: Int, @Entity("NAME") coffeeName: String)
-  //    //    val r7 = shallow {
+  //    //    val r7 = stage {
   //    //      val q1 = Queryable[CoffeeNested3] filter (x => x.idNumber == 3)
   //    //      q1.first
   //    //    }
-  //    //    val r8 = shallow {
+  //    //    val r8 = stage {
   //    //      val q1 = Queryable[CoffeeNested3] filter (x => x.idNumber == 3)
   //    //      q1.toSeq
   //    //    }
@@ -219,68 +219,68 @@ class YYTest {
     initSortTable()
     import Shallow._
     import Shallow.TestH2._
-    val r1 = shallow {
+    val r1 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => x._2)
       q1.toSeq
     }
     assertEquals("Query sort by name of Table", List((2, "one"), (1, "one"), (10, "ten"), (3, "three")), r1.toList)
-    val r2 = shallow {
+    val r2 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => x._1)
       q1.toSeq
     }
     assertEquals("Query sort by id of Table", List((1, "one"), (2, "one"), (3, "three"), (10, "ten")), r2.toList)
-    val r3 = shallow {
+    val r3 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => (x._2, x._1))
       q1.toSeq
     }
     assertEquals("Query sort by (name, id) of Table", List((1, "one"), (2, "one"), (10, "ten"), (3, "three")), r3.toList)
-    val r4 = shallow {
+    val r4 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => (x._2, x._1)) take 2
       q1.toSeq
     }
     assertEquals("Query sort by (name, id) + take of Table", List((1, "one"), (2, "one")), r4.toList)
-    val r5 = shallow {
+    val r5 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => (x._1, x._2)) drop 1
       q1.toSeq
     }
     assertEquals("Query sort by (id, name) + drop of Table", List((2, "one"), (3, "three"), (10, "ten")), r5.toList)
 
-    val r6 = shallow {
+    val r6 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => x._1)(Ordering[Int])
       q1.toSeq
     }
     assertEquals("Query sort by id of Table + Ordering", List((1, "one"), (2, "one"), (3, "three"), (10, "ten")), r6.toList)
-    val r7 = shallow {
+    val r7 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => x._1)(Ordering[Int].reverse)
       q1.toSeq
     }
     assertEquals("Query sort by reverse of id of Table + Ordering", List((10, "ten"), (3, "three"), (2, "one"), (1, "one")), r7.toList)
-    val r8 = shallow {
+    val r8 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => x._2)(Ordering[String].reverse)
       q1.toSeq
     }
     assertEquals("Query sort by reverse of name of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r8.toList)
-    val r9 = shallow {
+    val r9 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => (x._2, x._1))(Ordering[(String, Int)])
       q1.toSeq
     }
     assertEquals("Query sort by (name, id) of Table + Ordering", List((1, "one"), (2, "one"), (10, "ten"), (3, "three")), r9.toList)
-    val r10 = shallow {
+    val r10 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => (x._2, x._1))(Ordering[(String, Int)].reverse)
       q1.toSeq
     }
     assertEquals("Query sort by reverse of (name, id) of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r10.toList)
-    val r11 = shallow {
+    val r11 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => (x._2, x._1))(Ordering.by[(String, Int), String](_._1).reverse)
       q1.toSeq
     }
     assertEquals("Query sort by reverse of name of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r11.toList)
-    val r12 = shallow {
+    val r12 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sorted(Ordering.by[(Int, String), String](_._2).reverse)
       q1.toSeq
     }
     assertEquals("Query sorted reverse of name of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r12.toList)
-    val r13 = shallow {
+    val r13 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sorted(Ordering.by[(Int, String), (String, Int)](x => (x._2, x._1)).reverse)
       q1.toSeq
     }
@@ -294,49 +294,49 @@ class YYTest {
     initCoffeeTable()
     import Shallow._
     import Shallow.TestH2._
-    val r1 = shallow {
+    val r1 = stage {
       val tbl = Table.getTable[Coffee1]
       val q = Query.ofTable(tbl)
       val q1 = for (x <- q) yield x.id
       q1.toSeq
     }
     assertEquals("Query forComprehension map _1 of Virtualized Table", 4, r1.length)
-    val r2 = shallow {
+    val r2 = stage {
       val q1 = for (x <- Queryable[Coffee1]) yield (x.id, x.name)
       q1.toSeq
     }
     assertEquals("Query forComprehension map (_1, _2) of Table", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r2.toList)
-    val r3 = shallow {
+    val r3 = stage {
       val q1 = for (x <- Queryable[Coffee1]) yield (x.id, if (x.id < 3) "Low" else x.name)
       q1.toSeq
     }
     assertEquals("Query forComprehension map (_1, _2) of Table + if", List((1, "Low"), (2, "Low"), (3, "three"), (10, "ten")), r3.toList)
-    val r4 = shallow {
+    val r4 = stage {
       val q1 = for (x <- Queryable[Coff]) yield (x.idNumber, x.name)
       q1.toSeq
     }
     assertEquals("Query forComprehension map (_1, _2) of Table + Annotation", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r4.toList)
-    val r5 = shallow {
+    val r5 = stage {
       val q1 = for (x <- Queryable[Coff] if x.idNumber < 3) yield x.idNumber
       q1.toSeq
     }
     assertEquals("Query forComprehension map _1 filter of Table + Annotation", List(1, 2), r5.toList)
-    val r6 = shallow {
+    val r6 = stage {
       val q1 = for (x <- Queryable[Coff] if x.idNumber < 3) yield (x.idNumber, x.name)
       q1.toSeq
     }
     assertEquals("Query forComprehension map (_1, _2) filter of Table + Annotation", List((1, "one"), (2, "two")), r6.toList)
-    val r7 = shallow {
+    val r7 = stage {
       val q1 = for (x <- Queryable[Coffn] if x.idNumber == 3) yield (x.idNumber, x._2)
       q1.toSeq
     }
     assertEquals("Query forComprehension filter == map (_1, _2) of Table + Annotation", List((3, "three")), r7.toList)
-    val r8 = shallow {
+    val r8 = stage {
       val q1 = for ((x, y) <- Queryable[Coffn].map(x => (x.idNumber, x._2)) if x == 3) yield (x, y)
       q1.toSeq
     }
     assertEquals("Query forComprehension filter == map (_1, _2) of Table + Annotation + (_1, _2) <-", List((3, "three")), r8.toList)
-    val r9 = shallow {
+    val r9 = stage {
       val q1 = for (x <- Queryable[Coff]) yield (x.idNumber, (x.idNumber, x.name))
       q1.toSeq
     }
@@ -349,12 +349,12 @@ class YYTest {
     import Shallow._
     def driver = H2Driver
     implicit val session = DatabaseHandler.provideSession
-    val r1 = shallow {
+    val r1 = stage {
       val q1 = Queryable[Coffee1] map (x => x.id)
       q1.getInvoker
     }(driver)
     assertEquals("Query map _1 of Virtualized++ Table invoker", 4, r1.list.length)
-    val r2 = shallow {
+    val r2 = stage {
       val q1 = Queryable[Coffee1] map (x => x.id)
       q1.toSeqImplicit
     }(driver)(session)
@@ -367,42 +367,42 @@ class YYTest {
     initCoffeeTable()
     import Shallow._
     import Shallow.TestH2._
-    val r1 = shallow {
+    val r1 = stage {
       val q1 = Queryable[Coffee1] map (x => x.id + 2)
       q1.toSeq
     }
     assertEquals("numericOps +", List(3, 4, 5, 12), r1.toList)
-    val r2 = shallow {
+    val r2 = stage {
       val q1 = Queryable[Coffee1] map (x => x.id * 2 % 3)
       q1.toSeq
     }
     assertEquals("numericOps * %", List(2, 1, 0, 2), r2.toList)
-    val r3 = shallow {
+    val r3 = stage {
       val q1 = Queryable[Coffee1] map (x => ((x.id - 5).abs, (x.id).toDegrees))
       q1.toSeq
     }
     assertEquals("numericOps (x - 5).abs, toDegrees", List((4, 57), (3, 115), (2, 172), (5, 573)), r3.toList)
-    val r4 = shallow {
+    val r4 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.name + "!"))
       q1.toSeq
     }
     assertEquals("stringOps +", List("one!", "two!", "three!", "ten!"), r4.toList)
-    val r5 = shallow {
+    val r5 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.name ++ "!").toUpperCase)
       q1.toSeq
     }
     assertEquals("stringOps ++ toUpperCase", List("ONE!", "TWO!", "THREE!", "TEN!"), r5.toList)
-    val r6 = shallow {
+    val r6 = stage {
       val q1 = Queryable[Coffee1] map (x => if (x.name like "%e") x.name.toUpperCase else ("  " + x.name + "! ").trim)
       q1.toSeq
     }
     assertEquals("stringOps if (like %%e) toUpperCase else ( + + ).trim", List("ONE", "two!", "THREE", "ten!"), r6.toList)
-    val r7 = shallow {
+    val r7 = stage {
       val q1 = Queryable[Coffee1] map (x => if (x.name like "%e") ("  " + x.name + "!  ").ltrim else ("  " + x.name + "!  ").rtrim)
       q1.toSeq
     }
     assertEquals("stringOps if (like %%e) ( + + ).ltrim else ( + + ).rtrim", List("one!  ", "  two!", "three!  ", "  ten!"), r7.toList)
-    val r8 = shallow {
+    val r8 = stage {
       val q1 = Queryable[Coffee1] map (x => if (x.name endsWith "e") x.name.toUpperCase else ("  " + x.name + "! ").trim)
       q1.toSeq
     }
@@ -444,7 +444,7 @@ class YYTest {
 
     import Shallow._
 
-    val q1 = shallow {
+    val q1 = stage {
       (for {
         c <- Queryable[Categories]
         p <- Queryable[Posts] if c.id == p.category
@@ -452,7 +452,7 @@ class YYTest {
     }
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), q1.toList)
 
-    val q2 = shallow {
+    val q2 = stage {
       val q = Queryable[Categories] innerJoin Queryable[Posts] on (_.id == _.category)
       val q1 = q.sortBy(_._2.id)
       val q2 = q1.map(x => (x._2.id, x._1.id))
@@ -460,7 +460,7 @@ class YYTest {
     }
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), q2.toList)
 
-    val q3 = shallow {
+    val q3 = stage {
       (for {
         (c, p) <- Queryable[Categories] leftJoin Queryable[Posts] on (_.id == _.category)
       } yield (p.id, (p.id.?.getOrElse(0), c.id, c.name, p.title.?.getOrElse("")))).sortBy(x => x._1)(nullsFirst).map(_._2).map(x => (x._1, x._2)).toSeq
@@ -468,21 +468,21 @@ class YYTest {
     assertEquals(List((0, 4), (2, 1), (3, 2), (4, 3), (5, 2)), q3.toList)
 
     assertFail {
-      shallow {
+      stage {
         (for {
           (c, p) <- Queryable[Categories] leftJoin Queryable[Posts] on (_.id == _.category)
         } yield (p.id, c.id, c.name, p.title)).sortBy(_._1)(nullsFirst).toSeq
       }
     }
 
-    val q3b = shallow {
+    val q3b = stage {
       (for {
         (c, p) <- Queryable[Categories] leftJoin Queryable[Posts] on (_.id == _.category)
       } yield (p.id, (p.id.?.getOrElse(0), c.id, c.name, p.title.?.getOrElse("")))).sortBy(_._1)(nullsLast).map(_._2).map(x => (x._1, x._2)).toSeq
     }
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2), (0, 4)), q3b.toList)
 
-    val q4 = shallow {
+    val q4 = stage {
       (for {
         (c, p) <- Queryable[Categories] rightJoin Queryable[Posts] on (_.id == _.category)
       } yield (p.id, c.id.?.getOrElse(0), c.name.?.getOrElse(""), p.title)).sortBy(_._1).map(x => (x._1, x._2)).toSeq
@@ -525,20 +525,20 @@ class YYTest {
     }
 
     import Shallow._
-    val q1 = shallow {
+    val q1 = stage {
       val q = Queryable[Categories].sortBy(_.id).zipWithIndex
       val q1 = q.map(x => (x._1.id, x._2))
       q1.toSeq
     }
     assertEquals(List((1, 0), (2, 1), (3, 2), (4, 3)), q1.toList)
-    val q2 = shallow {
+    val q2 = stage {
       val q =
         Queryable[Categories].sortBy(_.id) zip Queryable[Posts].sortBy(_.category)
       val q1 = q.map(x => (x._1.id, x._2.category))
       q1.toSeq
     }
     assertEquals(List((1, -1), (2, 1), (3, 2), (4, 2)), q2.toList)
-    val q3 = shallow {
+    val q3 = stage {
       val q = for {
         (c, p) <- Queryable[Categories].sortBy(_.id) zip Queryable[Posts].sortBy(_.category)
       } yield (c.id, p.category)
@@ -564,14 +564,14 @@ class YYTest {
       T.insertAll((3, 1), (3, 9))
     }
     import Shallow._
-    val r0 = shallow {
+    val r0 = stage {
       val q0 = Queryable[T3].groupBy(_.a)
       val q1 = q0.map(_._2.length).sorted
       q1.toSeq
     }
     val r0t: List[Int] = r0.toList
     assertEquals(List(2, 3, 3), r0t)
-    val r = shallow {
+    val r = stage {
       (for {
         (k, v) <- Queryable[T3].groupBy(t => t.a)
       } yield (k, v.length)).sortBy(_._1).toSeq
@@ -579,7 +579,7 @@ class YYTest {
     val rt: List[(Int, Int)] = r.toList
     assertEquals(List((1, 3), (2, 3), (3, 2)), rt)
 
-    val r2 = shallow {
+    val r2 = stage {
       (
         (for {
           (k, v) <- Queryable[T3].groupBy(t => t.a)
@@ -610,30 +610,30 @@ class YYTest {
       T.insertAll(inMemT3: _*)
     }
     import Shallow._
-    val r0 = shallow {
+    val r0 = stage {
       Queryable[T3O].map(x => (x.a, x.b)).toSeq
     }
     assertEquals(inMemT3, r0.toList)
-    val r1 = shallow {
+    val r1 = stage {
       Queryable[T3O].map(x => (x.a, x.b.getOrElse(0))).toSeq
     }
     assertEquals(inMemT3 map {
       case (_1, _2) => (_1, _2.getOrElse(0))
     }, r1.toList)
     assertEquals(inMemT3, r0.toList)
-    val r2 = shallow {
+    val r2 = stage {
       Queryable[T3O].map(x => (x.a.?, x.b.getOrElse(0))).toSeq
     }
     assertEquals(inMemT3 map {
       case (_1, _2) => (Some(_1), _2.getOrElse(0))
     }, r2.toList)
-    val r3 = shallow {
+    val r3 = stage {
       Queryable[T3O].map(x => (x.a.?.getOrElse(3), x.b.getOrElse(0))).toSeq
     }
     assertEquals(inMemT3 map {
       case (_1, _2) => (_1, _2.getOrElse(0))
     }, r3.toList)
-    val r4 = shallow {
+    val r4 = stage {
       Queryable[T3O].map(x => (x.a.?.toRadians, x.b.getOrElse(0))).toSeq
     }
     assertEquals(inMemT3 map {
@@ -688,100 +688,100 @@ class YYTest {
       T.insertAll((3, 1), (3, 9))
     }
 
-    val q: Query[Coffee1] = shallow {
+    val q: Query[Coffee1] = stage {
       Queryable[Coffee1] filter (x => x.id == 3)
     }
-    val r7 = shallow {
+    val r7 = stage {
       q.toSeq
     }
     assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r7.head)
 
-    val qq = shallow {
+    val qq = stage {
       Queryable[Coffee1] map (x => x.id)
     }
-    val r8 = shallow {
+    val r8 = stage {
       (qq filter (x => x < 3)).toSeq
     }
     assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", List(1, 2), r8.toList)
 
-    val q0 = shallow {
+    val q0 = stage {
       Queryable[Coffee1]
     }
-    val q1 = shallow {
+    val q1 = stage {
       q0 filter (x => x.id == 3)
     }
-    val r9 = shallow {
+    val r9 = stage {
       q1.toSeq
     }
     assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r9.head)
 
-    val categories = shallow {
+    val categories = stage {
       Queryable[Categories]
     }
-    val posts = shallow {
+    val posts = stage {
       Queryable[Posts]
     }
 
-    val cpImplicitJoin = shallow {
+    val cpImplicitJoin = stage {
       for {
         c <- Queryable[Categories]
         p <- Queryable[Posts] if c.id == p.category
       } yield (p.id, c.id, c.name, p.title)
     }
 
-    val cp1 = shallow {
+    val cp1 = stage {
       (cpImplicitJoin).sortBy(_._1).map(x => (x._1, x._2)).toSeq
     }
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), cp1.toList)
 
-    val cpInnerJoin = shallow {
+    val cpInnerJoin = stage {
       categories innerJoin posts on (_.id == _.category)
     }
-    val cpInnerJoinSorted = shallow {
+    val cpInnerJoinSorted = stage {
       cpInnerJoin.sortBy(_._2.id)
     }
-    val cpInnerJoinMapped = shallow {
+    val cpInnerJoinMapped = stage {
       cpInnerJoinSorted.map(x => (x._2.id, x._1.id))
     }
-    val cp2 = shallow {
+    val cp2 = stage {
       cpInnerJoinMapped.toSeq
     }
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), cp2.toList)
 
-    val cpRightJoin = shallow {
+    val cpRightJoin = stage {
       categories rightJoin posts on (_.id == _.category)
     }
-    val cpRightJoinMapped = shallow {
+    val cpRightJoinMapped = stage {
       for {
         (c, p) <- cpRightJoin
       } yield (p.id, c.id.?.getOrElse(0), c.name.?.getOrElse(""), p.title)
     }
-    val cpRightJoinSorted = shallow {
+    val cpRightJoinSorted = stage {
       cpRightJoinMapped.sortBy(_._1)
     }
-    val cpRightJoinSortedMapped = shallow {
+    val cpRightJoinSortedMapped = stage {
       cpRightJoinSorted.map(x => (x._1, x._2))
     }
-    val cp3 = shallow {
+    val cp3 = stage {
       cpRightJoinSortedMapped.toSeq
     }
     assertEquals(List((1, 0), (2, 1), (3, 2), (4, 3), (5, 2)), cp3.toList)
 
-    val t3Query = shallow {
+    val t3Query = stage {
       Queryable[T3]
     }
-    val t3GroupBy = shallow {
+    val t3GroupBy = stage {
       t3Query.groupBy(t => t.a)
     }
-    val t3GroupByMapped = shallow {
+    val t3GroupByMapped = stage {
       for {
         (k, v) <- t3GroupBy
       } yield (k, v.length, v.map(_.a).sum, v.map(_.b).sum)
     }
-    val t3GroupBySorted = shallow {
+    val t3GroupBySorted = stage {
       t3GroupByMapped.sortBy(_._1)
     }
-    val t3r = shallow {
+    val t3r = stage {
       t3GroupBySorted.toSeq
     }
     val t3result: List[(Int, Int, Option[Int], Option[Int])] = t3r.toList
@@ -799,44 +799,44 @@ class YYTest {
     val cName = "Amir"
     val coffee = Coffee1(cId, cName)
 
-    val r = shallowTemplate {
+    val r = stage {
       val c = Coffee1(1989, "Amir")
       c
     }
     assertEquals("Creating case class object inside block", coffee, r)
 
-    val r1Before = shallowTemplate {
+    val r1Before = stage {
       Queryable[Coffee1].toSeq
     }
 
-    //    shallowTemplate {
+    //    stage {
     //      val c = Coffee1(1989, "Amir")
     //      Queryable[Coffee1].insert(c)
     //    }
-    shallowTemplate {
+    stage {
       Queryable[Coffee1].executor
     }.insert(coffee)
 
-    //    shallowTemplate {
+    //    stage {
     //      val c = Coffee1(1989, "Amir")
     //      Queryable[Coffee1].insert(c)
     //    }
-    shallowTemplate {
+    stage {
       Queryable[Coffee1].executor
     }.insert(coffee)
 
-    val r1After = shallowTemplate {
+    val r1After = stage {
       Queryable[Coffee1].toSeq
     }
 
     assertEquals("Inserting a constant element", r1Before ++ List(coffee, coffee), r1After)
 
-    shallowTemplate {
+    stage {
       val c = Coffee1(cId, cName)
       Queryable[Coffee1].insert(c)
     }
 
-    val r2After = shallowTemplate {
+    val r2After = stage {
       Queryable[Coffee1].toSeq
     }
 
@@ -851,7 +851,7 @@ class YYTest {
     import Shallow._
     import Shallow.TestH2._
 
-    def getAll() = shallowTemplate {
+    def getAll() = stage {
       Queryable[Coffee1].toSeq
     }
 
@@ -861,19 +861,19 @@ class YYTest {
 
     val r1Before = getAll()
 
-    //    shallowTemplate {
+    //    stage {
     //      val c = Coffee1(1989, "Amir")
     //      Queryable[Coffee1].insert(c)
     //    }
-    shallowTemplate {
+    stage {
       Queryable[Coffee1].executor
     }.insert(coffee)
 
-    //    shallowTemplate {
+    //    stage {
     //      val c = Coffee1(1368, "Amir")
     //      Queryable[Coffee1].filter(_.id == 1989).update(c)
     //    }
-    shallowTemplate {
+    stage {
       Queryable[Coffee1].filter(_.id == 1989).executor
     }.update(Coffee1(1368, "Amir"))
 
@@ -881,11 +881,11 @@ class YYTest {
 
     assertEquals("Updating a constant element with constant value", r1Before ++ List(Coffee1(1368, cName)), r1After)
 
-    //    def updateToGivenId(toId: Int) = shallowTemplate {
+    //    def updateToGivenId(toId: Int) = stage {
     //      val c = Coffee1(toId, "Amir")
     //      Queryable[Coffee1].filter(_.id == 1368).update(c)
     //    }
-    def updateToGivenId(toId: Int) = shallowTemplate {
+    def updateToGivenId(toId: Int) = stage {
       Queryable[Coffee1].filter(_.id == 1368).executor
     }.update(Coffee1(toId, "Amir"))
 
@@ -895,11 +895,11 @@ class YYTest {
 
     assertEquals("Updating a constant element with captured value", r1Before ++ List(Coffee1(cId, cName)), r2After)
 
-    //    def updateById(id: Int) = shallowTemplate {
+    //    def updateById(id: Int) = stage {
     //      val c = Coffee1(1368, "Amir")
     //      Queryable[Coffee1].filter(_.id == id).update(c)
     //    }
-    def updateById(id: Int) = shallowTemplate {
+    def updateById(id: Int) = stage {
       Queryable[Coffee1].filter(_.id == id).executor
     }.update(Coffee1(1368, "Amir"))
 
@@ -908,12 +908,12 @@ class YYTest {
     val r3After = getAll()
 
     assertEquals("Updating a captured element with constant value", r1Before ++ List(Coffee1(1368, cName)), r3After)
-    //    def updateByIdToId(id: Int, toId: Int, toName: String) = shallowTemplate {
+    //    def updateByIdToId(id: Int, toId: Int, toName: String) = stage {
     //      val i = id // inorder to change the order of holes
     //      val c = Coffee1(toId, toName)
     //      Queryable[Coffee1].filter(_.id == i).update(c)
     //    }
-    def updateByIdToId(id: Int, toId: Int, toName: String) = shallowTemplate {
+    def updateByIdToId(id: Int, toId: Int, toName: String) = stage {
       val i = id // inorder to change the order of holes
       Queryable[Coffee1].filter(_.id == i).executor
     }.update(Coffee1(toId, toName))
@@ -923,11 +923,11 @@ class YYTest {
     val r4After = getAll()
 
     assertEquals("Updating a captured element with captured value", r1Before ++ List(Coffee1(cId, "AmirSh")), r4After)
-    //    def updateByIdToSameId(id: Int, toName: String) = shallowTemplate {
+    //    def updateByIdToSameId(id: Int, toName: String) = stage {
     //      val c = Coffee1(id, toName)
     //      Queryable[Coffee1].filter(_.id == id).update(c)
     //    }
-    def updateByIdToSameId(id: Int, toName: String) = shallowTemplate {
+    def updateByIdToSameId(id: Int, toName: String) = stage {
       Queryable[Coffee1].filter(_.id == id).executor
     }.update(Coffee1(id, toName))
 
@@ -937,7 +937,7 @@ class YYTest {
 
     assertEquals("Updating a captured element with captured value with repeated variable", r1Before ++ List(Coffee1(cId, "Amir")), r5After)
 
-    def updateByIdToSameIdTuple2(id: Int, toName: String) = shallowTemplate {
+    def updateByIdToSameIdTuple2(id: Int, toName: String) = stage {
       Queryable[Coffee1].filter(_.id == id).map(x => (x.id, x.name)).executor
     }.update((id, toName))
 
@@ -949,18 +949,18 @@ class YYTest {
 
     initAccountsTable()
 
-    def getAccounts() = shallowTemplate {
+    def getAccounts() = stage {
       Queryable[Account1].toSeq
     }
 
-    def getAccountsExcept(id: Int) = shallowTemplate {
+    def getAccountsExcept(id: Int) = stage {
       Queryable[Account1].filter(_.id != id).toSeq
     }
 
     val a1Before = getAccountsExcept(1)
 
     def updateAccount(id: Int, balance: Int, transfers: String) = {
-      shallow {
+      stage {
         Queryable[Account1].filter(_.id == id).update(Account1(id, balance, transfers))
       }
     }
@@ -983,7 +983,7 @@ class YYTest {
     val inMem = List((1, "one"), (2, "two"), (3, "three"), (10, "ten"))
 
     for (threshold <- 1 to 10) {
-      val r3 = shallowTemplate {
+      val r3 = stage {
         val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
         q1.toSeq
       }
@@ -997,13 +997,13 @@ class YYTest {
     //    //    println(templ: Shallow.QueryTemplate[String, (Int, String)])
     //
     //    for (threshold <- 1 to 10) {
-    //      val r3 = shallowTemplate {
+    //      val r3 = stage {
     //        templ(threshold)
     //      }
     //      assertEquals("Template by using templateMaker", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
     //    }
 
-    def template(threshold: Long) = shallowTemplate {
+    def template(threshold: Long) = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
       q1.toSeq
     }
@@ -1012,7 +1012,7 @@ class YYTest {
       val r3 = template(threshold)
       assertEquals("Template by invoking function", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
     }
-    def template2(lower: Long, upper: Long) = shallowTemplate {
+    def template2(lower: Long, upper: Long) = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < upper && x.id > lower) "Mid" else x.name))
       q1.toSeq
     }
@@ -1022,7 +1022,7 @@ class YYTest {
       assertEquals("Template with 2 args by invoking function", inMem.map(x => (x._1, if (x._1 < upper && x._1 > lower) "Mid" else x._2)), r3.toList)
     }
 
-    def template2_r(lower: Long, upper: Long) = shallowTemplate {
+    def template2_r(lower: Long, upper: Long) = stage {
       val l = lower
       val u = upper
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < u && x.id > l) "Mid" else x.name))
@@ -1034,11 +1034,11 @@ class YYTest {
       val r3 = template2_r(lower, upper)
       assertEquals("Template with 2 reversed args by invoking function", inMem.map(x => (x._1, if (x._1 < upper && x._1 > lower) "Mid" else x._2)), r3.toList)
     }
-    //    val r = (a: Int) => shallowTemplateDebug {
+    //    val r = (a: Int) => stageDebug {
     //      a
     //    }
     //    val threshold = 1
-    //    val r3 = shallow {
+    //    val r3 = stage {
     //      val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
     //      q1.toSeq
     //    }
