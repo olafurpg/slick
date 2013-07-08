@@ -10,11 +10,13 @@ import scala.slick.jdbc.JdbcBackend
 import scala.slick.driver.JdbcDriver
 
 package object yy {
-  def shallow[T](block: => T): T = macro implementations.slick[T]
-  def shallowDebug[T](block: => T): T = macro implementations.slickDebug[T]
+  //  def shallow[T](block: => T): T = macro implementations.slick[T]
+  //  def shallowDebug[T](block: => T): T = macro implementations.slickDebug[T]
+  def shallow[T](block: => T): T = macro implementations.slickTemplate[T]
+  def shallowDebug[T](block: => T): T = macro implementations.slickTemplateDebug[T]
   def shallowTemplate[T](block: => T): T = macro implementations.slickTemplate[T]
   def shallowTemplateDebug[T](block: => T): T = macro implementations.slickTemplateDebug[T]
-  def templateMaker[P, R](block: P => Shallow.QueryTemplate[_, R]): Shallow.QueryTemplate[P, R] = macro implementations.templateMaker[P, R]
+  /*def templateMaker[P, R](block: P => Shallow.QueryTemplate[_, R]): Shallow.QueryTemplate[P, R] = macro implementations.templateMaker[P, R]*/
 
   object implementations {
     def slick[T](c: Context)(block: c.Expr[T]): c.Expr[T] = {
@@ -61,12 +63,14 @@ package object yy {
       YYTransformer[c.type, T](c)("scala.slick.yy.SlickYinYangTemplate",
         new SlickTypeTransformer[c.type](c)(virtualTypes),
         postProcessing = Some(new PostProcessing[c.type](c)(virtualStatements)),
-        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate"))
+        //        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "scala.slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate", "scala.slick.yy.Shallow.QueryTemplate"))
+        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]], c.typeOf[Shallow.QueryTemplate[_, _]]))
       )(block)
     }
+    /*
     def templateMaker[P, R](c: Context)(block: c.Expr[(P => Shallow.QueryTemplate[_, R])]): c.Expr[Shallow.QueryTemplate[P, R]] = {
       import c.universe._
-//      println(c.universe.showRaw(block))
+      //      println(c.universe.showRaw(block))
       block.tree match {
         case Function(vparams, body) =>
           val yyTranformers = new {
@@ -81,7 +85,7 @@ package object yy {
           val result = YYTransformer[c.type, Shallow.QueryTemplate[P, R]](c)("scala.slick.yy.SlickYinYangTemplate",
             new SlickTypeTransformer[c.type](c)(virtualTypes),
             postProcessing = Some(new PostProcessing[c.type](c)(virtualStatements)),
-            Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate"), "noInterpretParams" -> true)
+            Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> /* FIXME */ List("slick.yy.Shallow.Query", "scala.slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate", "scala.slick.yy.Shallow.QueryTemplate"), "noInterpretParams" -> true)
           )(c.Expr[Shallow.QueryTemplate[P, R]](body))
           val shallowQueryType = Select(Select(Select(Select(Ident(newTermName("scala")), newTermName("slick")), newTermName("yy")), newTermName("Shallow")), newTypeName("QueryTemplate"))
           val shallowQueryTemplateType = TypeTree().setOriginal(AppliedTypeTree(shallowQueryType, List(TypeTree(vparams.head.tpt.tpe), TypeTree(body.tpe.asInstanceOf[TypeRef].args(1)))))
@@ -113,6 +117,7 @@ package object yy {
       //        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate"))
       //      )(block)
     }
+     */
     def slickTemplateDebug[T](c: Context)(block: c.Expr[T]): c.Expr[T] = {
       //      println(c.universe.showRaw(block))
       val yyTranformers = new {
@@ -125,7 +130,8 @@ package object yy {
       YYTransformer[c.type, T](c)("scala.slick.yy.SlickYinYangTemplate",
         new SlickTypeTransformer[c.type](c, 1)(virtualTypes),
         postProcessing = Some(new PostProcessing[c.type](c)(virtualStatements)),
-        Map("shallow" -> false, "debug" -> 1, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate"))
+        //        Map("shallow" -> false, "debug" -> 1, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "scala.slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate", "scala.slick.yy.Shallow.QueryTemplate"))
+        Map("shallow" -> false, "debug" -> 1, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]], c.typeOf[Shallow.QueryTemplate[_, _]]))
       )(block)
     }
 

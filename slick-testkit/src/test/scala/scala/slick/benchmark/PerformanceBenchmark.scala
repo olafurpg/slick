@@ -6,7 +6,7 @@ import scala.slick.yy.YYSlickCake
 import scala.slick.yy.shallow
 import scala.slick.yy.shallowTemplate
 import scala.slick.yy.shallowTemplateDebug
-import scala.slick.yy.templateMaker
+// import scala.slick.yy.templateMaker
 
 object PerformanceBenchmark extends PerformanceTest {
   lazy val executor = LocalExecutor(
@@ -31,30 +31,34 @@ object PerformanceBenchmark extends PerformanceTest {
   //  val directSizes = Gen.range("size")(1, 10, 1)
   val directSizes = Gen.range("size")(1, 2, 1)
 
+  //  val insertionSizes = Gen.range("size")(10, 10000, 200)
   val insertionSizes = Gen.range("size")(10, 5000, 200)
+  //  val updateSizes = Gen.range("size")(10, 800, 50)
+  val updateSizes = Gen.range("size")(10, 160, 50)
 
   val ranges = for {
     size <- sizes
-    //  } yield size to size
   } yield 0 until size
 
   val directRanges = for {
     size <- directSizes
-    //  } yield size to size
   } yield 0 until size
 
-  val insertionRenges = for {
+  val insertionRanges = for {
     size <- insertionSizes
-    //  } yield size to size
+  } yield 0 until size
+
+  val updateRanges = for {
+    size <- updateSizes
   } yield 0 until size
 
   val DatabaseHandler = Shallow.TestH2
 
   initCoffeeTable()
   /*
-  performance of "Templates" in {
+  performance of "SelectTemplates" in {
     import Shallow.TestH2.h2Session
-    measure method "Select * where id < ?" in {
+    measure method "inequalityCaptured" in {
       {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
@@ -177,11 +181,11 @@ object PerformanceBenchmark extends PerformanceTest {
       }
     }
   }
-*/
-  /*
-  performance of "Templates simple" in {
+  
+
+  performance of "SelectTemplates" in {
     import Shallow.TestH2.h2Session
-    measure method "Select * where id == 1" in {
+    measure method "equalityConstant" in {
       {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
@@ -276,17 +280,17 @@ object PerformanceBenchmark extends PerformanceTest {
         }
       }
     }
-  }*/
+  }
+  */
 
   performance of "Insertion" in {
     import Shallow.TestH2.h2Session
-    /*
     measure method "constantValue" in {
       {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(insertionRenges) curve ("lifted embedding") in { r =>
+          using(insertionRanges) curve ("lifted embedding") in { r =>
             for (i <- r) {
               val c = Cf(1989, "Amir")
               Coffee.insert(c)
@@ -300,12 +304,20 @@ object PerformanceBenchmark extends PerformanceTest {
         //        import ShallowEmbeddingDefs._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
-          using(insertionRenges) curve ("shallow embedding") in { r =>
+          using(insertionRanges) curve ("shallow embedding") in { r =>
             for (i <- r) {
               val r0 = shallowTemplate {
                 val c = Coffee1(1989, "Amir")
                 Queryable[Coffee1].insert(c)
               }
+            }
+          }
+          using(insertionRanges) curve ("shallow embedding executor") in { r =>
+            for (i <- r) {
+              val c = Coffee1(1989, "Amir")
+              val r0 = shallowTemplate {
+                Queryable[Coffee1].executor
+              }.insert(c)
             }
           }
         }
@@ -316,22 +328,21 @@ object PerformanceBenchmark extends PerformanceTest {
         implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
         import Q.interpolation
         {
-          using(insertionRenges) curve ("plain sql") in { r =>
+          using(insertionRanges) curve ("plain sql") in { r =>
             for (i <- r) {
               val c = Coffee(1989, "Amir")
-              sqlu"insert into Coffee values (${c.id}, ${c.name})"
+              sqlu"insert into Coffee values (${c.id}, ${c.name})".first
             }
           }
         }
       }
     }
-    */
     measure method "capturedValue" in {
       {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(insertionRenges) curve ("lifted embedding") in { r =>
+          using(insertionRanges) curve ("lifted embedding") in { r =>
             for (i <- r) {
               val cId = i
               val cName = s"$i"
@@ -344,10 +355,9 @@ object PerformanceBenchmark extends PerformanceTest {
       {
         import Shallow.TestH2.h2Driver
         import Shallow._
-        //        import ShallowEmbeddingDefs._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
-          using(insertionRenges) curve ("shallow embedding") in { r =>
+          using(insertionRanges) curve ("shallow embedding") in { r =>
             for (i <- r) {
               val cId = i
               val cName = s"$i"
@@ -357,25 +367,254 @@ object PerformanceBenchmark extends PerformanceTest {
               }
             }
           }
+          using(insertionRanges) curve ("shallow embedding executor") in { r =>
+            for (i <- r) {
+              val cId = i
+              val cName = s"$i"
+              val c = Coffee1(cId, cName)
+              val r0 = shallowTemplate {
+                Queryable[Coffee1].executor
+              }.insert(c)
+            }
+          }
         }
       }
       {
         import PlainSqlDefs._
         import Q.interpolation
         {
-          using(insertionRenges) curve ("plain sql") in { r =>
+          using(insertionRanges) curve ("plain sql") in { r =>
             for (i <- r) {
               val cId = i
               val cName = s"$i"
               val c = Coffee(cId, cName)
-              sqlu"insert into Coffee values (${c.id}, ${c.name})"
+              sqlu"insert into Coffee values (${c.id}, ${c.name})".first
             }
           }
         }
       }
     }
   }
-
+  performance of "Update" in {
+    import Shallow.TestH2.h2Session
+    measure method "constantWhereConstantUpdate" in {
+      {
+        import scala.slick.driver.H2Driver.simple._
+        import LiftedEmbeddingDefs._
+        {
+          using(updateRanges) curve ("lifted embedding") in { r =>
+            for (i <- r) {
+              val c = Cf(10, "Amir")
+              Coffee.filter(_.id === 10).update(c)
+            }
+          }
+        }
+      }
+      {
+        import Shallow.TestH2.h2Driver
+        import Shallow._
+        //        import ShallowEmbeddingDefs._
+        import scala.slick.yy.test.YYDefinitions.Coffee1
+        {
+          using(updateRanges) curve ("shallow embedding") in { r =>
+            for (i <- r) {
+              val r0 = shallowTemplate {
+                val c = Coffee1(10, "Amir")
+                Queryable[Coffee1].filter(_.id == 10).update(c)
+              }
+            }
+          }
+          using(updateRanges) curve ("shallow embedding executor") in { r =>
+            for (i <- r) {
+              val c = Coffee1(10, "Amir")
+              val r0 = shallowTemplate {
+                Queryable[Coffee1].filter(_.id == 10).executor
+              }.update(c)
+            }
+          }
+        }
+      }
+      {
+        import PlainSqlDefs._
+        import scala.slick.jdbc.GetResult
+        implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
+        import Q.interpolation
+        {
+          using(updateRanges) curve ("plain sql") in { r =>
+            for (i <- r) {
+              val c = Coffee(10, "Amir")
+              sqlu"update Coffee set id = ${c.id}, name = ${c.name} where id = 10".first()
+            }
+          }
+        }
+      }
+    }
+    measure method "constantWhereCapturedUpdate" in {
+      {
+        import scala.slick.driver.H2Driver.simple._
+        import LiftedEmbeddingDefs._
+        {
+          using(updateRanges) curve ("lifted embedding") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Cf(10, cName)
+              Coffee.filter(_.id === 10).update(c)
+            }
+          }
+        }
+      }
+      {
+        import Shallow.TestH2.h2Driver
+        import Shallow._
+        import scala.slick.yy.test.YYDefinitions.Coffee1
+        {
+          using(updateRanges) curve ("shallow embedding") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val r0 = shallowTemplate {
+                val c = Coffee1(10, cName)
+                Queryable[Coffee1].filter(_.id == 10).update(c)
+              }
+            }
+          }
+          using(updateRanges) curve ("shallow embedding executor") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Coffee1(10, cName)
+              val r0 = shallowTemplate {
+                Queryable[Coffee1].filter(_.id == 10).executor
+              }.update(c)
+            }
+          }
+        }
+      }
+      {
+        import PlainSqlDefs._
+        import scala.slick.jdbc.GetResult
+        implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
+        import Q.interpolation
+        {
+          using(updateRanges) curve ("plain sql") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Coffee(10, cName)
+              sqlu"update Coffee set id = ${c.id}, name = ${c.name} where id = 10".first()
+            }
+          }
+        }
+      }
+    }
+    measure method "capturedWhereCapturedUpdate" in {
+      {
+        import scala.slick.driver.H2Driver.simple._
+        import LiftedEmbeddingDefs._
+        {
+          using(updateRanges) curve ("lifted embedding") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Cf(i, cName)
+              Coffee.filter(_.id === i).update(c)
+            }
+          }
+        }
+      }
+      {
+        import Shallow.TestH2.h2Driver
+        import Shallow._
+        import scala.slick.yy.test.YYDefinitions.Coffee1
+        {
+          using(updateRanges) curve ("shallow embedding") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val r0 = shallowTemplate {
+                val c = Coffee1(i, cName)
+                Queryable[Coffee1].filter(_.id == i).update(c)
+              }
+            }
+          }
+          using(updateRanges) curve ("shallow embedding executor") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Coffee1(i, cName)
+              val r0 = shallowTemplate {
+                Queryable[Coffee1].filter(_.id == i).executor
+              }.update(c)
+            }
+          }
+        }
+      }
+      {
+        import PlainSqlDefs._
+        import scala.slick.jdbc.GetResult
+        implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
+        import Q.interpolation
+        {
+          using(updateRanges) curve ("plain sql") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Coffee(i, cName)
+              sqlu"update Coffee set id = ${c.id}, name = ${c.name} where id = $i".first()
+            }
+          }
+        }
+      }
+    }
+    measure method "capturedWhereCapturedUpdateComplex" in {
+      {
+        import scala.slick.driver.H2Driver.simple._
+        import LiftedEmbeddingDefs._
+        {
+          using(updateRanges) curve ("lifted embedding") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Cf(i, cName)
+              Coffee.filter(x => x.id === i && x.name === cName).update(c)
+            }
+          }
+        }
+      }
+      {
+        import Shallow.TestH2.h2Driver
+        import Shallow._
+        import scala.slick.yy.test.YYDefinitions.Coffee1
+        {
+          using(updateRanges) curve ("shallow embedding") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val r0 = shallowTemplate {
+                val c = Coffee1(i, cName)
+                Queryable[Coffee1].filter(x => x.id == i && x.name == cName).update(c)
+              }
+            }
+          }
+          using(updateRanges) curve ("shallow embedding executor") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Coffee1(i, cName)
+              val r0 = shallowTemplate {
+                Queryable[Coffee1].filter(x => x.id == i && x.name == cName).executor
+              }.update(c)
+            }
+          }
+        }
+      }
+      {
+        import PlainSqlDefs._
+        import scala.slick.jdbc.GetResult
+        implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
+        import Q.interpolation
+        {
+          using(updateRanges) curve ("plain sql") in { r =>
+            for (i <- r) {
+              val cName = s"$i"
+              val c = Coffee(i, cName)
+              sqlu"update Coffee set id = ${c.id}, name = ${c.name} where id = $i and name = $cName".first()
+            }
+          }
+        }
+      }
+    }
+  }
   def initCoffeeTable() {
     import scala.slick.driver.H2Driver.simple._
     import LiftedEmbeddingDefs._

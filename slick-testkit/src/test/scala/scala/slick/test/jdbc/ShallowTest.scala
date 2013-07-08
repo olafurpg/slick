@@ -13,7 +13,7 @@ import scala.slick.yy._
 import ch.qos.logback.core.pattern.util.AsIsEscapeUtil
 import scala.slick.yy.test.YYDefinitions._
 
-object ShallowTest extends DBTestObject(TestDBs.H2Mem, TestDBs.H2Disk, TestDBs.HsqldbMem, TestDBs.HsqldbDisk, TestDBs.SQLiteMem, TestDBs.SQLiteDisk /*, TestDBs.DerbyMem, TestDBs.DerbyDisk*/ )
+object ShallowTest extends DBTestObject(TestDBs.H2Mem, TestDBs.H2Disk, TestDBs.HsqldbMem, TestDBs.HsqldbDisk, TestDBs.SQLiteMem, TestDBs.SQLiteDisk /*, TestDBs.DerbyMem, TestDBs.DerbyDisk*/, TestDBs.Postgres)
 
 class ShallowTest(val tdb: TestDB) extends DBTest {
   implicit val testDriver = tdb.driver

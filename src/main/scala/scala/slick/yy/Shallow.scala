@@ -47,7 +47,10 @@ object Shallow {
     def firstImplicit: (JdbcDriver => JdbcBackend#Session => T) = ???
     def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[T]) = ???
     def insert(value: T): Int = ???
+    def update(value: T): Int = ???
+    def executor: Executor[T] = ???
   }
+  type Executor[T] = QueryExecutor[T]
   class JoinQuery[T1, T2] extends Query[(T1, T2)] {
     def on(pred: (T1, T2) => Boolean): Query[(T1, T2)] = ???
   }
@@ -81,7 +84,8 @@ object Shallow {
     def apply(param: P): Seq[R] = ???
   }
   object TestH2 {
-    implicit val h2Driver = H2Driver
+    val driver = H2Driver
+    implicit val h2Driver = driver
     implicit def h2Session = _session
     private val conn = h2Driver.simple.Database.forURL("jdbc:h2:mem:test14", driver = "org.h2.Driver")
     private var _session = conn.createSession

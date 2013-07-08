@@ -143,6 +143,7 @@ trait ColumnExtensionOps[T] { self: YYColumn[T] =>
   def is[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn is e.column)
   def ===[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn === e.column)
   def __==[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn === e.column)
+  def __!=[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn =!= e.column)
   def >[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn > e.column)
   def <[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn < e.column)
 }
@@ -201,12 +202,11 @@ trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] with YYQueryTemplateComp
     def apply(value: Rep[Boolean]) = value.asInstanceOf[Column[Boolean]]
   }
   private[yy] def invoker(implicit driver: JdbcProfile): UnitInvoker[U] = driver.Implicit.queryToQueryInvoker(query)
-  //  def first(implicit driver: JdbcProfile, session: JdbcBackend#Session): U = invoker.first
-  //  def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): Seq[U] = invoker.list.toSeq
+  def executor(implicit driver: JdbcProfile): YYQueryExecuter[U] = YYQueryExecuter[U](this, driver)
   def first(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.First, driver, session)
   def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.List, driver, session)
   def insert(value: YYRep[U])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInsertInvoker[U] = YYInsertInvoker(this, value, driver, session)
-  //  def update(value: YYRep[U])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYUpdateInvoker[U] = YYUpdateInvoker(this, value, driver, session)
+  def update(value: YYRep[U])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYUpdateInvoker[U] = YYUpdateInvoker(this, value, driver, session)
   def firstImplicit: (JdbcDriver => JdbcBackend#Session => U) =
     (driver: JdbcDriver) => (session: JdbcBackend#Session) => invoker(driver).first()(session)
   def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[U]) =
@@ -219,9 +219,9 @@ case class YYInsertInvoker[T](query: YYQuery[T], value: YYRep[T], driver: JdbcPr
   override val column = null
 }
 
-//case class YYUpdateInvoker[T](query: YYQuery[T], value: YYRep[T], driver: JdbcProfile, session: JdbcBackend#Session) extends YYColumn[Int] /* necessary for type checking */ {
-//  override val column = null
-//}
+case class YYUpdateInvoker[T](query: YYQuery[T], value: YYRep[T], driver: JdbcProfile, session: JdbcBackend#Session) extends YYColumn[Int] /* necessary for type checking */ {
+  override val column = null
+}
 
 trait YYJoinQuery[U1, U2] extends YYQuery[(U1, U2)] {
   def on(pred: (YYRep[U1], YYRep[U2]) => YYColumn[Boolean]): YYQuery[(U1, U2)] = {

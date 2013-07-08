@@ -256,4 +256,15 @@ trait JdbcInvokerComponent { driver: JdbcDriver =>
 
     def updateInvoker: this.type = this
   }
+  
+  /** Pseudo-invoker for running UPDATE calls with Query Template. */
+  class UpdateTemplateInvoker[T](protected override val tree: Node) extends UpdateInvoker[T](tree) {
+    def update(value: T)(params: Any)(implicit session: Backend#Session): Int = session.withPreparedStatement(updateStatement) { st =>
+      st.clearParameters
+      val pp = new PositionedParameters(st)
+      converter.set(value, pp)
+      sres.setter(pp, params)
+      st.executeUpdate
+    }
+  }
 }

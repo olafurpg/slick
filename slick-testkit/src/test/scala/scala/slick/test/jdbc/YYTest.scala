@@ -809,15 +809,21 @@ class YYTest {
       Queryable[Coffee1].toSeq
     }
 
+    //    shallowTemplate {
+    //      val c = Coffee1(1989, "Amir")
+    //      Queryable[Coffee1].insert(c)
+    //    }
     shallowTemplate {
-      val c = Coffee1(1989, "Amir")
-      Queryable[Coffee1].insert(c)
-    }
+      Queryable[Coffee1].executor
+    }.insert(coffee)
 
+    //    shallowTemplate {
+    //      val c = Coffee1(1989, "Amir")
+    //      Queryable[Coffee1].insert(c)
+    //    }
     shallowTemplate {
-      val c = Coffee1(1989, "Amir")
-      Queryable[Coffee1].insert(c)
-    }
+      Queryable[Coffee1].executor
+    }.insert(coffee)
 
     val r1After = shallowTemplate {
       Queryable[Coffee1].toSeq
@@ -840,6 +846,135 @@ class YYTest {
   }
 
   @Test
+  def updateTest {
+    initCoffeeTable()
+    import Shallow._
+    import Shallow.TestH2._
+
+    def getAll() = shallowTemplate {
+      Queryable[Coffee1].toSeq
+    }
+
+    val cId = 1989
+    val cName = "Amir"
+    val coffee = Coffee1(cId, cName)
+
+    val r1Before = getAll()
+
+    //    shallowTemplate {
+    //      val c = Coffee1(1989, "Amir")
+    //      Queryable[Coffee1].insert(c)
+    //    }
+    shallowTemplate {
+      Queryable[Coffee1].executor
+    }.insert(coffee)
+
+    //    shallowTemplate {
+    //      val c = Coffee1(1368, "Amir")
+    //      Queryable[Coffee1].filter(_.id == 1989).update(c)
+    //    }
+    shallowTemplate {
+      Queryable[Coffee1].filter(_.id == 1989).executor
+    }.update(Coffee1(1368, "Amir"))
+
+    val r1After = getAll()
+
+    assertEquals("Updating a constant element with constant value", r1Before ++ List(Coffee1(1368, cName)), r1After)
+
+    //    def updateToGivenId(toId: Int) = shallowTemplate {
+    //      val c = Coffee1(toId, "Amir")
+    //      Queryable[Coffee1].filter(_.id == 1368).update(c)
+    //    }
+    def updateToGivenId(toId: Int) = shallowTemplate {
+      Queryable[Coffee1].filter(_.id == 1368).executor
+    }.update(Coffee1(toId, "Amir"))
+
+    updateToGivenId(cId)
+
+    val r2After = getAll()
+
+    assertEquals("Updating a constant element with captured value", r1Before ++ List(Coffee1(cId, cName)), r2After)
+
+    //    def updateById(id: Int) = shallowTemplate {
+    //      val c = Coffee1(1368, "Amir")
+    //      Queryable[Coffee1].filter(_.id == id).update(c)
+    //    }
+    def updateById(id: Int) = shallowTemplate {
+      Queryable[Coffee1].filter(_.id == id).executor
+    }.update(Coffee1(1368, "Amir"))
+
+    updateById(cId)
+
+    val r3After = getAll()
+
+    assertEquals("Updating a captured element with constant value", r1Before ++ List(Coffee1(1368, cName)), r3After)
+    //    def updateByIdToId(id: Int, toId: Int, toName: String) = shallowTemplate {
+    //      val i = id // inorder to change the order of holes
+    //      val c = Coffee1(toId, toName)
+    //      Queryable[Coffee1].filter(_.id == i).update(c)
+    //    }
+    def updateByIdToId(id: Int, toId: Int, toName: String) = shallowTemplate {
+      val i = id // inorder to change the order of holes
+      Queryable[Coffee1].filter(_.id == i).executor
+    }.update(Coffee1(toId, toName))
+
+    updateByIdToId(1368, cId, "AmirSh")
+
+    val r4After = getAll()
+
+    assertEquals("Updating a captured element with captured value", r1Before ++ List(Coffee1(cId, "AmirSh")), r4After)
+    //    def updateByIdToSameId(id: Int, toName: String) = shallowTemplate {
+    //      val c = Coffee1(id, toName)
+    //      Queryable[Coffee1].filter(_.id == id).update(c)
+    //    }
+    def updateByIdToSameId(id: Int, toName: String) = shallowTemplate {
+      Queryable[Coffee1].filter(_.id == id).executor
+    }.update(Coffee1(id, toName))
+
+    updateByIdToSameId(cId, "Amir")
+
+    val r5After = getAll()
+
+    assertEquals("Updating a captured element with captured value with repeated variable", r1Before ++ List(Coffee1(cId, "Amir")), r5After)
+
+    def updateByIdToSameIdTuple2(id: Int, toName: String) = shallowTemplate {
+      Queryable[Coffee1].filter(_.id == id).map(x => (x.id, x.name)).executor
+    }.update((id, toName))
+
+    updateByIdToSameId(cId, "AmirSh")
+
+    val r6After = getAll()
+
+    assertEquals("Updating a captured element with captured value with repeated variable", r1Before ++ List(Coffee1(cId, "AmirSh")), r6After)
+
+    initAccountsTable()
+
+    def getAccounts() = shallowTemplate {
+      Queryable[Account1].toSeq
+    }
+
+    def getAccountsExcept(id: Int) = shallowTemplate {
+      Queryable[Account1].filter(_.id != id).toSeq
+    }
+
+    val a1Before = getAccountsExcept(1)
+
+    def updateAccount(id: Int, balance: Int, transfers: String) = {
+      shallow {
+        Queryable[Account1].filter(_.id == id).update(Account1(id, balance, transfers))
+      }
+    }
+
+    updateAccount(1, 1, ", 1")
+
+    val a1After = getAccounts()
+
+    assertEquals("Updating an element of account", a1Before ++ List(Account1(1, 1, ", 1")), a1After)
+
+    DatabaseHandler.closeSession
+  }
+
+  @Test
   def queryTemplateTest {
     initCoffeeTable()
     import Shallow._
@@ -855,18 +990,18 @@ class YYTest {
       assertEquals("Template implicitly!", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
     }
 
-    val templ = templateMaker { (param: Long) =>
-      (Queryable[Coffee1] map (x => (x.id, if (x.id < param) "Low" else x.name))).funcTemplate
-    }
-
-    //    println(templ: Shallow.QueryTemplate[String, (Int, String)])
-
-    for (threshold <- 1 to 10) {
-      val r3 = shallowTemplate {
-        templ(threshold)
-      }
-      assertEquals("Template by using templateMaker", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
-    }
+    //    val templ = templateMaker { (param: Long) =>
+    //      (Queryable[Coffee1] map (x => (x.id, if (x.id < param) "Low" else x.name))).funcTemplate
+    //    }
+    //
+    //    //    println(templ: Shallow.QueryTemplate[String, (Int, String)])
+    //
+    //    for (threshold <- 1 to 10) {
+    //      val r3 = shallowTemplate {
+    //        templ(threshold)
+    //      }
+    //      assertEquals("Template by using templateMaker", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
+    //    }
 
     def template(threshold: Long) = shallowTemplate {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
@@ -876,6 +1011,28 @@ class YYTest {
     for (threshold <- 1 to 10) {
       val r3 = template(threshold)
       assertEquals("Template by invoking function", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
+    }
+    def template2(lower: Long, upper: Long) = shallowTemplate {
+      val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < upper && x.id > lower) "Mid" else x.name))
+      q1.toSeq
+    }
+
+    for (lower <- 1 to 10; upper <- (lower + 1) to 10) {
+      val r3 = template2(lower, upper)
+      assertEquals("Template with 2 args by invoking function", inMem.map(x => (x._1, if (x._1 < upper && x._1 > lower) "Mid" else x._2)), r3.toList)
+    }
+
+    def template2_r(lower: Long, upper: Long) = shallowTemplate {
+      val l = lower
+      val u = upper
+      val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < u && x.id > l) "Mid" else x.name))
+      q1.executor
+      //      q1.toSeq
+    }.list()
+
+    for (lower <- 1 to 10; upper <- (lower + 1) to 10) {
+      val r3 = template2_r(lower, upper)
+      assertEquals("Template with 2 reversed args by invoking function", inMem.map(x => (x._1, if (x._1 < upper && x._1 > lower) "Mid" else x._2)), r3.toList)
     }
     //    val r = (a: Int) => shallowTemplateDebug {
     //      a
@@ -891,7 +1048,7 @@ class YYTest {
   }
 
   def initCoffeeTable() {
-    import scala.slick.driver.H2Driver.simple._
+    import DatabaseHandler.driver.simple._
 
     object Coffee extends Table[(Int, String)]("COFFEE") {
       def id = column[Int]("ID")
@@ -932,6 +1089,18 @@ class YYTest {
       Coffee.insert((10, "ten"))
     }
     Test
+  }
+
+  def initAccountsTable() {
+    import scala.slick.yy.VirtualizedCG._
+    import scala.slick.driver.H2Driver.simple._
+    implicit val session = DatabaseHandler.provideSession
+    val numberOfAccounts = 2
+    Account1Table.ddl.create
+    for (i <- (0 until numberOfAccounts)) yield {
+      Account1Table.insert(Account1(i, 0, " "))
+      i
+    }
   }
 
   def assertFail(f: => Unit) = {
