@@ -13,7 +13,7 @@ import scala.slick.yy._
 import ch.qos.logback.core.pattern.util.AsIsEscapeUtil
 import scala.slick.yy.test.YYDefinitions._
 
-object DirectDualTest extends DBTestObject(TestDBs.H2Mem, TestDBs.H2Disk, TestDBs.HsqldbMem, TestDBs.HsqldbDisk, TestDBs.SQLiteMem, TestDBs.SQLiteDisk /*, TestDBs.DerbyMem, TestDBs.DerbyDisk*/, TestDBs.Postgres)
+object DirectDualTest extends DBTestObject(TestDBs.H2Mem, TestDBs.H2Disk, TestDBs.HsqldbMem, TestDBs.HsqldbDisk, TestDBs.SQLiteMem, TestDBs.SQLiteDisk /*, TestDBs.DerbyMem, TestDBs.DerbyDisk*/ , TestDBs.Postgres)
 
 class DirectDualTest(val tdb: TestDB) extends DBTest {
   implicit val testDriver = tdb.driver
@@ -23,25 +23,25 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
     import Shallow._
     // TODO needs some fixes in YY for ScopeInjection to be able to use composibility
     val q = stage {
-      Queryable[Coffee].toSeq
-    }
+      Queryable[Coffee]
+    }.list()
     val q1 = stage {
-      Queryable[Coffee].map(_.sales + 5).toSeq
-    }
+      Queryable[Coffee].map(_.sales + 5)
+    }.list()
     object Singleton {
       val q = stage {
-        Queryable[Coffee].toSeq
-      }
+        Queryable[Coffee]
+      }.list()
       val q1 = stage {
-        Queryable[Coffee].map(_.sales + 5).toSeq
-      }
+        Queryable[Coffee].map(_.sales + 5)
+      }.list()
       object Singleton {
         val q = stage {
-          Queryable[Coffee].toSeq
-        }
+          Queryable[Coffee]
+        }.list()
         val q1 = stage {
-          Queryable[Coffee].map(_.sales + 5).toSeq
-        }
+          Queryable[Coffee].map(_.sales + 5)
+        }.list()
       }
     }
   }
@@ -64,8 +64,8 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
   object SingletonInClass {
     import Shallow._
     val q1 = stage {
-      Queryable[Coffee].map(_.sales + 5).toSeq
-    }
+      Queryable[Coffee].map(_.sales + 5)
+    }.list()
   }
 
   def initialStringOptionOrdering = implicitly[Ordering[Option[String]]]
@@ -103,16 +103,16 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       }
 
       // test framework sanity checks
-      assertNoMatch(inMem ++ inMem, stage { query.toSeq })
-      assertNoMatch(Vector(), stage { query.toSeq })
+      assertNoMatch(inMem ++ inMem, stage { query}.list())
+      assertNoMatch(Vector(), stage { query}.list())
 
       // fetch whole table
-      assertMatchCaseClass(inMem, stage { query.toSeq })
+      assertMatchCaseClass(inMem, stage { query}.list())
       // FIXME: make this test less artificial
       class MyQuerycollection {
         def findUserByName(name: String) = stage {
-          query.filter(_.name == name).toSeq
-        }
+          query.filter(_.name == name)
+        }.list()
       }
       val qc = new MyQuerycollection
       qc.findUserByName("some value")
@@ -146,8 +146,8 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         inMem.map((_: Coffee).sales + 5),
         stage {
-          query.map(_.sales + 5).toSeq
-        })
+          query.map(_.sales + 5)
+        }.list())
 
       /*
       // left-hand-side coming from attribute
@@ -161,58 +161,58 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         inMem.map(_.name + "."),
         stage {
-          query.map(_.name + ".").toSeq
-        })
+          query.map(_.name + ".")
+        }.list())
 
       // filter with more complex condition
       assertMatchCaseClass(
         inMem.filter(c => c.sales > 5 || "Chris" == c.name),
         stage {
-          query.filter(c => c.sales > 5 || "Chris" == c.name).toSeq
-        })
+          query.filter(c => c.sales > 5 || "Chris" == c.name)
+        }.list())
 
       // type annotations FIXME canBuildFrom
       assertMatch(
         inMem.map((_: Coffee).name: String),
         stage {
-          query.map[String](_.name: String).toSeq
-        })
+          query.map[String](_.name: String)
+        }.list())
 
       // chaining
       assertMatch(
         inMem.map(_.name).filter(_ == ""),
         stage {
-          query.map(_.name).filter(_ == "").toSeq
-        })
+          query.map(_.name).filter(_ == "")
+        }.list())
 
       // referenced values are inlined as constants using reflection
       val o = 2 + 3
       assertMatchCaseClass(
         inMem.filter(_.sales > o),
         stage {
-          query.filter(_.sales > o).toSeq
-        })
+          query.filter(_.sales > o)
+        }.list())
 
       // nesting (not supported yet: query.map(e1 => query.map(e2=>e1))) 
       assertMatchCaseClass(
         inMem.flatMap(e1 => inMem.map(e2 => e1)),
         stage {
-          query.flatMap(e1 => query.map(e2 => e1)).toSeq
-        })
+          query.flatMap(e1 => query.map(e2 => e1))
+        }.list())
 
       // query scope
       {
         val inMemResult = inMem.filter(_.sales > 5)
         List(
           stage {
-            query.filter(_.sales > 5).toSeq
-          },
+            query.filter(_.sales > 5)
+            }.list(),
           // Queryable( query.filter( _.sales > 5 ) ),
           stage {
             val foo = query
             val bar = foo.filter(_.sales > 5)
-            bar.toSeq
-          }).foreach {
+            bar
+            }.list()).foreach {
             query_ => assertMatchCaseClass(inMemResult, query_)
           }
       }
@@ -221,20 +221,20 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         for (c <- inMem) yield c.name,
         stage {
-          (for (c <- query) yield c.name).toSeq
-        })
+          (for (c <- query) yield c.name)
+        }.list())
 
       // nesting with flatMap
       {
         val inMemResult = for (o <- inMem; i <- inMem) yield i.name
         List(
           stage {
-            query.flatMap(o => query.map(i => i.name)).toSeq
-          },
+            query.flatMap(o => query.map(i => i.name))
+            }.list(),
           // Queryable(for (o <- query; i <- query) yield i.name), 
           stage {
-            (for (o <- query; i <- query) yield i.name).toSeq
-          }).foreach {
+            (for (o <- query; i <- query) yield i.name)
+            }.list()).foreach {
             query_ => assertMatch(inMemResult, query_)
           }
       }
@@ -242,20 +242,20 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       assertMatchCaseClass(
         inMem.flatMap(e1 => inMem.map(e2 => e1).map(e2 => e1)),
         stage {
-          query.flatMap(e1 => query.map(e2 => e1).map(e2 => e1)).toSeq
-        })
+          query.flatMap(e1 => query.map(e2 => e1).map(e2 => e1))
+        }.list())
 
       // nesting with outer macro reference
       {
         val inMemResult = for (o <- inMem; i <- inMem) yield o.name
         List(
           stage {
-            query.flatMap(o => query.map(i => o.name)).toSeq
-          },
+            query.flatMap(o => query.map(i => o.name))
+            }.list(),
           // Queryable(for (o <- query; i <- query) yield o.name),
           stage {
-            (for (o <- query; i <- query) yield o.name).toSeq
-          }).foreach {
+            (for (o <- query; i <- query) yield o.name)
+            }.list()).foreach {
             query_ => assertMatch(inMemResult, query_)
           }
       }
@@ -265,12 +265,12 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
         val inMemResult = for (o <- inMem; i <- inMem; if i.sales == o.sales) yield i.name
         List(
           stage {
-            query.flatMap(o => query.filter(i => i.sales == o.sales).map(i => i.name)).toSeq
-          },
+            query.flatMap(o => query.filter(i => i.sales == o.sales).map(i => i.name))
+            }.list(),
           // Queryable(for (o <- query; i <- query; if i.sales == o.sales) yield i.name),
           stage {
-            (for (o <- query; i <- query; if i.sales == o.sales) yield i.name).toSeq
-          }).foreach {
+            (for (o <- query; i <- query; if i.sales == o.sales) yield i.name)
+            }.list()).foreach {
             query_ => assertMatch(inMemResult, query_)
           }
       }
@@ -279,8 +279,8 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       assertMatch(
         inMem.map(c => (c.name, c.sales)),
         stage {
-          query.map(c => (c.name, c.sales)).toSeq
-        })
+          query.map(c => (c.name, c.sales))
+        }.list())
 
       // nested structures (here tuples and case classes)
       //      assertMatch(
@@ -290,37 +290,38 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       //        })
       // length
       assertEquals(inMem.length, stage {
-        Query(query.length).first
-      })
+        //        Query(query.length).first
+        Query(query.length)
+      }.first)
 
       assertMatchCaseClass(
         inMem.map(c => c),
         stage {
-          query.map(c => c).toSeq
-        })
+          query.map(c => c)
+        }.list())
 
       assertMatch(for (v1 <- inMem; v2 <- inMem; if !(v1.name == v2.name)) yield (v1.name, v2.name),
         stage {
-          (for (v1 <- query; v2 <- query; if !(v1.name == v2.name)) yield (v1.name, v2.name)).toSeq
-        })
+          (for (v1 <- query; v2 <- query; if !(v1.name == v2.name)) yield (v1.name, v2.name))
+        }.list())
 
       assertMatchCaseClass(inMem.take(2),
-        stage { query.take(2).toSeq })
+        stage { query.take(2)}.list())
 
       assertMatchCaseClass(inMem.drop(2),
-        stage { query.drop(2).toSeq })
+        stage { query.drop(2)}.list())
 
       assertMatchOrdered(inMem.sortBy(_.name),
-        stage { query.sortBy(_.name).toSeq })
+        stage { query.sortBy(_.name)}.list())
 
       assertMatchOrdered(inMem.sortBy(c => (c.name, c.sales)),
-        stage { query.sortBy(c => (c.name, c.sales)).toSeq })
+        stage { query.sortBy(c => (c.name, c.sales))}.list())
 
       assertMatchOrdered(inMem.sortBy(c => c.name)(Ordering[String].reverse),
-        stage { query.sortBy(c => c.name)(Ordering[String].reverse).toSeq })
+        stage { query.sortBy(c => c.name)(Ordering[String].reverse)}.list())
 
       assertMatchOrdered(inMem.sortBy(c => (c.name, c.sales))(Ordering.Tuple2(Ordering[String], Ordering[Int].reverse)),
-        stage { query.sortBy(c => (c.name, c.sales))(Ordering.Tuple2(Ordering[String], Ordering[Int].reverse)).toSeq })
+        stage { query.sortBy(c => (c.name, c.sales))(Ordering.Tuple2(Ordering[String], Ordering[Int].reverse))}.list())
 
       def nullOrdering(x: Int, y: Int) = new scala.math.Ordering[Option[String]] {
         def compare(a: Option[String], b: Option[String]) = {
@@ -334,26 +335,26 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
       stringOptionOrdering = nullOrdering(-1, 1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         stage {
-          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast[String], Ordering.String)).toSeq
-        })
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast[String], Ordering.String))
+        }.list())
 
       stringOptionOrdering = nullOrdering(1, 1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         stage {
-          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst[String], Ordering.String)).toSeq
-        })
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst[String], Ordering.String))
+        }.list())
 
       stringOptionOrdering = nullOrdering(-1, -1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         stage {
-          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast.reverse, Ordering.String)).toSeq
-        })
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesLast.reverse, Ordering.String))
+        }.list())
 
       stringOptionOrdering = nullOrdering(1, -1)
       assertMatchOrdered(inMem.sortBy(c => (c.flavor, c.name)),
         stage {
-          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst.reverse, Ordering.String)).toSeq
-        })
+          query.sortBy(c => (c.flavor, c.name))(Ordering.Tuple2(nonesFirst.reverse, Ordering.String))
+        }.list())
 
       import scala.slick.direct.order.reversed
 
@@ -362,9 +363,9 @@ class DirectDualTest(val tdb: TestDB) extends DBTest {
         c.name, reversed(c.sales), reversed(c.flavor))),
         stage {
           query.sortBy(c => (
-            c.name, c.sales, c.flavor))(Ordering.Tuple3(Ordering[String], Ordering[Int].reverse, nonesFirst.reverse)).toSeq
-        })
+            c.name, c.sales, c.flavor))(Ordering.Tuple3(Ordering[String], Ordering[Int].reverse, nonesFirst.reverse))
+        }.list())
     }
   }
-  
+
 }

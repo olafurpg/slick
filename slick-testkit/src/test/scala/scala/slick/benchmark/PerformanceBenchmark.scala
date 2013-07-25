@@ -100,8 +100,8 @@ object PerformanceBenchmark extends PerformanceTest {
           using(ranges) curve ("shadow embedding") in { r =>
             for (i <- r) {
               stage {
-                (for (c <- Queryable[Coffee] if c.id < i) yield c).toSeq
-              }
+                (for (c <- Queryable[Coffee] if c.id < i) yield c)
+              }.list()
             }
 
           }
@@ -109,8 +109,8 @@ object PerformanceBenchmark extends PerformanceTest {
         {
           using(ranges) curve ("shadow embedding function") in { r =>
             def template(id: Int) = stage {
-              (for (c <- Queryable[Coffee] if c.id < id) yield c).toSeq
-            }
+              (for (c <- Queryable[Coffee] if c.id < id) yield c)
+            }.list()
             for (i <- r) {
               template(i)
             }
@@ -150,7 +150,6 @@ object PerformanceBenchmark extends PerformanceTest {
       }
     }
   }
-  
 
   performance of "SelectTemplates" in {
     import Shallow.TestH2.h2Session
@@ -190,8 +189,8 @@ object PerformanceBenchmark extends PerformanceTest {
           using(ranges) curve ("shadow embedding") in { r =>
             for (i <- r) {
               stage {
-                (for (c <- Queryable[Coffee] if c.id == 1) yield c).toSeq
-              }
+                (for (c <- Queryable[Coffee] if c.id == 1) yield c)
+              }.list()
             }
           }
         }
@@ -202,16 +201,16 @@ object PerformanceBenchmark extends PerformanceTest {
           using(ranges) curve ("shadow embedding composition") in { r =>
             for (i <- r) {
               stage {
-                templ.toSeq
-              }
+                templ
+              }.list()
             }
           }
         }
         {
           using(ranges) curve ("shadow embedding function") in { r =>
             def template = stage {
-              (for (c <- Queryable[Coffee] if c.id == 1) yield c).toSeq
-            }
+              (for (c <- Queryable[Coffee] if c.id == 1) yield c)
+            }.list()
             for (i <- r) {
               template
             }
@@ -272,19 +271,19 @@ object PerformanceBenchmark extends PerformanceTest {
         //        import ShallowEmbeddingDefs._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
+          //          using(insertionRanges) curve ("shadow embedding") in { r =>
+          //            for (i <- r) {
+          //              val r0 = stage {
+          //                val c = Coffee1(1989, "Amir")
+          //                Queryable[Coffee1].insert(c)
+          //              }
+          //            }
+          //          }
           using(insertionRanges) curve ("shadow embedding") in { r =>
-            for (i <- r) {
-              val r0 = stage {
-                val c = Coffee1(1989, "Amir")
-                Queryable[Coffee1].insert(c)
-              }
-            }
-          }
-          using(insertionRanges) curve ("shadow embedding executor") in { r =>
             for (i <- r) {
               val c = Coffee1(1989, "Amir")
               val r0 = stage {
-                Queryable[Coffee1].executor
+                Queryable[Coffee1]
               }.insert(c)
             }
           }
@@ -325,23 +324,23 @@ object PerformanceBenchmark extends PerformanceTest {
         import Shallow._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
+          //          using(insertionRanges) curve ("shadow embedding") in { r =>
+          //            for (i <- r) {
+          //              val cId = i
+          //              val cName = s"$i"
+          //              val r0 = stage {
+          //                val c = Coffee1(cId, cName)
+          //                Queryable[Coffee1].insert(c)
+          //              }
+          //            }
+          //          }
           using(insertionRanges) curve ("shadow embedding") in { r =>
-            for (i <- r) {
-              val cId = i
-              val cName = s"$i"
-              val r0 = stage {
-                val c = Coffee1(cId, cName)
-                Queryable[Coffee1].insert(c)
-              }
-            }
-          }
-          using(insertionRanges) curve ("shadow embedding executor") in { r =>
             for (i <- r) {
               val cId = i
               val cName = s"$i"
               val c = Coffee1(cId, cName)
               val r0 = stage {
-                Queryable[Coffee1].executor
+                Queryable[Coffee1]
               }.insert(c)
             }
           }
@@ -384,19 +383,19 @@ object PerformanceBenchmark extends PerformanceTest {
         //        import ShallowEmbeddingDefs._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
+//          using(updateRanges) curve ("shadow embedding") in { r =>
+//            for (i <- r) {
+//              val r0 = stage {
+//                val c = Coffee1(10, "Amir")
+//                Queryable[Coffee1].filter(_.id == 10).update(c)
+//              }
+//            }
+//          }
           using(updateRanges) curve ("shadow embedding") in { r =>
-            for (i <- r) {
-              val r0 = stage {
-                val c = Coffee1(10, "Amir")
-                Queryable[Coffee1].filter(_.id == 10).update(c)
-              }
-            }
-          }
-          using(updateRanges) curve ("shadow embedding executor") in { r =>
             for (i <- r) {
               val c = Coffee1(10, "Amir")
               val r0 = stage {
-                Queryable[Coffee1].filter(_.id == 10).executor
+                Queryable[Coffee1].filter(_.id == 10)
               }.update(c)
             }
           }
@@ -436,21 +435,21 @@ object PerformanceBenchmark extends PerformanceTest {
         import Shallow._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
+//          using(updateRanges) curve ("shadow embedding") in { r =>
+//            for (i <- r) {
+//              val cName = s"$i"
+//              val r0 = stage {
+//                val c = Coffee1(10, cName)
+//                Queryable[Coffee1].filter(_.id == 10).update(c)
+//              }
+//            }
+//          }
           using(updateRanges) curve ("shadow embedding") in { r =>
-            for (i <- r) {
-              val cName = s"$i"
-              val r0 = stage {
-                val c = Coffee1(10, cName)
-                Queryable[Coffee1].filter(_.id == 10).update(c)
-              }
-            }
-          }
-          using(updateRanges) curve ("shadow embedding executor") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee1(10, cName)
               val r0 = stage {
-                Queryable[Coffee1].filter(_.id == 10).executor
+                Queryable[Coffee1].filter(_.id == 10)
               }.update(c)
             }
           }
@@ -491,21 +490,21 @@ object PerformanceBenchmark extends PerformanceTest {
         import Shallow._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
+          //          using(updateRanges) curve ("shadow embedding") in { r =>
+          //            for (i <- r) {
+          //              val cName = s"$i"
+          //              val r0 = stage {
+          //                val c = Coffee1(i, cName)
+          //                Queryable[Coffee1].filter(_.id == i).update(c)
+          //              }
+          //            }
+          //          }
           using(updateRanges) curve ("shadow embedding") in { r =>
-            for (i <- r) {
-              val cName = s"$i"
-              val r0 = stage {
-                val c = Coffee1(i, cName)
-                Queryable[Coffee1].filter(_.id == i).update(c)
-              }
-            }
-          }
-          using(updateRanges) curve ("shadow embedding executor") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee1(i, cName)
               val r0 = stage {
-                Queryable[Coffee1].filter(_.id == i).executor
+                Queryable[Coffee1].filter(_.id == i)
               }.update(c)
             }
           }
@@ -546,21 +545,21 @@ object PerformanceBenchmark extends PerformanceTest {
         import Shallow._
         import scala.slick.yy.test.YYDefinitions.Coffee1
         {
+//          using(updateRanges) curve ("shadow embedding") in { r =>
+//            for (i <- r) {
+//              val cName = s"$i"
+//              val r0 = stage {
+//                val c = Coffee1(i, cName)
+//                Queryable[Coffee1].filter(x => x.id == i && x.name == cName).update(c)
+//              }
+//            }
+//          }
           using(updateRanges) curve ("shadow embedding") in { r =>
-            for (i <- r) {
-              val cName = s"$i"
-              val r0 = stage {
-                val c = Coffee1(i, cName)
-                Queryable[Coffee1].filter(x => x.id == i && x.name == cName).update(c)
-              }
-            }
-          }
-          using(updateRanges) curve ("shadow embedding executor") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee1(i, cName)
               val r0 = stage {
-                Queryable[Coffee1].filter(x => x.id == i && x.name == cName).executor
+                Queryable[Coffee1].filter(x => x.id == i && x.name == cName)
               }.update(c)
             }
           }

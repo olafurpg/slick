@@ -20,7 +20,7 @@ object Shallow {
   def nonesLast[T]: Ordering[Option[T]] = ???
   def nullsFirst[T]: Ordering[T] = ???
   def nullsLast[T]: Ordering[T] = ???
-  class Query[T] {
+  trait Query[T] {
     def flatMap[S](projection: T => Query[S]): Query[S] = ???
     def map[S](projection: T => S): Query[S] = ???
     def filter(projection: T => Boolean): Query[T] = ???
@@ -37,21 +37,21 @@ object Shallow {
     def zipWithIndex: JoinQuery[T, Long] = ???
     def take(i: Int): Query[T] = ???
     def drop(i: Int): Query[T] = ???
-    def toSeq: Seq[T] = ???
-    def first: T = ???
-    def toSeqTemplate: Seq[T] = ???
-    def firstTemplate: T = ???
-    def getQueryTemplate[P]: QueryTemplate[P, T] = ???
-    def funcTemplate: QueryTemplate[Any, T] = ???
-    def getInvoker: Invoker[T] = ???
-    def firstImplicit: (JdbcDriver => JdbcBackend#Session => T) = ???
-    def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[T]) = ???
-    def insert(value: T): Int = ???
-    def update(value: T): Int = ???
-    def executor: Executor[T] = ???
+    //    def toSeq: Seq[T] = ???
+    //    def first: T = ???
+    //    def toSeqTemplate: Seq[T] = ???
+    //    def firstTemplate: T = ???
+    //    def getQueryTemplate[P]: QueryTemplate[P, T] = ???
+    //    def funcTemplate: QueryTemplate[Any, T] = ???
+    //    def getInvoker: Invoker[T] = ???
+    //    def firstImplicit: (JdbcDriver => JdbcBackend#Session => T) = ???
+    //    def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[T]) = ???
+    //    def insert(value: T): Int = ???
+    //    def update(value: T): Int = ???
+    //    def executor: Executor[T] = ???
   }
-  type Executor[T] = QueryExecutor[T]
-  class JoinQuery[T1, T2] extends Query[(T1, T2)] {
+  //  type Executor[T] = QueryExecutor[T]
+  trait JoinQuery[T1, T2] extends Query[(T1, T2)] {
     def on(pred: (T1, T2) => Boolean): Query[(T1, T2)] = ???
   }
   implicit def stringWrapper(value: String): ColumnOps[String] = new ColumnOps(value)
@@ -83,6 +83,7 @@ object Shallow {
   class QueryTemplate[-P, R] {
     def apply(param: P): Seq[R] = ???
   }
+  implicit def queryToShadowExecutor[T](query: Query[T]): ShadowExecutor[T] = new ShadowExecutor(query)
   object TestH2 {
     val driver = H2Driver
     implicit val h2Driver = driver

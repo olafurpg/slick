@@ -39,6 +39,13 @@ trait YYSlickCake extends YYType with YYSlickCakeTuples with YYSlickLowPriorityI
     def nonesLast[T]: YYOrdering[scala.Option[T]] = YYOrdering.nonesLast
     def nullsFirst[T]: YYOrdering[T] = YYOrdering.nullsFirst
     def nullsLast[T]: YYOrdering[T] = YYOrdering.nullsLast
+    def queryToShadowExecutor[T](query: YYQuery[T]): DummyExecutor[T] = throw new SlickException("You cannot invoke inside the block")
+  }
+  class DummyExecutor[T] {
+    def list()(): List[T] = ???
+    def first()(): T = ???
+    def insert(value: T)(): Int = ???
+    def update(value: T)(): Int = ???
   }
   object scalaYY extends scalaYYTuples {
     type Query[T] = scala.slick.yy.Shallow.Query[T]

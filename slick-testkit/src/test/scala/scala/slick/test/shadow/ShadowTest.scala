@@ -24,37 +24,37 @@ class ShadowTest {
     val y = 5.3
     val r1 = stage {
       val q = Query(y)
-      q.toSeq
-    }
+      q
+    }.list()
     assertEquals("Query of int", y, r1.head, 0.1)
     val r2 = stage {
-      Query(y).map(x => x).toSeq
-    }
+      Query(y).map(x => x)
+    }.list()
     assertEquals("Query identity map", y, r2.head, 0.1)
     val r3 = stage {
-      Query(y).map(x => false).toSeq
-    }
+      Query(y).map(x => false)
+    }.list()
     assertEquals("Query dummy map", false, r3.head)
     val r4 = stage {
-      Query(y).filter(x => x < 1).toSeq
-    }
+      Query(y).filter(x => x < 1)
+    }.list()
     assertEquals("Query filter", 0, r4.length)
 
     val z = 3
     val r5 = stage {
-      Query(z).filter(x => x > 2.5).toSeq
-    }
+      Query(z).filter(x => x > 2.5)
+    }.list()
     assertEquals("Query filter + captured var", z, r5.head)
     val a = 1
     val r6 = stage {
       val b = 1
-      Query(a).filter(x => x == b).toSeq
-    }
+      Query(a).filter(x => x == b)
+    }.list()
     assertEquals("Query filter + Column ==", a, r6.head)
     val r7 = stage {
       val b = 1
-      Query(2 > b).filter(x => x == true).toSeq
-    }
+      Query(2 > b).filter(x => x == true)
+    }.list()
     assertEquals("Query filter + Column == (2)", true, r7.head)
   }
   @Test
@@ -64,38 +64,40 @@ class ShadowTest {
     val r1 = stage {
       val x = (1, 2)
       val q = Query(x)
-      q.first
-    }
+      //      q.first
+      q
+    }.first
     assertEquals("Query of tuple2", (1, 2), r1)
     val r2 = stage {
       val x = (1, 2.5)
-      Query(x).map(x => x._2).first
-    }
+      //      Query(x).map(x => x._2).first
+      Query(x).map(x => x._2)
+    }.first
     assertEquals("Query map _2 of tuple", 2.5, r2, 0.1)
     val r3 = stage {
       val x = (1, 2)
       val q = Query(x).map(x => x._2)
       val q2 = q.filter(x => x == 1)
-      q2.toSeq
-    }
+      q2
+    }.list()
     assertEquals("Query filter of tuple2 + Column ==", 0, r3.length)
     val r4 = stage {
       val x = (1, 2)
-      Query(x).map(x => x._2).filter(x => x == 2).toSeq
-    }
+      Query(x).map(x => x._2).filter(x => x == 2)
+    }.list()
     assertEquals("Query filter of tuple2 + Column == (2)", 1, r4.length)
     val r5 = stage {
       val x = (1, 2)
-      Query(x).map(x => x._2).filter(x => x > 1).toSeq
-    }
+      Query(x).map(x => x._2).filter(x => x > 1)
+    }.list()
     assertEquals("Query filter of tuple2 + Column >", 1, r5.length)
     val r6 = stage {
-      Query((1, 2)).map(x => (x._2, if (x._2 == 2) false else true)).toSeq
-    }
+      Query((1, 2)).map(x => (x._2, if (x._2 == 2) false else true))
+    }.list()
     assertEquals("Query map of tuple 2 + Column > + if true", (2, false), r6.head)
     val r7 = stage {
-      Query((1, 2)).map(x => (x._2, if (x._2 == 1) false else true)).toSeq
-    }
+      Query((1, 2)).map(x => (x._2, if (x._2 == 1) false else true))
+    }.list()
     assertEquals("Query map of tuple 2 + Column > + if false", (2, true), r7.head)
   }
 
@@ -106,8 +108,9 @@ class ShadowTest {
     val r1 = stage {
       val x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
       val q = Query(x)
-      q.first
-    }
+      //      q.first
+      q
+    }.first
     assertEquals("Query of tuple22", (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22), r1)
   }
 
@@ -121,39 +124,39 @@ class ShadowTest {
       val tbl = Table.getTable[Coffee1]
       val q = Query.ofTable(tbl)
       val q1 = q map (x => x.id)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query map _1 of Virtualized++ Table", 4, r1.length)
     val r2 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query map (_1, _2) of Virtualized++ Table", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r2.toList)
     val r3 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < 3) "Low" else x.name))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query map (_1, _2) of Virtualized++ Table + if", List((1, "Low"), (2, "Low"), (3, "three"), (10, "ten")), r3.toList)
     val r4 = stage {
       val q1 = Queryable[Coff] map (x => (x.idNumber, x.name))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query map (_1, _2) of Virtualized++ Table + Annotation", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r4.toList)
     val r5 = stage {
       val q1 = Queryable[Coff] map (x => x.idNumber) filter (x => x < 3)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query map _1 filter of Virtualized++ Table + Annotation", List(1, 2), r5.toList)
     val r6 = stage {
       val q1 = Queryable[Coff] map (x => (x.idNumber, x.name)) filter (x => x._1 < 3)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query map (_1, _2) filter of Virtualized++ Table + Annotation", List((1, "one"), (2, "two")), r6.toList)
 
     val r7 = stage {
       val q1 = Queryable[Coffn] filter (x => x.idNumber == 3) map (x => (x.idNumber, x._2))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", List((3, "three")), r7.toList)
     DatabaseHandler.closeSession
   }
@@ -221,69 +224,69 @@ class ShadowTest {
     import Shallow.TestH2._
     val r1 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => x._2)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by name of Table", List((2, "one"), (1, "one"), (10, "ten"), (3, "three")), r1.toList)
     val r2 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => x._1)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by id of Table", List((1, "one"), (2, "one"), (3, "three"), (10, "ten")), r2.toList)
     val r3 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => (x._2, x._1))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by (name, id) of Table", List((1, "one"), (2, "one"), (10, "ten"), (3, "three")), r3.toList)
     val r4 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => (x._2, x._1)) take 2
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by (name, id) + take of Table", List((1, "one"), (2, "one")), r4.toList)
     val r5 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, x.name)) sortBy (x => (x._1, x._2)) drop 1
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by (id, name) + drop of Table", List((2, "one"), (3, "three"), (10, "ten")), r5.toList)
 
     val r6 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => x._1)(Ordering[Int])
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by id of Table + Ordering", List((1, "one"), (2, "one"), (3, "three"), (10, "ten")), r6.toList)
     val r7 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => x._1)(Ordering[Int].reverse)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by reverse of id of Table + Ordering", List((10, "ten"), (3, "three"), (2, "one"), (1, "one")), r7.toList)
     val r8 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => x._2)(Ordering[String].reverse)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by reverse of name of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r8.toList)
     val r9 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => (x._2, x._1))(Ordering[(String, Int)])
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by (name, id) of Table + Ordering", List((1, "one"), (2, "one"), (10, "ten"), (3, "three")), r9.toList)
     val r10 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => (x._2, x._1))(Ordering[(String, Int)].reverse)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by reverse of (name, id) of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r10.toList)
     val r11 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sortBy(x => (x._2, x._1))(Ordering.by[(String, Int), String](_._1).reverse)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sort by reverse of name of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r11.toList)
     val r12 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sorted(Ordering.by[(Int, String), String](_._2).reverse)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sorted reverse of name of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r12.toList)
     val r13 = stage {
       val q1 = Queryable[Coffee1].map(x => (x.id, x.name)).sorted(Ordering.by[(Int, String), (String, Int)](x => (x._2, x._1)).reverse)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query sorted by reverse of (name, id) of Table + Ordering", List((3, "three"), (10, "ten"), (2, "one"), (1, "one")), r13.toList)
 
     DatabaseHandler.closeSession
@@ -298,69 +301,69 @@ class ShadowTest {
       val tbl = Table.getTable[Coffee1]
       val q = Query.ofTable(tbl)
       val q1 = for (x <- q) yield x.id
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension map _1 of Virtualized Table", 4, r1.length)
     val r2 = stage {
       val q1 = for (x <- Queryable[Coffee1]) yield (x.id, x.name)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension map (_1, _2) of Table", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r2.toList)
     val r3 = stage {
       val q1 = for (x <- Queryable[Coffee1]) yield (x.id, if (x.id < 3) "Low" else x.name)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension map (_1, _2) of Table + if", List((1, "Low"), (2, "Low"), (3, "three"), (10, "ten")), r3.toList)
     val r4 = stage {
       val q1 = for (x <- Queryable[Coff]) yield (x.idNumber, x.name)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension map (_1, _2) of Table + Annotation", List((1, "one"), (2, "two"), (3, "three"), (10, "ten")), r4.toList)
     val r5 = stage {
       val q1 = for (x <- Queryable[Coff] if x.idNumber < 3) yield x.idNumber
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension map _1 filter of Table + Annotation", List(1, 2), r5.toList)
     val r6 = stage {
       val q1 = for (x <- Queryable[Coff] if x.idNumber < 3) yield (x.idNumber, x.name)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension map (_1, _2) filter of Table + Annotation", List((1, "one"), (2, "two")), r6.toList)
     val r7 = stage {
       val q1 = for (x <- Queryable[Coffn] if x.idNumber == 3) yield (x.idNumber, x._2)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension filter == map (_1, _2) of Table + Annotation", List((3, "three")), r7.toList)
     val r8 = stage {
       val q1 = for ((x, y) <- Queryable[Coffn].map(x => (x.idNumber, x._2)) if x == 3) yield (x, y)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension filter == map (_1, _2) of Table + Annotation + (_1, _2) <-", List((3, "three")), r8.toList)
     val r9 = stage {
       val q1 = for (x <- Queryable[Coff]) yield (x.idNumber, (x.idNumber, x.name))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query forComprehension map NestedTuples (_1, (_1, _2)) filter of Table + Annotation", List((1, (1, "one")), (2, (2, "two")), (3, (3, "three")), (10, (10, "ten"))), r9.toList)
     DatabaseHandler.closeSession
   }
-  @Test
-  def virtualizationProInvokerTest {
-    initCoffeeTable()
-    import Shallow._
-    def driver = H2Driver
-    implicit val session = DatabaseHandler.provideSession
-    val r1 = stage {
-      val q1 = Queryable[Coffee1] map (x => x.id)
-      q1.getInvoker
-    }(driver)
-    assertEquals("Query map _1 of Virtualized++ Table invoker", 4, r1.list.length)
-    val r2 = stage {
-      val q1 = Queryable[Coffee1] map (x => x.id)
-      q1.toSeqImplicit
-    }(driver)(session)
-    assertEquals("Query map _1 of Virtualized++ Table toSeqImplicit", 4, r2.length)
-    DatabaseHandler.closeSession
-  }
+  //  @Test
+  //  def virtualizationProInvokerTest {
+  //    initCoffeeTable()
+  //    import Shallow._
+  //    def driver = H2Driver
+  //    implicit val session = DatabaseHandler.provideSession
+  //    val r1 = stage {
+  //      val q1 = Queryable[Coffee1] map (x => x.id)
+  //      q1.getInvoker
+  //    }(driver)
+  //    assertEquals("Query map _1 of Virtualized++ Table invoker", 4, r1.list.length)
+  //    val r2 = stage {
+  //      val q1 = Queryable[Coffee1] map (x => x.id)
+  //      q1.toSeqImplicit
+  //    }(driver)(session)
+  //    assertEquals("Query map _1 of Virtualized++ Table toSeqImplicit", 4, r2.length)
+  //    DatabaseHandler.closeSession
+  //  }
 
   @Test
   def columnOpsTest {
@@ -369,43 +372,43 @@ class ShadowTest {
     import Shallow.TestH2._
     val r1 = stage {
       val q1 = Queryable[Coffee1] map (x => x.id + 2)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("numericOps +", List(3, 4, 5, 12), r1.toList)
     val r2 = stage {
       val q1 = Queryable[Coffee1] map (x => x.id * 2 % 3)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("numericOps * %", List(2, 1, 0, 2), r2.toList)
     val r3 = stage {
       val q1 = Queryable[Coffee1] map (x => ((x.id - 5).abs, (x.id).toDegrees))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("numericOps (x - 5).abs, toDegrees", List((4, 57), (3, 115), (2, 172), (5, 573)), r3.toList)
     val r4 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.name + "!"))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("stringOps +", List("one!", "two!", "three!", "ten!"), r4.toList)
     val r5 = stage {
       val q1 = Queryable[Coffee1] map (x => (x.name ++ "!").toUpperCase)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("stringOps ++ toUpperCase", List("ONE!", "TWO!", "THREE!", "TEN!"), r5.toList)
     val r6 = stage {
       val q1 = Queryable[Coffee1] map (x => if (x.name like "%e") x.name.toUpperCase else ("  " + x.name + "! ").trim)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("stringOps if (like %%e) toUpperCase else ( + + ).trim", List("ONE", "two!", "THREE", "ten!"), r6.toList)
     val r7 = stage {
       val q1 = Queryable[Coffee1] map (x => if (x.name like "%e") ("  " + x.name + "!  ").ltrim else ("  " + x.name + "!  ").rtrim)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("stringOps if (like %%e) ( + + ).ltrim else ( + + ).rtrim", List("one!  ", "  two!", "three!  ", "  ten!"), r7.toList)
     val r8 = stage {
       val q1 = Queryable[Coffee1] map (x => if (x.name endsWith "e") x.name.toUpperCase else ("  " + x.name + "! ").trim)
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("stringOps if (endsWith 'e') toUpperCase else ( + + ).trim", List("ONE", "two!", "THREE", "ten!"), r8.toList)
     DatabaseHandler.closeSession
   }
@@ -448,45 +451,45 @@ class ShadowTest {
       (for {
         c <- Queryable[Categories]
         p <- Queryable[Posts] if c.id == p.category
-      } yield (p.id, c.id, c.name, p.title)).sortBy(_._1).map(x => (x._1, x._2)).toSeq
-    }
+      } yield (p.id, c.id, c.name, p.title)).sortBy(_._1).map(x => (x._1, x._2))
+    }.list()
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), q1.toList)
 
     val q2 = stage {
       val q = Queryable[Categories] innerJoin Queryable[Posts] on (_.id == _.category)
       val q1 = q.sortBy(_._2.id)
       val q2 = q1.map(x => (x._2.id, x._1.id))
-      q2.toSeq
-    }
+      q2
+    }.list()
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), q2.toList)
 
     val q3 = stage {
       (for {
         (c, p) <- Queryable[Categories] leftJoin Queryable[Posts] on (_.id == _.category)
-      } yield (p.id, (p.id.?.getOrElse(0), c.id, c.name, p.title.?.getOrElse("")))).sortBy(x => x._1)(nullsFirst).map(_._2).map(x => (x._1, x._2)).toSeq
-    }
+      } yield (p.id, (p.id.?.getOrElse(0), c.id, c.name, p.title.?.getOrElse("")))).sortBy(x => x._1)(nullsFirst).map(_._2).map(x => (x._1, x._2))
+    }.list()
     assertEquals(List((0, 4), (2, 1), (3, 2), (4, 3), (5, 2)), q3.toList)
 
     assertFail {
       stage {
         (for {
           (c, p) <- Queryable[Categories] leftJoin Queryable[Posts] on (_.id == _.category)
-        } yield (p.id, c.id, c.name, p.title)).sortBy(_._1)(nullsFirst).toSeq
-      }
+        } yield (p.id, c.id, c.name, p.title)).sortBy(_._1)(nullsFirst)
+      }.list()
     }
 
     val q3b = stage {
       (for {
         (c, p) <- Queryable[Categories] leftJoin Queryable[Posts] on (_.id == _.category)
-      } yield (p.id, (p.id.?.getOrElse(0), c.id, c.name, p.title.?.getOrElse("")))).sortBy(_._1)(nullsLast).map(_._2).map(x => (x._1, x._2)).toSeq
-    }
+      } yield (p.id, (p.id.?.getOrElse(0), c.id, c.name, p.title.?.getOrElse("")))).sortBy(_._1)(nullsLast).map(_._2).map(x => (x._1, x._2))
+    }.list()
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2), (0, 4)), q3b.toList)
 
     val q4 = stage {
       (for {
         (c, p) <- Queryable[Categories] rightJoin Queryable[Posts] on (_.id == _.category)
-      } yield (p.id, c.id.?.getOrElse(0), c.name.?.getOrElse(""), p.title)).sortBy(_._1).map(x => (x._1, x._2)).toSeq
-    }
+      } yield (p.id, c.id.?.getOrElse(0), c.name.?.getOrElse(""), p.title)).sortBy(_._1).map(x => (x._1, x._2))
+    }.list()
     assertEquals(List((1, 0), (2, 1), (3, 2), (4, 3), (5, 2)), q4.toList)
     DatabaseHandler.closeSession
   }
@@ -528,22 +531,22 @@ class ShadowTest {
     val q1 = stage {
       val q = Queryable[Categories].sortBy(_.id).zipWithIndex
       val q1 = q.map(x => (x._1.id, x._2))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals(List((1, 0), (2, 1), (3, 2), (4, 3)), q1.toList)
     val q2 = stage {
       val q =
         Queryable[Categories].sortBy(_.id) zip Queryable[Posts].sortBy(_.category)
       val q1 = q.map(x => (x._1.id, x._2.category))
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals(List((1, -1), (2, 1), (3, 2), (4, 2)), q2.toList)
     val q3 = stage {
       val q = for {
         (c, p) <- Queryable[Categories].sortBy(_.id) zip Queryable[Posts].sortBy(_.category)
       } yield (c.id, p.category)
-      q.toSeq
-    }
+      q
+    }.list()
     assertEquals(List((1, -1), (2, 1), (3, 2), (4, 2)), q3.toList)
     DatabaseHandler.closeSession
   }
@@ -567,15 +570,15 @@ class ShadowTest {
     val r0 = stage {
       val q0 = Queryable[T3].groupBy(_.a)
       val q1 = q0.map(_._2.length).sorted
-      q1.toSeq
-    }
+      q1
+    }.list()
     val r0t: List[Int] = r0.toList
     assertEquals(List(2, 3, 3), r0t)
     val r = stage {
       (for {
         (k, v) <- Queryable[T3].groupBy(t => t.a)
-      } yield (k, v.length)).sortBy(_._1).toSeq
-    }
+      } yield (k, v.length)).sortBy(_._1)
+    }.list()
     val rt: List[(Int, Int)] = r.toList
     assertEquals(List((1, 3), (2, 3), (3, 2)), rt)
 
@@ -584,8 +587,8 @@ class ShadowTest {
         (for {
           (k, v) <- Queryable[T3].groupBy(t => t.a)
         } yield (k, v.length, v.map(_.a).sum, v.map(_.b).sum)).sortBy(_._1)
-      ).toSeq
-    }
+      )
+    }.list()
     val r2t: List[(Int, Int, Option[Int], Option[Int])] = r2.toList
     assertEquals(List((1, 3, Some(3), Some(6)), (2, 3, Some(6), Some(8)), (3, 2, Some(6), Some(10))), r2t)
     DatabaseHandler.closeSession
@@ -611,31 +614,31 @@ class ShadowTest {
     }
     import Shallow._
     val r0 = stage {
-      Queryable[T3O].map(x => (x.a, x.b)).toSeq
-    }
+      Queryable[T3O].map(x => (x.a, x.b))
+    }.list()
     assertEquals(inMemT3, r0.toList)
     val r1 = stage {
-      Queryable[T3O].map(x => (x.a, x.b.getOrElse(0))).toSeq
-    }
+      Queryable[T3O].map(x => (x.a, x.b.getOrElse(0)))
+    }.list()
     assertEquals(inMemT3 map {
       case (_1, _2) => (_1, _2.getOrElse(0))
     }, r1.toList)
     assertEquals(inMemT3, r0.toList)
     val r2 = stage {
-      Queryable[T3O].map(x => (x.a.?, x.b.getOrElse(0))).toSeq
-    }
+      Queryable[T3O].map(x => (x.a.?, x.b.getOrElse(0)))
+    }.list()
     assertEquals(inMemT3 map {
       case (_1, _2) => (Some(_1), _2.getOrElse(0))
     }, r2.toList)
     val r3 = stage {
-      Queryable[T3O].map(x => (x.a.?.getOrElse(3), x.b.getOrElse(0))).toSeq
-    }
+      Queryable[T3O].map(x => (x.a.?.getOrElse(3), x.b.getOrElse(0)))
+    }.list()
     assertEquals(inMemT3 map {
       case (_1, _2) => (_1, _2.getOrElse(0))
     }, r3.toList)
     val r4 = stage {
-      Queryable[T3O].map(x => (x.a.?.toRadians, x.b.getOrElse(0))).toSeq
-    }
+      Queryable[T3O].map(x => (x.a.?.toRadians, x.b.getOrElse(0)))
+    }.list()
     assertEquals(inMemT3 map {
       case (_1, _2) => (Some(0), _2.getOrElse(0))
     }, r4.toList)
@@ -692,16 +695,16 @@ class ShadowTest {
       Queryable[Coffee1] filter (x => x.id == 3)
     }
     val r7 = stage {
-      q.toSeq
-    }
+      q
+    }.list()
     assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r7.head)
 
     val qq = stage {
       Queryable[Coffee1] map (x => x.id)
     }
     val r8 = stage {
-      (qq filter (x => x < 3)).toSeq
-    }
+      (qq filter (x => x < 3))
+    }.list()
     assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", List(1, 2), r8.toList)
 
     val q0 = stage {
@@ -711,8 +714,8 @@ class ShadowTest {
       q0 filter (x => x.id == 3)
     }
     val r9 = stage {
-      q1.toSeq
-    }
+      q1
+    }.list()
     assertEquals("Query filter == map (_1, _2) of Virtualized++ Table + Annotation", Coffee1(3, "three"), r9.head)
 
     val categories = stage {
@@ -730,8 +733,8 @@ class ShadowTest {
     }
 
     val cp1 = stage {
-      (cpImplicitJoin).sortBy(_._1).map(x => (x._1, x._2)).toSeq
-    }
+      (cpImplicitJoin).sortBy(_._1).map(x => (x._1, x._2))
+    }.list()
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), cp1.toList)
 
     val cpInnerJoin = stage {
@@ -744,8 +747,8 @@ class ShadowTest {
       cpInnerJoinSorted.map(x => (x._2.id, x._1.id))
     }
     val cp2 = stage {
-      cpInnerJoinMapped.toSeq
-    }
+      cpInnerJoinMapped
+    }.list()
     assertEquals(List((2, 1), (3, 2), (4, 3), (5, 2)), cp2.toList)
 
     val cpRightJoin = stage {
@@ -763,8 +766,8 @@ class ShadowTest {
       cpRightJoinSorted.map(x => (x._1, x._2))
     }
     val cp3 = stage {
-      cpRightJoinSortedMapped.toSeq
-    }
+      cpRightJoinSortedMapped
+    }.list()
     assertEquals(List((1, 0), (2, 1), (3, 2), (4, 3), (5, 2)), cp3.toList)
 
     val t3Query = stage {
@@ -782,8 +785,8 @@ class ShadowTest {
       t3GroupByMapped.sortBy(_._1)
     }
     val t3r = stage {
-      t3GroupBySorted.toSeq
-    }
+      t3GroupBySorted
+    }.list()
     val t3result: List[(Int, Int, Option[Int], Option[Int])] = t3r.toList
     assertEquals(List((1, 3, Some(3), Some(6)), (2, 3, Some(6), Some(8)), (3, 2, Some(6), Some(10))), t3result)
     DatabaseHandler.closeSession
@@ -806,15 +809,15 @@ class ShadowTest {
     assertEquals("Creating case class object inside block", coffee, r)
 
     val r1Before = stage {
-      Queryable[Coffee1].toSeq
-    }
+      Queryable[Coffee1]
+    }.list()
 
     //    stage {
     //      val c = Coffee1(1989, "Amir")
     //      Queryable[Coffee1].insert(c)
     //    }
     stage {
-      Queryable[Coffee1].executor
+      Queryable[Coffee1]
     }.insert(coffee)
 
     //    stage {
@@ -822,23 +825,25 @@ class ShadowTest {
     //      Queryable[Coffee1].insert(c)
     //    }
     stage {
-      Queryable[Coffee1].executor
+      Queryable[Coffee1]
     }.insert(coffee)
 
     val r1After = stage {
-      Queryable[Coffee1].toSeq
-    }
+      Queryable[Coffee1]
+    }.list()
 
     assertEquals("Inserting a constant element", r1Before ++ List(coffee, coffee), r1After)
 
+    val c1 = Coffee1(cId, cName)
     stage {
-      val c = Coffee1(cId, cName)
-      Queryable[Coffee1].insert(c)
-    }
+      //      val c = Coffee1(cId, cName)
+      //      Queryable[Coffee1].insert(c)
+      Queryable[Coffee1]
+    }.insert(c1)
 
     val r2After = stage {
-      Queryable[Coffee1].toSeq
-    }
+      Queryable[Coffee1]
+    }.list()
 
     assertEquals("Inserting an element using captured variables", r1After ++ List(coffee), r2After)
 
@@ -852,8 +857,8 @@ class ShadowTest {
     import Shallow.TestH2._
 
     def getAll() = stage {
-      Queryable[Coffee1].toSeq
-    }
+      Queryable[Coffee1]
+    }.list()
 
     val cId = 1989
     val cName = "Amir"
@@ -866,7 +871,7 @@ class ShadowTest {
     //      Queryable[Coffee1].insert(c)
     //    }
     stage {
-      Queryable[Coffee1].executor
+      Queryable[Coffee1]
     }.insert(coffee)
 
     //    stage {
@@ -874,7 +879,7 @@ class ShadowTest {
     //      Queryable[Coffee1].filter(_.id == 1989).update(c)
     //    }
     stage {
-      Queryable[Coffee1].filter(_.id == 1989).executor
+      Queryable[Coffee1].filter(_.id == 1989)
     }.update(Coffee1(1368, "Amir"))
 
     val r1After = getAll()
@@ -886,7 +891,7 @@ class ShadowTest {
     //      Queryable[Coffee1].filter(_.id == 1368).update(c)
     //    }
     def updateToGivenId(toId: Int) = stage {
-      Queryable[Coffee1].filter(_.id == 1368).executor
+      Queryable[Coffee1].filter(_.id == 1368)
     }.update(Coffee1(toId, "Amir"))
 
     updateToGivenId(cId)
@@ -900,7 +905,7 @@ class ShadowTest {
     //      Queryable[Coffee1].filter(_.id == id).update(c)
     //    }
     def updateById(id: Int) = stage {
-      Queryable[Coffee1].filter(_.id == id).executor
+      Queryable[Coffee1].filter(_.id == id)
     }.update(Coffee1(1368, "Amir"))
 
     updateById(cId)
@@ -915,7 +920,7 @@ class ShadowTest {
     //    }
     def updateByIdToId(id: Int, toId: Int, toName: String) = stage {
       val i = id // inorder to change the order of holes
-      Queryable[Coffee1].filter(_.id == i).executor
+      Queryable[Coffee1].filter(_.id == i)
     }.update(Coffee1(toId, toName))
 
     updateByIdToId(1368, cId, "AmirSh")
@@ -928,7 +933,7 @@ class ShadowTest {
     //      Queryable[Coffee1].filter(_.id == id).update(c)
     //    }
     def updateByIdToSameId(id: Int, toName: String) = stage {
-      Queryable[Coffee1].filter(_.id == id).executor
+      Queryable[Coffee1].filter(_.id == id)
     }.update(Coffee1(id, toName))
 
     updateByIdToSameId(cId, "Amir")
@@ -938,7 +943,7 @@ class ShadowTest {
     assertEquals("Updating a captured element with captured value with repeated variable", r1Before ++ List(Coffee1(cId, "Amir")), r5After)
 
     def updateByIdToSameIdTuple2(id: Int, toName: String) = stage {
-      Queryable[Coffee1].filter(_.id == id).map(x => (x.id, x.name)).executor
+      Queryable[Coffee1].filter(_.id == id).map(x => (x.id, x.name))
     }.update((id, toName))
 
     updateByIdToSameId(cId, "AmirSh")
@@ -950,19 +955,20 @@ class ShadowTest {
     initAccountsTable()
 
     def getAccounts() = stage {
-      Queryable[Account1].toSeq
-    }
+      Queryable[Account1]
+    }.list()
 
     def getAccountsExcept(id: Int) = stage {
-      Queryable[Account1].filter(_.id != id).toSeq
-    }
+      Queryable[Account1].filter(_.id != id)
+    }.list()
 
     val a1Before = getAccountsExcept(1)
 
     def updateAccount(id: Int, balance: Int, transfers: String) = {
       stage {
-        Queryable[Account1].filter(_.id == id).update(Account1(id, balance, transfers))
-      }
+        //        Queryable[Account1].filter(_.id == id).update(Account1(id, balance, transfers))
+        Queryable[Account1].filter(_.id == id)
+      }.update(Account1(id, balance, transfers))
     }
 
     updateAccount(1, 1, ", 1")
@@ -985,8 +991,8 @@ class ShadowTest {
     for (threshold <- 1 to 10) {
       val r3 = stage {
         val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
-        q1.toSeq
-      }
+        q1
+      }.list()
       assertEquals("Template implicitly!", inMem.map(x => (x._1, if (x._1 < threshold) "Low" else x._2)), r3.toList)
     }
 
@@ -1005,8 +1011,8 @@ class ShadowTest {
 
     def template(threshold: Long) = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < threshold) "Low" else x.name))
-      q1.toSeq
-    }
+      q1
+    }.list()
 
     for (threshold <- 1 to 10) {
       val r3 = template(threshold)
@@ -1014,8 +1020,8 @@ class ShadowTest {
     }
     def template2(lower: Long, upper: Long) = stage {
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < upper && x.id > lower) "Mid" else x.name))
-      q1.toSeq
-    }
+      q1
+    }.list()
 
     for (lower <- 1 to 10; upper <- (lower + 1) to 10) {
       val r3 = template2(lower, upper)
@@ -1026,8 +1032,8 @@ class ShadowTest {
       val l = lower
       val u = upper
       val q1 = Queryable[Coffee1] map (x => (x.id, if (x.id < u && x.id > l) "Mid" else x.name))
-      q1.executor
-      //      q1.toSeq
+      q1
+      //      q1
     }.list()
 
     for (lower <- 1 to 10; upper <- (lower + 1) to 10) {

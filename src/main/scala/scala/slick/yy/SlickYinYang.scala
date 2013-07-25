@@ -6,49 +6,9 @@ import scala.reflect.runtime.{ universe => ru }
 import scala.slick.ast.QueryParameter
 import scala.slick.jdbc.UnitInvoker
 
-trait SlickYinYang extends SlickConstYinYang with YYSlickCake with Interpreted with FullyStaged {
-  //  def stagingAnalyze(allHoles: List[scala.Int]): List[scala.Int] = allHoles
-  def reset() = {
-    alreadyInterpreted = false
-  }
-  var alreadyInterpreted: scala.Boolean = false
-  var cachedInvoker: UnitInvoker[_] = _
-  var previousResult: Any = _
-  def interpret[T: ru.TypeTag](params: Any*): T = {
-    @inline def handleResult(result: Any): Any = {
-      result match {
-        case yyQuery: YYQuery[_] => new TransferQuery(result.asInstanceOf[YYQuery[_]])
-        case inv @ YYInvoker(q, t, driver, s) => {
-          val invoker = {
-            if (!alreadyInterpreted) {
-              cachedInvoker = driver.Implicit.queryToQueryInvoker(q.query)
-            }
-            cachedInvoker
-          }
-          inv.invoke(Some(invoker))
-        }
-        case _ => result
-      }
-    }
-    if (!alreadyInterpreted) {
-      val result = main()
-      val newRes = handleResult(result)
-      alreadyInterpreted = true
-      previousResult = result
-      newRes.asInstanceOf[T]
-    } else {
-      val newRes = handleResult(previousResult)
-      newRes.asInstanceOf[T]
-    }
-  }
-  def main(): Any
-}
+class TransferQuery[T](val underlying: YYQuery[T], val cake: SlickYinYangTemplate, val params: IndexedSeq[Any]) extends OShallow.Query[T]
 
-trait TransferCake { self: YYSlickCake =>
-  class TransferQuery[T](val underlying: YYQuery[T]) extends OShallow.Query[T]
-}
-
-trait SlickConstYinYang extends scala.slick.driver.JdbcDriver.ImplicitJdbcTypes with BaseYinYang with TransferCake { self: YYSlickCake =>
+trait SlickConstYinYang extends scala.slick.driver.JdbcDriver.ImplicitJdbcTypes with BaseYinYang { self: YYSlickCake =>
   import scala.slick.ast.TypedType
   implicit object LiftUnit extends LiftEvidence[Unit, Unit] {
     def lift(v: Unit): Unit = v
