@@ -147,7 +147,7 @@ object SlickBuild extends Build {
         val cgDir = dir / "generated-classes"
         IO.delete(cgDir ** "*.scala" get)
         toError(r.run("scala.slick.typeproviders.test.GeneratedClasses", cp.files, Array(cgDir.getPath), s.log))
-        toError(r.run("scala.slick.yy.test.YYClasses", cp.files, Array(cgDir.getPath), s.log))
+        toError(r.run("scala.slick.shadow.test.YYClasses", cp.files, Array(cgDir.getPath), s.log))
         val files = (cgDir) ** "*.scala"
         files.get
       },

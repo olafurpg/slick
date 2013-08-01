@@ -3,7 +3,7 @@ package scala.slick.test.shadow
 import scala.language.implicitConversions
 import org.junit.Test
 import org.junit.Assert._
-import scala.slick.yy._
+import scala.slick.shadow._
 import scala.slick.driver.H2Driver
 import scala.slick.jdbc.JdbcBackend
 
@@ -16,7 +16,7 @@ import scala.slick.jdbc.JdbcBackend
 //}
 
 class ShadowTest {
-  import scala.slick.yy.test.YYDefinitions._
+  import scala.slick.shadow.test.YYDefinitions._
 
   @Test def simpleTest() {
     import Shallow._
@@ -1121,6 +1121,8 @@ class ShadowTest {
       (Queryable[Manager] filter { _.name == "Peter" }) union (Queryable[Manager] filter { _.name == "Amy" })
     }
     assertEquals(Set(Manager(1, "Peter", "HR"), Manager(2, "Amy", "IT")), q.list.toSet)
+    
+    DatabaseHandler.closeSession
   }
 
   def initCoffeeTable() {
@@ -1168,7 +1170,7 @@ class ShadowTest {
   }
 
   def initAccountsTable() {
-    import scala.slick.yy.VirtualizedCG._
+    import scala.slick.shadow.VirtualizationModule._
     import scala.slick.driver.H2Driver.simple._
     implicit val session = DatabaseHandler.provideSession
     val numberOfAccounts = 2

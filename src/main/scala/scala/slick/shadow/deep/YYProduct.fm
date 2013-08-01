@@ -1,6 +1,6 @@
 <#assign N = 22>
 <#assign OrdN = 9>
-package scala.slick.yy
+package scala.slick.shadow.deep
 
 import scala.language.implicitConversions
 import scala.slick.lifted.Column
@@ -94,7 +94,7 @@ trait YYOrderingTuples {
   </#list>
 }
 
-trait YYSlickCakeTuples { self: YYSlickCake =>
+trait YYSlickCakeTuples { self: scala.slick.shadow.YYSlickCake =>
   <#list 2..N as i>
   type Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = YYTuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>]
   </#list>

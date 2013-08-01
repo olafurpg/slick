@@ -1,6 +1,6 @@
-package scala.slick.yy.test
+package scala.slick.shadow.test
 
-import scala.slick.yy.Entity
+import scala.slick.shadow.Entity
 
 object YYDefinitions {
   @Entity("COFFEES") case class Coffee(@Entity("COF_NAME") name: String, sales: Int, flavor: Option[String])

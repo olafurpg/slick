@@ -1,4 +1,4 @@
-package scala.slick.yy
+package scala.slick.shadow
 
 import java.io.PrintWriter
 import java.io.File

@@ -1,4 +1,4 @@
-package scala.slick.yy
+package scala.slick.shadow
 
 import scala.slick.schema.Table
 import scala.slick.schema.Column
@@ -29,7 +29,7 @@ trait YYTransformers {
     def getStatementsFromTables: List[(StatementContext, Tree)] = {
       val cv = new ClassVirtualization()
       if (USE_VIRTUAL_CG) {
-        val importStatement = (ClassContext, macroHelper.createImport(macroHelper.createObjectFromString("_root_.scala.slick.yy.VirtualizedCG"), Nil))
+        val importStatement = (ClassContext, macroHelper.createImport(macroHelper.createObjectFromString("_root_.scala.slick.shadow.VirtualizationModule"), Nil))
         val tables = virtualSymbols map cv.getTableFromSymbol
         val caseAliasTerm = virtualSymbols zip tables map (x => cv.createCaseClassRepTerm(x._2)(x._1)) map (x => (ClassContext, x))
         val caseAliasType = virtualSymbols zip tables map (x => cv.createCaseClassRepType(x._2)(x._1)) map (x => (ClassContext, x))
@@ -90,18 +90,18 @@ trait YYTransformers {
       // module.*.asInstanceOf[MappedProjection].f
       val f = Select(TypeApply(Select(Select(Ident(newTermName(table.moduleName)), newTermName("$times")), newTermName("asInstanceOf")), List(mappedProjectionType)), newTermName("f"))
       // YYThisCase(f)
-      val body = Apply(Select(macroHelper.createObjectFromString("_root_.scala.slick.yy.YYThisCase"), newTermName("apply")), List(f))
+      val body = Apply(Select(macroHelper.createObjectFromString("_root_.scala.slick.shadow.deep.ThisCase"), newTermName("apply")), List(f))
       ValDef(NoMods, TermName(symbol.name.toString()), TypeTree(), body)
     }
     def createCaseClassRepType(table: Table)(symbol: Symbol): TypeDef = {
-      val repTypeTree = macroHelper.createClassFromString("_root_.scala.slick.yy.YYRep")
+      val repTypeTree = macroHelper.createClassFromString("_root_.scala.slick.shadow.deep.YYRep")
       TypeDef(NoMods, TypeName(symbol.name.toString()), List(), AppliedTypeTree(repTypeTree, List(Ident(newTypeName(table.caseClassName)))))
     }
     def createYYTableClass(table: Table): ClassDef = {
       val yyTableName = getYYTableName(table)
       val PARAMACCESSOR = scala.reflect.internal.Flags.PARAMACCESSOR.asInstanceOf[Long].asInstanceOf[FlagSet]
       val typeParamName = TypeName(table.caseClassName)
-      val yyTableType = macroHelper.createClassFromString("_root_.scala.slick.yy.YYTable")
+      val yyTableType = macroHelper.createClassFromString("_root_.scala.slick.shadow.deep.YYTable")
       val tableSuper = AppliedTypeTree(yyTableType, List(Ident(typeParamName)))
       val tableParamVar = "table"
       val tableClassTree = macroHelper.createClass(table.moduleName, Nil)
@@ -110,7 +110,7 @@ trait YYTransformers {
       val constructorBody = ValDef(Modifiers(PARAM | PARAMACCESSOR), TermName(tableParamVar), tableClassTree, EmptyTree)
       val constructor = DefDef(NoMods, nme.CONSTRUCTOR, List(), List(List(constructorBody)), TypeTree(), Block(List(superCall), Literal(Constant(()))))
       val fields = table.columns map { c =>
-        DefDef(NoMods, TermName(c.moduleFieldName), List(), List(), TypeTree(), Apply(Select(macroHelper.createObjectFromString("_root_.scala.slick.yy.YYColumn"), TermName("apply")), List(Select(Select(This(TypeName(yyTableName)), TermName(tableParamVar)), TermName(c.moduleFieldName)))))
+        DefDef(NoMods, TermName(c.moduleFieldName), List(), List(), TypeTree(), Apply(Select(macroHelper.createObjectFromString("_root_.scala.slick.shadow.deep.YYColumn"), TermName("apply")), List(Select(Select(This(TypeName(yyTableName)), TermName(tableParamVar)), TermName(c.moduleFieldName)))))
       }
       val methods = tableParam :: constructor :: fields
       ClassDef(NoMods, TypeName(yyTableName), List(), Template(List(tableSuper), emptyValDef, methods))
@@ -138,7 +138,7 @@ trait YYTransformers {
       val yyTableName = getYYTableName(table)
       //      val repTypeName = newTypeName("CakeRep")
       //      val repTypeTree = Ident(repTypeName)
-      val repTypeTree = macroHelper.createClassFromString("_root_.scala.slick.yy.YYRep")
+      val repTypeTree = macroHelper.createClassFromString("_root_.scala.slick.shadow.deep.YYRep")
       val tableTypeName = newTypeName(yyTableName)
       val body = Apply(Select(New(Ident(tableTypeName)), nme.CONSTRUCTOR), List(TypeApply(Select(Select(Ident(newTermName("x")), newTermName("underlying")), newTermName("asInstanceOf")), List(Ident(newTypeName(table.moduleName))))))
       DefDef(Modifiers(Flag.IMPLICIT), newTermName("convImplicit" + yyTableName), List(), List(List(ValDef(Modifiers(PARAM), newTermName("x"), AppliedTypeTree(repTypeTree, List(Ident(newTypeName(table.caseClassName)))), EmptyTree))), Ident(tableTypeName), body)
@@ -196,35 +196,6 @@ trait YYTransformers {
       case _ => super.traverse(tree)
     }
   }
-}
-
-case class YYCaseRep[T](const: (Product => T), fields: IndexedSeq[YYColumn[_]]) extends YYRep[T] with YYValue[T] {
-  def underlying = ???
-  def getValue: T = const.apply(scala.slick.util.TupleSupport.buildTuple(fields map (_.getValue)))
-  def getValue(params: IndexedSeq[Any]): T = const.apply(scala.slick.util.TupleSupport.buildTuple({
-    fields map {
-      case hole: YYHole =>
-        params(hole.index)
-      case x => x.getValue
-    }
-  }
-  ))
-}
-case class YYConstCaseRep[T](const: (Product => T), fieldValues: IndexedSeq[_]) extends YYRep[T] with YYValue[T] {
-  def underlying = ???
-  def getValue: T = const.apply(scala.slick.util.TupleSupport.buildTuple(fieldValues))
-  def getValue(params: IndexedSeq[Any]): T = getValue
-}
-object YYThisCase {
-  class ThisCaseWithConstructor[T](val const: (Product => T)) {
-    def apply(fields: YYColumn[_]*): YYRep[T] = {
-      if (fields.exists(_.isInstanceOf[YYHole]))
-        YYCaseRep(const, fields.toIndexedSeq)
-      else
-        YYConstCaseRep(const, fields.toIndexedSeq map (_.getValue))
-    }
-  }
-  def apply[T](const: (Product => T)): ThisCaseWithConstructor[T] = new ThisCaseWithConstructor(const)
 }
 
 final case class Entity(name: String) extends scala.annotation.StaticAnnotation

@@ -1,4 +1,4 @@
-package scala.slick.yy
+package scala.slick.shadow
 
 import scala.language.implicitConversions
 import scala.slick.lifted.{ Case, AbstractTable }
@@ -7,6 +7,7 @@ import scala.slick.jdbc.JdbcBackend
 import scala.slick.SlickException
 import scala.slick.profile.BasicDriver
 import scala.slick.driver.{ H2Driver, JdbcDriver, JdbcProfile }
+import scala.slick.shadow.deep._
 
 trait YYSlickCake extends YYType with YYSlickCakeTuples {
   val Ordering = YYOrdering
@@ -48,7 +49,7 @@ trait YYSlickCake extends YYType with YYSlickCakeTuples {
     def update(value: T)(): Int = ???
   }
   object scalaYY extends scalaYYTuples {
-    type Query[T] = scala.slick.yy.Shallow.Query[T]
+    type Query[T] = scala.slick.shadow.Shallow.Query[T]
     type Option[T] = scala.Option[T]
   }
   def __ifThenElse[T: BaseTypedType](c: => Boolean, t: Column[T], e: Column[T]): Column[T] =

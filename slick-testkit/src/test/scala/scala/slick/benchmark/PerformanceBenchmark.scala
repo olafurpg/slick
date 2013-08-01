@@ -1,9 +1,8 @@
 package scala.slick.benchmark
 
 import org.scalameter.api._
-import scala.slick.yy.Shallow
-import scala.slick.yy.YYSlickCake
-import scala.slick.yy.stage
+import scala.slick.shadow.Shallow
+import scala.slick.shadow.stage
 import org.scalameter.reporting.DsvReporter
 
 object PerformanceBenchmark extends PerformanceTest {
@@ -270,7 +269,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import Shallow.TestH2.h2Driver
         import Shallow._
         //        import ShallowEmbeddingDefs._
-        import scala.slick.yy.test.YYDefinitions.Coffee1
+        import scala.slick.shadow.test.YYDefinitions.Coffee1
         {
           //          using(insertionRanges) curve ("shadow embedding") in { r =>
           //            for (i <- r) {
@@ -323,7 +322,7 @@ object PerformanceBenchmark extends PerformanceTest {
       {
         import Shallow.TestH2.h2Driver
         import Shallow._
-        import scala.slick.yy.test.YYDefinitions.Coffee1
+        import scala.slick.shadow.test.YYDefinitions.Coffee1
         {
           //          using(insertionRanges) curve ("shadow embedding") in { r =>
           //            for (i <- r) {
@@ -382,7 +381,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import Shallow.TestH2.h2Driver
         import Shallow._
         //        import ShallowEmbeddingDefs._
-        import scala.slick.yy.test.YYDefinitions.Coffee1
+        import scala.slick.shadow.test.YYDefinitions.Coffee1
         {
           //          using(updateRanges) curve ("shadow embedding") in { r =>
           //            for (i <- r) {
@@ -434,7 +433,7 @@ object PerformanceBenchmark extends PerformanceTest {
       {
         import Shallow.TestH2.h2Driver
         import Shallow._
-        import scala.slick.yy.test.YYDefinitions.Coffee1
+        import scala.slick.shadow.test.YYDefinitions.Coffee1
         {
           //          using(updateRanges) curve ("shadow embedding") in { r =>
           //            for (i <- r) {
@@ -489,7 +488,7 @@ object PerformanceBenchmark extends PerformanceTest {
       {
         import Shallow.TestH2.h2Driver
         import Shallow._
-        import scala.slick.yy.test.YYDefinitions.Coffee1
+        import scala.slick.shadow.test.YYDefinitions.Coffee1
         {
           //          using(updateRanges) curve ("shadow embedding") in { r =>
           //            for (i <- r) {
@@ -544,7 +543,7 @@ object PerformanceBenchmark extends PerformanceTest {
       {
         import Shallow.TestH2.h2Driver
         import Shallow._
-        import scala.slick.yy.test.YYDefinitions.Coffee1
+        import scala.slick.shadow.test.YYDefinitions.Coffee1
         {
           //          using(updateRanges) curve ("shadow embedding") in { r =>
           //            for (i <- r) {
@@ -612,8 +611,8 @@ object PerformanceBenchmark extends PerformanceTest {
     }
   }
   object ShallowEmbeddingDefs {
-    type Coffee = scala.slick.yy.test.YYDefinitions.Coffee1
-    val Coffee = scala.slick.yy.test.YYDefinitions.Coffee1
+    type Coffee = scala.slick.shadow.test.YYDefinitions.Coffee1
+    val Coffee = scala.slick.shadow.test.YYDefinitions.Coffee1
   }
   object PlainSqlDefs {
     val Q = scala.slick.jdbc.StaticQuery

@@ -1,11 +1,10 @@
-package scala.slick.yy
+package scala.slick.shadow
 
 import scala.language.implicitConversions
 import scala.slick.driver.{ H2Driver, JdbcDriver }
 import scala.slick.jdbc.{ JdbcBackend, UnitInvoker }
 
 object Shallow {
-  //  type Invoker[T] = (JdbcDriver => UnitInvoker[T])
   object Queryable {
     def apply[T]: Query[T] = ???
   }
@@ -69,9 +68,6 @@ object Shallow {
   implicit class OptMaker[T](val value: T) {
     def ? : Option[T] = ???
   }
-  //  class QueryTemplate[-P, R] {
-  //    def apply(param: P): Seq[R] = ???
-  //  }
   implicit def queryToShadowExecutor[T](query: Query[T]): ShadowExecutor[T] = new ShadowExecutor(query)
   object TestH2 {
     val driver = H2Driver

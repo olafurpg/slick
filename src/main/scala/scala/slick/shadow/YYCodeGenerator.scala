@@ -1,4 +1,4 @@
-package scala.slick.yy
+package scala.slick.shadow
 
 import scala.slick.typeproviders.codegenerator.Generator
 

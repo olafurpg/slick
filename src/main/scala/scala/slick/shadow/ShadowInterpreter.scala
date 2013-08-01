@@ -1,7 +1,7 @@
-package scala.slick.yy
+package scala.slick.shadow
 
 import ch.epfl.yinyang.api.{ Interpreted, FullyUnstaged, BaseYinYang, HoleTypeAnalyser }
-import scala.slick.yy.{ Shallow => OShallow }
+import scala.slick.shadow.{ Shallow => OShallow }
 import scala.reflect.runtime.{ universe => ru }
 import scala.slick.jdbc.{ JdbcBackend }
 import scala.slick.driver.{ JdbcProfile }
@@ -9,8 +9,14 @@ import scala.slick.lifted.{ Query }
 import scala.slick.jdbc.{ UnitInvoker }
 import scala.slick.lifted.NothingContainer
 import scala.slick.SlickException
+import scala.slick.shadow.deep.CaseRep
+import scala.slick.shadow.deep.ConstCaseRep
+import scala.slick.shadow.deep.Hole
+import scala.slick.shadow.deep._
+import scala.slick.shadow.lifting.ShadowSlickLifting
+import scala.slick.shadow.lifting.TransferQuery
 
-trait SlickYinYangTemplate extends SlickConstYinYangTemplate with YYSlickCake with Interpreted with HoleTypeAnalyser {
+trait ShadowInterpreter extends ShadowSlickLifting with YYSlickCake with Interpreted with HoleTypeAnalyser {
   @volatile private var alreadyInterpreted: scala.Boolean = false
   @volatile private var isCached: scala.Boolean = false
   @volatile private var cachedDriver: JdbcProfile = _
@@ -55,9 +61,9 @@ trait SlickYinYangTemplate extends SlickConstYinYangTemplate with YYSlickCake wi
 
   def interpret[T: ru.TypeTag](params: Any*): T = {
     @inline def getValue(value: YYValue[_]): Any = value match {
-      case caseRep @ YYCaseRep(const, fields) =>
+      case caseRep @ CaseRep(const, fields) =>
         caseRep.getValue(params.toIndexedSeq)
-      case caseRep @ YYConstCaseRep(const, fields) =>
+      case caseRep @ ConstCaseRep(const, fields) =>
         if (!alreadyInterpreted) {
           cachedConstCaseClass = caseRep.getValue
         }
@@ -123,48 +129,5 @@ class ShadowExecutor[T](val query: Shallow.Query[T]) {
   }
   def foreach(f: T => Unit)(implicit driver: JdbcProfile, session: JdbcBackend#Session) {
     list() foreach (f)
-  }
-}
-
-trait YYHole {
-  val index: Int
-}
-
-object YYHole {
-  import scala.slick.ast.TypedType
-  import scala.slick.lifted.{ Column }
-  import scala.slick.ast.{ QueryParameter }
-  def apply[T](index: Int)(implicit tpe: TypedType[T]): YYHole = {
-    def extractor(x: Any): Any = {
-      val res = x match {
-        case seq: IndexedSeq[_] => seq(index)
-        case _ => x
-      }
-      res
-    }
-    val c = Column.forNode[T](new QueryParameter(extractor, tpe))(tpe)
-    val i = index
-    new YYColumn[T] with YYHole {
-      val column = c
-      val index = i
-    }
-  }
-}
-
-trait SlickConstYinYangTemplate extends scala.slick.driver.JdbcDriver.ImplicitJdbcTypes with BaseYinYang { self: YYSlickCake =>
-  import scala.slick.ast.TypedType
-  implicit object LiftUnit extends LiftEvidence[Unit, Unit] {
-    def lift(v: Unit): Unit = v
-    def hole(tpe: ru.TypeTag[Unit], symbolId: scala.Int): Unit = ()
-  }
-  implicit def LiftConst[T, S](implicit cstTpe: YYConstantType[T, S], ttag: ru.TypeTag[T], tpe: TypedType[T]): LiftEvidence[T, S] = new LiftEvidence[T, S] {
-    def lift(v: T): S = YYConstColumn(v).asInstanceOf[S]
-    def hole(tptag: ru.TypeTag[T], symbolId: scala.Int): S = {
-      YYHole[T](symbolId).asInstanceOf[S]
-    }
-  }
-  implicit def liftQuery[T](implicit ttag: ru.TypeTag[OShallow.Query[T]]): LiftEvidence[OShallow.Query[T], Query[T]] = new LiftEvidence[OShallow.Query[T], Query[T]] {
-    def lift(v: OShallow.Query[T]): Query[T] = v.asInstanceOf[TransferQuery[T]].underlying
-    def hole(tpe: ru.TypeTag[OShallow.Query[T]], symbolId: scala.Int): Query[T] = ???
   }
 }

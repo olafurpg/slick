@@ -1,4 +1,5 @@
-package scala.slick.yy
+package scala.slick.shadow.deep
+
 
 import scala.slick.lifted.{ Column, Projection, Query, ColumnOrdered, Ordered => LOrdered, Shape, IdentityShape, ColumnExtensionMethods }
 import scala.slick.lifted.{ PlainColumnExtensionMethods, OptionMapper2, ConstColumn, Rep, AbstractTable, NumericColumnExtensionMethods }
@@ -237,8 +238,8 @@ trait QueryOps[T] { self: YYQuery[T] =>
   def take(i: YYColumn[Int]): YYQuery[T] = YYQuery.fromQuery(query.take(i.getValue))
   def drop(i: YYColumn[Int]): YYQuery[T] = YYQuery.fromQuery(query.drop(i.getValue))
   def length: YYColumn[Int] = YYColumn(query.length)
-  def groupBy[S](f: YYRep[T] => YYRep[S]): YYQuery[(S, scala.slick.yy.Shallow.Query[T])] =
-    YYQuery.fromQuery(query.groupBy(underlyingProjection(f))(YYShape[S], YYShape[T]).asInstanceOf[Query[Rep[(S, scala.slick.yy.Shallow.Query[T])], (S, scala.slick.yy.Shallow.Query[T])]])
+  def groupBy[S](f: YYRep[T] => YYRep[S]): YYQuery[(S, scala.slick.shadow.Shallow.Query[T])] =
+    YYQuery.fromQuery(query.groupBy(underlyingProjection(f))(YYShape[S], YYShape[T]).asInstanceOf[Query[Rep[(S, scala.slick.shadow.Shallow.Query[T])], (S, scala.slick.shadow.Shallow.Query[T])]])
   def union(q2: YYQuery[T]): YYQuery[T] = YYQuery.fromQuery(query.union(q2.query))
   def innerJoin[S](q2: YYQuery[S]): YYJoinQuery[T, S] = YYQuery.fromJoinQuery(query.innerJoin(q2.query))
   def leftJoin[S](q2: YYQuery[S]): YYJoinQuery[T, S] = YYQuery.fromJoinQuery(query.leftJoin(q2.query))
