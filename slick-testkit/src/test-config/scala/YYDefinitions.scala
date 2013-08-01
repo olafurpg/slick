@@ -12,4 +12,6 @@ object YYDefinitions {
   @Entity("t3") case class T3(@Entity("a") a: Int, @Entity("b") b: Int)
   @Entity("t3o") case class T3O(@Entity("a") a: Int, @Entity("b") b: Option[Int])
   @Entity("SLICK_ACCOUNT") case class Account1(id: Int, balance: Int, transfers: String)
+  @Entity("managers") case class Manager(@Entity("id") id: Int, @Entity("name") name: String, @Entity("department") department: String)
+  @Entity("employees") case class Employee(@Entity("id") id: Int, @Entity("name2") name: String, @Entity("manager") manager: Int)
 }

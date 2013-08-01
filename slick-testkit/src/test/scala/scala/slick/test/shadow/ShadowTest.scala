@@ -1053,6 +1053,76 @@ class ShadowTest {
     DatabaseHandler.closeSession
   }
 
+  @Test
+  def testUnion {
+    {
+      import DatabaseHandler.driver.simple._
+      object Managers extends Table[(Int, String, String)]("managers") {
+        def id = column[Int]("id")
+        def name = column[String]("name")
+        def department = column[String]("department")
+        def * = id ~ name ~ department
+      }
+
+      object Employees extends Table[(Int, String, Int)]("employees") {
+        def id = column[Int]("id")
+        def name = column[String]("name2")
+        def manager = column[Int]("manager")
+        def * = id ~ name ~ manager
+
+        // A convenience method for selecting employees by department
+        def departmentIs(dept: String) = manager in Managers.where(_.department is dept).map(_.id)
+      }
+
+      implicit val session = DatabaseHandler.provideSession
+
+      (Managers.ddl ++ Employees.ddl).create
+
+      Managers.insertAll(
+        (1, "Peter", "HR"),
+        (2, "Amy", "IT"),
+        (3, "Steve", "IT")
+      )
+
+      Employees.insertAll(
+        (4, "Jennifer", 1),
+        (5, "Tom", 1),
+        (6, "Leonard", 2),
+        (7, "Ben", 2),
+        (8, "Greg", 3)
+      )
+    }
+    import Shallow._
+    import Shallow.TestH2._
+
+    // testBasic
+    val q1 = stage {
+      for (m <- Queryable[Manager] filter { _.department == "IT" }) yield (m.id, m.name)
+    }
+    val q2 = stage {
+      for (
+        e <- Queryable[Employee] filter { e =>
+          e.manager in {
+            Queryable[Manager] filter { m =>
+              m.department == "IT"
+            } map (_.id)
+          }
+        }
+      ) yield (e.id, e.name)
+    }
+    val q3 = stage {
+      (q1 union q2).sortBy(_._2)
+    }
+    assertEquals(q3.list, List((2, "Amy"), (7, "Ben"), (8, "Greg"), (6, "Leonard"), (3, "Steve")))
+
+    // testUnionWithoutProjection
+
+    val q = stage {
+      (Queryable[Manager] filter { _.name == "Peter" }) union (Queryable[Manager] filter { _.name == "Amy" })
+    }
+    assertEquals(Set(Manager(1, "Peter", "HR"), Manager(2, "Amy", "IT")), q.list.toSet)
+  }
+
   def initCoffeeTable() {
     import DatabaseHandler.driver.simple._
 

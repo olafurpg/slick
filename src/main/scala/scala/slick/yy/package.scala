@@ -27,8 +27,8 @@ package object yy {
       YYTransformer[c.type, T](c)("scala.slick.yy.SlickYinYangTemplate",
         new SlickTypeTransformer[c.type](c)(virtualTypes),
         postProcessing = Some(new PostProcessing[c.type](c)(virtualStatements)),
-        //        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "scala.slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate", "scala.slick.yy.Shallow.QueryTemplate"))
-        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]], c.typeOf[Shallow.QueryTemplate[_, _]]))
+        //        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]], c.typeOf[Shallow.QueryTemplate[_, _]]))
+        Map("shallow" -> false, "debug" -> 0, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]]))
       )(block)
     }
     def stageDebug[T](c: Context)(block: c.Expr[T]): c.Expr[T] = {
@@ -43,8 +43,8 @@ package object yy {
       YYTransformer[c.type, T](c)("scala.slick.yy.SlickYinYangTemplate",
         new SlickTypeTransformer[c.type](c, 1)(virtualTypes),
         postProcessing = Some(new PostProcessing[c.type](c)(virtualStatements)),
-        //        Map("shallow" -> false, "debug" -> 1, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List("slick.yy.Shallow.Query", "scala.slick.yy.Shallow.Query", "slick.yy.Shallow.QueryTemplate", "scala.slick.yy.Shallow.QueryTemplate"))
-        Map("shallow" -> false, "debug" -> 1, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]], c.typeOf[Shallow.QueryTemplate[_, _]]))
+        //        Map("shallow" -> false, "debug" -> 1, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]], c.typeOf[Shallow.QueryTemplate[_, _]]))
+        Map("shallow" -> false, "debug" -> 1, "featureAnalysing" -> false, "ascriptionTransforming" -> true, "liftTypes" -> List(c.typeOf[Shallow.Query[_]]))
       )(block)
     }
 

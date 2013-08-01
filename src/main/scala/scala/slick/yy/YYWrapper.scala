@@ -146,6 +146,7 @@ trait ColumnExtensionOps[T] { self: YYColumn[T] =>
   def __!=[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn =!= e.column)
   def >[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn > e.column)
   def <[T2](e: YYColumn[T2]): YYColumn[Boolean] = YYColumn(extendedColumn < e.column)
+  def in(q: YYQuery[T]): YYColumn[Boolean] = YYColumn(extendedColumn in (q.query.asInstanceOf[Query[Column[T], _]]))
 }
 
 trait ColumnNumericExtensionOps[T] { self: YYColumn[T] =>
@@ -192,36 +193,14 @@ object YYShape {
   def apply[U] = ident[U]
 }
 
-trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] /* with YYQueryTemplateComponent[U] */ {
+trait YYQuery[U] extends QueryOps[U] with YYRep[Seq[U]] {
   val query: Query[Rep[U], U]
   def repValue: Rep[U] = YYValue.valueOfQuery(query)
-  type E <: YYRep[U]
-  def value: E = YYValue[U, E](repValue)
   override def underlying = query
   object BooleanRepCanBeQueryCondition extends CanBeQueryCondition[Rep[Boolean]] {
     def apply(value: Rep[Boolean]) = value.asInstanceOf[Column[Boolean]]
   }
-  //  private[yy] def invoker(implicit driver: JdbcProfile): UnitInvoker[U] = driver.Implicit.queryToQueryInvoker(query)
-  //  def executor(implicit driver: JdbcProfile): YYQueryExecuter[U] = YYQueryExecuter[U](this, driver)
-  //  def first(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.First, driver, session)
-  //  def toSeq(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInvoker[U] = YYInvoker[U](this, YYInvoker.List, driver, session)
-  //  def insert(value: YYRep[U])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYInsertInvoker[U] = YYInsertInvoker(this, value, driver, session)
-  //  def update(value: YYRep[U])(implicit driver: JdbcProfile, session: JdbcBackend#Session): YYUpdateInvoker[U] = YYUpdateInvoker(this, value, driver, session)
-  //  def firstImplicit: (JdbcDriver => JdbcBackend#Session => U) =
-  //    (driver: JdbcDriver) => (session: JdbcBackend#Session) => invoker(driver).first()(session)
-  //  def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[U]) =
-  //    (driver: JdbcDriver) => (session: JdbcBackend#Session) => invoker(driver).list()(session).toSeq
-  //  def getInvoker: (JdbcDriver => UnitInvoker[U]) =
-  //    (driver: JdbcDriver) => invoker(driver)
 }
-
-//case class YYInsertInvoker[T](query: YYQuery[T], value: YYRep[T], driver: JdbcProfile, session: JdbcBackend#Session) extends YYColumn[Int] /* necessary for type checking */ {
-//  override val column = null
-//}
-//
-//case class YYUpdateInvoker[T](query: YYQuery[T], value: YYRep[T], driver: JdbcProfile, session: JdbcBackend#Session) extends YYColumn[Int] /* necessary for type checking */ {
-//  override val column = null
-//}
 
 trait YYJoinQuery[U1, U2] extends YYQuery[(U1, U2)] {
   def on(pred: (YYRep[U1], YYRep[U2]) => YYColumn[Boolean]): YYQuery[(U1, U2)] = {
@@ -232,21 +211,12 @@ trait YYJoinQuery[U1, U2] extends YYQuery[(U1, U2)] {
 }
 
 object YYQuery {
-  def create[U](q: Query[Rep[U], U], e: Rep[U]): YYQuery[U] = {
-    class YYQueryInst[E1 <: YYRep[U]] extends YYQuery[U] {
-      type E = E1
-      val query = q
-      override def repValue: Rep[U] = e
-    }
-    e match {
-      case col: Column[U] => new YYQueryInst[YYColumn[U]]
-      case tab: AbstractTable[U] => new YYQueryInst[YYTable[U]]
-      case tupN: Projection[U] => new YYQueryInst[YYProjection[U]]
-    }
+  def create[U](q: Query[Rep[U], U], e: Rep[U]): YYQuery[U] = new YYQuery[U] {
+    val query = q
+    override def repValue: Rep[U] = e
   }
   def fromQuery[U](q: Query[Rep[U], U]): YYQuery[U] = create(q, YYValue.valueOfQuery(q))
   def fromJoinQuery[U1, U2](q: Query[(Rep[U1], Rep[U2]), (U1, U2)]): YYJoinQuery[U1, U2] = new YYJoinQuery[U1, U2] {
-    type E = YYProjection[(U1, U2)]
     val query = q.asInstanceOf[Query[(Rep[(U1, U2)]), (U1, U2)]]
   }
   def apply[U](v: YYRep[U]): YYQuery[U] = create(Query(v.underlying)(YYShape.ident[U]), v.underlying)
@@ -260,7 +230,7 @@ trait QueryOps[T] { self: YYQuery[T] =>
   def filter(projection: YYRep[T] => YYRep[Boolean]): YYQuery[T] = YYQuery.fromQuery(query.filter(underlyingProjection(projection))(BooleanRepCanBeQueryCondition))
   def withFilter(projection: YYRep[T] => YYRep[Boolean]): YYQuery[T] = filter(projection)
   def flatMap[S](projection: YYRep[T] => YYQuery[S]): YYQuery[S] = YYQuery.fromQuery(query flatMap { (x: Rep[T]) =>
-    projection(YYValue[T, E](x)).query
+    projection(YYValue(x)).query
   })
   def sortBy[S](f: YYRep[T] => YYRep[S])(ord: YYOrdering[S]): YYQuery[T] = YYQuery.fromQuery(query.sortBy(underlyingProjection(f))((x: Rep[S]) => ord.toOrdered(x)))
   def sorted(ord: YYOrdering[T]): YYQuery[T] = YYQuery.fromQuery(query.sorted((x: Rep[T]) => ord.toOrdered(x)))
@@ -269,6 +239,7 @@ trait QueryOps[T] { self: YYQuery[T] =>
   def length: YYColumn[Int] = YYColumn(query.length)
   def groupBy[S](f: YYRep[T] => YYRep[S]): YYQuery[(S, scala.slick.yy.Shallow.Query[T])] =
     YYQuery.fromQuery(query.groupBy(underlyingProjection(f))(YYShape[S], YYShape[T]).asInstanceOf[Query[Rep[(S, scala.slick.yy.Shallow.Query[T])], (S, scala.slick.yy.Shallow.Query[T])]])
+  def union(q2: YYQuery[T]): YYQuery[T] = YYQuery.fromQuery(query.union(q2.query))
   def innerJoin[S](q2: YYQuery[S]): YYJoinQuery[T, S] = YYQuery.fromJoinQuery(query.innerJoin(q2.query))
   def leftJoin[S](q2: YYQuery[S]): YYJoinQuery[T, S] = YYQuery.fromJoinQuery(query.leftJoin(q2.query))
   def rightJoin[S](q2: YYQuery[S]): YYJoinQuery[T, S] = YYQuery.fromJoinQuery(query.rightJoin(q2.query))

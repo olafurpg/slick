@@ -12,7 +12,7 @@ trait YYType {
   type String = YYColumn[Predef.String]
   type Boolean = YYColumn[scala.Boolean]
   type ColumnOps[T] = YYColumn[T]
-  type Invoker[T] = Shallow.Invoker[T]
+//  type Invoker[T] = Shallow.Invoker[T]
   type Ordering[T] = YYOrdering[T]
   type Option[T] = YYColumn[scala.Option[T]]
   type SingleColumnQuery[T] = YYSingleColumnQuery[T]

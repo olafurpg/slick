@@ -5,7 +5,7 @@ import scala.slick.driver.{ H2Driver, JdbcDriver }
 import scala.slick.jdbc.{ JdbcBackend, UnitInvoker }
 
 object Shallow {
-  type Invoker[T] = (JdbcDriver => UnitInvoker[T])
+  //  type Invoker[T] = (JdbcDriver => UnitInvoker[T])
   object Queryable {
     def apply[T]: Query[T] = ???
   }
@@ -29,6 +29,7 @@ object Shallow {
     def sortBy[S](projection: T => S)(implicit ord: Ordering[S]): Query[T] = ???
     def sorted(implicit ord: Ordering[T]): Query[T] = ???
     def groupBy[S](f: T => S): Query[(S, Shallow.Query[T])] = ???
+    def union(q2: Query[T]): Query[T] = ???
     def innerJoin[S](q2: Query[S]): JoinQuery[T, S] = ???
     def leftJoin[S](q2: Query[S]): JoinQuery[T, S] = ???
     def rightJoin[S](q2: Query[S]): JoinQuery[T, S] = ???
@@ -37,20 +38,7 @@ object Shallow {
     def zipWithIndex: JoinQuery[T, Long] = ???
     def take(i: Int): Query[T] = ???
     def drop(i: Int): Query[T] = ???
-    //    def toSeq: Seq[T] = ???
-    //    def first: T = ???
-    //    def toSeqTemplate: Seq[T] = ???
-    //    def firstTemplate: T = ???
-    //    def getQueryTemplate[P]: QueryTemplate[P, T] = ???
-    //    def funcTemplate: QueryTemplate[Any, T] = ???
-    //    def getInvoker: Invoker[T] = ???
-    //    def firstImplicit: (JdbcDriver => JdbcBackend#Session => T) = ???
-    //    def toSeqImplicit: (JdbcDriver => JdbcBackend#Session => Seq[T]) = ???
-    //    def insert(value: T): Int = ???
-    //    def update(value: T): Int = ???
-    //    def executor: Executor[T] = ???
   }
-  //  type Executor[T] = QueryExecutor[T]
   trait JoinQuery[T1, T2] extends Query[(T1, T2)] {
     def on(pred: (T1, T2) => Boolean): Query[(T1, T2)] = ???
   }
@@ -58,6 +46,7 @@ object Shallow {
   implicit def intWrapper(value: Int): ColumnOps[Int] = new ColumnOps(value)
   // FIXME operations for Int, Float, String, Double, and Boolean should be separated
   implicit class ColumnOps[T](val value: T) extends AnyVal {
+    def in(query: Query[T]): Boolean = ???
     def abs: T = ???
     def ceil: T = ???
     def floor: T = ???
@@ -80,9 +69,9 @@ object Shallow {
   implicit class OptMaker[T](val value: T) {
     def ? : Option[T] = ???
   }
-  class QueryTemplate[-P, R] {
-    def apply(param: P): Seq[R] = ???
-  }
+  //  class QueryTemplate[-P, R] {
+  //    def apply(param: P): Seq[R] = ???
+  //  }
   implicit def queryToShadowExecutor[T](query: Query[T]): ShadowExecutor[T] = new ShadowExecutor(query)
   object TestH2 {
     val driver = H2Driver

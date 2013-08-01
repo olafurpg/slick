@@ -137,7 +137,7 @@ object SlickBuild extends Build {
         "postgresql" % "postgresql" % "9.1-901.jdbc4" % "test",
         "mysql" % "mysql-connector-java" % "5.1.13" % "test",
         "net.sourceforge.jtds" % "jtds" % "1.2.4" % "test",
-        "com.github.axel22" %% "scalameter" % "0.4-M2" % "test"
+        "com.github.axel22" %% "scalameter" % "0.4-M1" % "test"
       ),
       ivyConfigurations += config("test-config").hide.extend(Compile),
       unmanagedClasspath in config("test-config") <++= fullClasspath in (slickProject, Compile),

@@ -8,7 +8,7 @@ import scala.slick.SlickException
 import scala.slick.profile.BasicDriver
 import scala.slick.driver.{ H2Driver, JdbcDriver, JdbcProfile }
 
-trait YYSlickCake extends YYType with YYSlickCakeTuples with YYSlickLowPriorityImplicits {
+trait YYSlickCake extends YYType with YYSlickCakeTuples {
   val Ordering = YYOrdering
   val String = YYOrdering.String
   val Int = YYOrdering.Int
@@ -57,14 +57,4 @@ trait YYSlickCake extends YYType with YYSlickCakeTuples with YYSlickLowPriorityI
   object Table {
     def getTable[S](implicit mapping: Table[S]): Table[S] = mapping
   }
-}
-
-trait YYSlickLowPriorityImplicits {
-  // These two implicits are needed for the cake to be type checked!
-
-  // Type of this one is JdbcProfile and not JdbcDriver in order to make it lower priority in comparison with the implicit driver which will
-  // provided by the user. If type of this one is JdbcDriver, we would get 'ambiguous implicit' error. 
-  implicit def dummyDriver: JdbcProfile = throw new SlickException("You forgot to provide appropriate implicit jdbc driver for YY block!")
-  // The reason of generality of this type is the same as the above one.
-  implicit def dummySession: JdbcBackend#Session = throw new SlickException("You forgot to provide implicit session for YY block!")
 }
