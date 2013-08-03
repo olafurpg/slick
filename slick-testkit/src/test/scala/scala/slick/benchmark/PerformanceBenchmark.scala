@@ -4,11 +4,12 @@ import org.scalameter.api._
 import scala.slick.shadow.Shallow
 import scala.slick.shadow.stage
 import org.scalameter.reporting.DsvReporter
+import scala.collection.mutable.ArrayBuffer
 
 object PerformanceBenchmark extends PerformanceTest {
   lazy val executor = LocalExecutor(
     new Executor.Warmer.Default,
-    Aggregator.median,
+    Aggregator.min,
     //    new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise)
     new Measurer.Default)
   //  lazy val reporter = Reporter.Composite(
@@ -19,19 +20,21 @@ object PerformanceBenchmark extends PerformanceTest {
   //    HtmlReporter(true)
   //  )
   //  lazy val reporter = HtmlReporter(true)
-  lazy val reporter = Reporter.Composite(LoggingReporter(), DsvReporter(','), ChartReporter(ChartReporter.ChartFactory.XYLine()))
+  //  lazy val reporter = Reporter.Composite(LoggingReporter(), DsvReporter(','), ChartReporter(ChartReporter.ChartFactory.XYLine()))
+  //  lazy val reporter = Reporter.Composite(LoggingReporter(), CsvReporter(','), ChartReporter(ChartReporter.ChartFactory.XYLine()))
+  lazy val reporter = Reporter.Composite(LoggingReporter(), CsvReporter(','))
   lazy val persistor = Persistor.None
   //  lazy val persistor = new SerializationPersistor()
 
   //  val sizes = Gen.range("size")(10, 1500, 50)
-  val sizes = Gen.range("size")(10, 260, 50)
+  val sizes = Gen.range("Size")(10, 260, 25)
   //  val directSizes = Gen.range("size")(1, 10, 1)
-  val directSizes = Gen.range("size")(1, 2, 1)
+  val directSizes = Gen.range("Size")(1, 5, 1)
 
   //  val insertionSizes = Gen.range("size")(10, 10000, 200)
-  val insertionSizes = Gen.range("size")(10, 5000, 200)
+  val insertionSizes = Gen.range("Size")(10, 5000, 500)
   //  val updateSizes = Gen.range("size")(10, 800, 50)
-  val updateSizes = Gen.range("size")(10, 160, 50)
+  val updateSizes = Gen.range("Size")(10, 160, 20)
 
   val ranges = for {
     size <- sizes
@@ -51,31 +54,42 @@ object PerformanceBenchmark extends PerformanceTest {
 
   val DatabaseHandler = Shallow.TestH2
 
+  /**
+   * 	Selection.inequalityCaptured
+   * 	Selection.equalityConstant
+   * 	Insertion.constantValue
+   * 	Insertion.capturedValue
+   * 	Update.constantWhereConstantUpdate
+   * 	Update.constantWhereCapturedUpdate
+   * 	Update.capturedWhereCapturedUpdate
+   * 	Update.complex
+   */
+
   initCoffeeTable()
-  performance of "SelectTemplates" in {
+  performance of "Selection" in {
     import Shallow.TestH2.h2Session
     measure method "inequalityCaptured" in {
       {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(ranges) curve ("lifted embedding") in { r =>
+          using(ranges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               (for (c <- Coffee if c.id < i.bind) yield c).list
             }
           }
         }
-        {
-          using(ranges) curve ("lifted embedding template") in { r =>
-            for (i <- r) {
-              val template = (for (i <- Parameters[Int]; c <- Coffee if c.id < i) yield c)
-              template(i).list
-            }
-          }
-        }
+        //        {
+        //          using(ranges) curve ("lifted embedding template") in { r =>
+        //            for (i <- r) {
+        //              val template = (for (i <- Parameters[Int]; c <- Coffee if c.id < i) yield c)
+        //              template(i).list
+        //            }
+        //          }
+        //        }
         {
           val template = (for (i <- Parameters[Int]; c <- Coffee if c.id < i) yield c)
-          using(ranges) curve ("lifted embedding template++") in { r =>
+          using(ranges) curve ("Lifted Embedding Query Template") in { r =>
             for (i <- r) {
               template(i).list
             }
@@ -97,7 +111,7 @@ object PerformanceBenchmark extends PerformanceTest {
         //          }
         //        }
         {
-          using(ranges) curve ("shadow embedding") in { r =>
+          using(ranges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               stage {
                 (for (c <- Queryable[Coffee] if c.id < i) yield c)
@@ -106,17 +120,17 @@ object PerformanceBenchmark extends PerformanceTest {
 
           }
         }
-        {
-          using(ranges) curve ("shadow embedding function") in { r =>
-            def template(id: Int) = stage {
-              (for (c <- Queryable[Coffee] if c.id < id) yield c)
-            }.list()
-            for (i <- r) {
-              template(i)
-            }
-
-          }
-        }
+        //        {
+        //          using(ranges) curve ("shadow embedding function") in { r =>
+        //            def template(id: Int) = stage {
+        //              (for (c <- Queryable[Coffee] if c.id < id) yield c)
+        //            }.list()
+        //            for (i <- r) {
+        //              template(i)
+        //            }
+        //
+        //          }
+        //        }
       }
       {
         import PlainSqlDefs._
@@ -125,68 +139,68 @@ object PerformanceBenchmark extends PerformanceTest {
         import Q.interpolation
         {
           def template(id: Int) = sql"select id, name from Coffee where id < $id".as[Coffee]
-          using(ranges) curve ("plain sql") in { r =>
+          using(ranges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               template(i).list()
             }
           }
         }
       }
-      {
-        import scala.slick.direct._
-        import DirectEmbeddingDefs._
-
-        object backend extends SlickBackend(Shallow.TestH2.h2Driver, AnnotationMapper)
-
-        {
-          using(directRanges) curve ("direct embedding") in { r =>
-            for (i <- r) {
-              val q = Queryable[Coffee]
-              val q1 = q.filter(_.id < i)
-              backend.result(q1, Shallow.TestH2.h2Session)
-            }
-          }
-        }
-      }
+      //      {
+      //        import scala.slick.direct._
+      //        import DirectEmbeddingDefs._
+      //
+      //        object backend extends SlickBackend(Shallow.TestH2.h2Driver, AnnotationMapper)
+      //
+      //        {
+      //          using(directRanges) curve ("Direct Embedding") in { r =>
+      //            for (i <- r) {
+      //              val q = Queryable[Coffee]
+      //              val q1 = q.filter(_.id < i)
+      //              backend.result(q1, Shallow.TestH2.h2Session)
+      //            }
+      //          }
+      //        }
+      //      }
     }
   }
 
-  performance of "SelectTemplates" in {
+  performance of "Selection" in {
     import Shallow.TestH2.h2Session
     measure method "equalityConstant" in {
       {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(ranges) curve ("lifted embedding") in { r =>
+          using(ranges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               (for (c <- Coffee if c.id === 1) yield c).list
             }
           }
         }
-        {
-          val template = (for (c <- Coffee if c.id === 1) yield c)
-          using(ranges) curve ("lifted embedding value") in { r =>
-            for (i <- r) {
-              template.list
-            }
-          }
-        }
-        {
-          def template = (for (c <- Coffee if c.id === 1) yield c).list
-          using(ranges) curve ("lifted embedding function") in { r =>
-            for (i <- r) {
-              template
-            }
-          }
-        }
+        //        {
+        //          val template = (for (c <- Coffee if c.id === 1) yield c)
+        //          using(ranges) curve ("lifted embedding value") in { r =>
+        //            for (i <- r) {
+        //              template.list
+        //            }
+        //          }
+        //        }
+        //        {
+        //          def template = (for (c <- Coffee if c.id === 1) yield c).list
+        //          using(ranges) curve ("lifted embedding function") in { r =>
+        //            for (i <- r) {
+        //              template
+        //            }
+        //          }
+        //        }
       }
       {
         import Shallow.TestH2.h2Driver
         import Shallow._
         import ShallowEmbeddingDefs._
         {
-          using(ranges) curve ("shadow embedding") in { r =>
+          using(ranges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               stage {
                 (for (c <- Queryable[Coffee] if c.id == 1) yield c)
@@ -194,29 +208,29 @@ object PerformanceBenchmark extends PerformanceTest {
             }
           }
         }
-        {
-          val templ = stage {
-            (for (c <- Queryable[Coffee] if c.id == 1) yield c)
-          }
-          using(ranges) curve ("shadow embedding composition") in { r =>
-            for (i <- r) {
-              stage {
-                templ
-              }.list()
-            }
-          }
-        }
-        {
-          using(ranges) curve ("shadow embedding function") in { r =>
-            def template = stage {
-              (for (c <- Queryable[Coffee] if c.id == 1) yield c)
-            }.list()
-            for (i <- r) {
-              template
-            }
-
-          }
-        }
+        //        {
+        //          val templ = stage {
+        //            (for (c <- Queryable[Coffee] if c.id == 1) yield c)
+        //          }
+        //          using(ranges) curve ("shadow embedding composition") in { r =>
+        //            for (i <- r) {
+        //              stage {
+        //                templ
+        //              }.list()
+        //            }
+        //          }
+        //        }
+        //        {
+        //          using(ranges) curve ("shadow embedding function") in { r =>
+        //            def template = stage {
+        //              (for (c <- Queryable[Coffee] if c.id == 1) yield c)
+        //            }.list()
+        //            for (i <- r) {
+        //              template
+        //            }
+        //
+        //          }
+        //        }
       }
       {
         import PlainSqlDefs._
@@ -225,28 +239,28 @@ object PerformanceBenchmark extends PerformanceTest {
         import Q.interpolation
         {
           def template = sql"select id, name from Coffee where id = 1".as[Coffee]
-          using(ranges) curve ("plain sql") in { r =>
+          using(ranges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               template.list()
             }
           }
         }
       }
-      {
-        import scala.slick.direct._
-        import DirectEmbeddingDefs._
-
-        object backend extends SlickBackend(Shallow.TestH2.h2Driver, AnnotationMapper)
-
-        {
-          using(directRanges) curve ("direct embedding") in { r =>
-            for (i <- r) {
-              val q = Queryable[Coffee]
-              backend.result(q, Shallow.TestH2.h2Session)
-            }
-          }
-        }
-      }
+      //      {
+      //        import scala.slick.direct._
+      //        import DirectEmbeddingDefs._
+      //
+      //        object backend extends SlickBackend(Shallow.TestH2.h2Driver, AnnotationMapper)
+      //
+      //        {
+      //          using(directRanges) curve ("Direct Embedding") in { r =>
+      //            for (i <- r) {
+      //              val q = Queryable[Coffee]
+      //              backend.result(q, Shallow.TestH2.h2Session)
+      //            }
+      //          }
+      //        }
+      //      }
     }
   }
 
@@ -257,7 +271,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(insertionRanges) curve ("lifted embedding") in { r =>
+          using(insertionRanges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               val c = Cf(1989, "Amir")
               Coffee.insert(c)
@@ -279,7 +293,7 @@ object PerformanceBenchmark extends PerformanceTest {
           //              }
           //            }
           //          }
-          using(insertionRanges) curve ("shadow embedding") in { r =>
+          using(insertionRanges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               val c = Coffee1(1989, "Amir")
               val r0 = stage {
@@ -295,7 +309,7 @@ object PerformanceBenchmark extends PerformanceTest {
         implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
         import Q.interpolation
         {
-          using(insertionRanges) curve ("plain sql") in { r =>
+          using(insertionRanges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               val c = Coffee(1989, "Amir")
               sqlu"insert into Coffee values (${c.id}, ${c.name})".first
@@ -309,7 +323,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(insertionRanges) curve ("lifted embedding") in { r =>
+          using(insertionRanges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               val cId = i
               val cName = s"$i"
@@ -334,7 +348,7 @@ object PerformanceBenchmark extends PerformanceTest {
           //              }
           //            }
           //          }
-          using(insertionRanges) curve ("shadow embedding") in { r =>
+          using(insertionRanges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               val cId = i
               val cName = s"$i"
@@ -350,7 +364,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import PlainSqlDefs._
         import Q.interpolation
         {
-          using(insertionRanges) curve ("plain sql") in { r =>
+          using(insertionRanges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               val cId = i
               val cName = s"$i"
@@ -369,7 +383,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(updateRanges) curve ("lifted embedding") in { r =>
+          using(updateRanges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               val c = Cf(10, "Amir")
               Coffee.filter(_.id === 10).update(c)
@@ -391,7 +405,7 @@ object PerformanceBenchmark extends PerformanceTest {
           //              }
           //            }
           //          }
-          using(updateRanges) curve ("shadow embedding") in { r =>
+          using(updateRanges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               val c = Coffee1(10, "Amir")
               val r0 = stage {
@@ -407,7 +421,7 @@ object PerformanceBenchmark extends PerformanceTest {
         implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
         import Q.interpolation
         {
-          using(updateRanges) curve ("plain sql") in { r =>
+          using(updateRanges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               val c = Coffee(10, "Amir")
               sqlu"update Coffee set id = ${c.id}, name = ${c.name} where id = 10".first()
@@ -421,7 +435,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(updateRanges) curve ("lifted embedding") in { r =>
+          using(updateRanges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Cf(10, cName)
@@ -444,7 +458,7 @@ object PerformanceBenchmark extends PerformanceTest {
           //              }
           //            }
           //          }
-          using(updateRanges) curve ("shadow embedding") in { r =>
+          using(updateRanges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee1(10, cName)
@@ -461,7 +475,7 @@ object PerformanceBenchmark extends PerformanceTest {
         implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
         import Q.interpolation
         {
-          using(updateRanges) curve ("plain sql") in { r =>
+          using(updateRanges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee(10, cName)
@@ -476,7 +490,7 @@ object PerformanceBenchmark extends PerformanceTest {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(updateRanges) curve ("lifted embedding") in { r =>
+          using(updateRanges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Cf(i, cName)
@@ -499,7 +513,7 @@ object PerformanceBenchmark extends PerformanceTest {
           //              }
           //            }
           //          }
-          using(updateRanges) curve ("shadow embedding") in { r =>
+          using(updateRanges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee1(i, cName)
@@ -516,7 +530,7 @@ object PerformanceBenchmark extends PerformanceTest {
         implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
         import Q.interpolation
         {
-          using(updateRanges) curve ("plain sql") in { r =>
+          using(updateRanges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee(i, cName)
@@ -526,12 +540,12 @@ object PerformanceBenchmark extends PerformanceTest {
         }
       }
     }
-    measure method "capturedWhereCapturedUpdateComplex" in {
+    measure method "complex" in {
       {
         import scala.slick.driver.H2Driver.simple._
         import LiftedEmbeddingDefs._
         {
-          using(updateRanges) curve ("lifted embedding") in { r =>
+          using(updateRanges) curve ("Lifted Embedding") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Cf(i, cName)
@@ -554,7 +568,7 @@ object PerformanceBenchmark extends PerformanceTest {
           //              }
           //            }
           //          }
-          using(updateRanges) curve ("shadow embedding") in { r =>
+          using(updateRanges) curve ("Shadow Embedding") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee1(i, cName)
@@ -571,7 +585,7 @@ object PerformanceBenchmark extends PerformanceTest {
         implicit val getCoffeeResult = GetResult(c => new Coffee(c.<<, c.<<))
         import Q.interpolation
         {
-          using(updateRanges) curve ("plain sql") in { r =>
+          using(updateRanges) curve ("Plain SQL") in { r =>
             for (i <- r) {
               val cName = s"$i"
               val c = Coffee(i, cName)
@@ -618,4 +632,84 @@ object PerformanceBenchmark extends PerformanceTest {
     val Q = scala.slick.jdbc.StaticQuery
     case class Coffee(id: Int, name: String)
   }
+}
+
+case class CsvReporter(delimiter: Char) extends Reporter {
+  import org.scalameter._
+  import java.io._
+  import java.util.Date
+  import java.util.TimeZone
+  import java.text.SimpleDateFormat
+  import utils.Tree
+
+  val sep = File.separator
+
+  def report(result: CurveData, persistor: Persistor) {
+  }
+
+  def report(result: Tree[CurveData], persistor: Persistor) = {
+    val currentDate = new Date
+    val resultdir = initialContext.goe(Key.reports.resultDir, "results")
+
+    def getHeadCurveData(tree: Tree[CurveData]): CurveData = {
+      tree.items.headOption.getOrElse({
+        tree.children.filter(t => getHeadCurveData(t) != null).headOption.map(getHeadCurveData).getOrElse(null)
+      }
+      )
+    }
+
+    val headCurveData = getHeadCurveData(result)
+
+    new File(s"$resultdir").mkdir()
+    val filename = s"$resultdir$sep${headCurveData.context.scope}.csv"
+
+    def print() {
+      var writer: PrintWriter = null
+      try {
+        writer = new PrintWriter(new FileWriter(filename, false))
+        //        writer = System.out
+        writeData(writer)
+      } finally {
+        if (writer != null) writer.close()
+      }
+    }
+
+    def writeData(pw: PrintWriter) {
+      var tabular = new ArrayBuffer[List[Any]]
+      def header(cd: CurveData) = {
+        //        "Method" + delimiter + cd.measurements.map(_.params.axisData.head._2).mkString(delimiter.toString)
+        tabular += List("Method") ++ cd.measurements.map(_.params.axisData.head._2)
+      }
+
+      def row(cd: CurveData) = {
+        //        cd.context.curve + delimiter + cd.measurements.map(m => m.value).mkString(delimiter.toString)
+        tabular += List(cd.context.curve) ++ cd.measurements.map(_.value)
+      }
+
+      //      def header(cd: CurveData) = {
+      //        val m = cd.measurements.head
+      //        "Method" + delimiter + m.params.axisData.head._1 + delimiter + s"Time (${m.units})"
+      //      }
+      //
+      //      def row(cd: CurveData) = {
+      //        cd.measurements.map(m => cd.context.curve + delimiter + m.params.axisData.head._2 + delimiter + m.value).mkString("\n")
+      //      }
+
+      //      pw.println(header(headCurveData))
+      //      result foreach { cd =>
+      //        pw.println(row(cd))
+      //
+      //      }
+      header(headCurveData)
+      result foreach row
+      tabular.toList.transpose foreach { line =>
+        pw.println(line.mkString(delimiter.toString))
+      }
+    }
+
+    print()
+
+    true
+  }
+
 }
