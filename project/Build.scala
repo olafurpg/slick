@@ -17,8 +17,8 @@ object SlickBuild extends Build {
   )
 
   def localScalaSettings(path: String): Seq[Setting[_]] = Seq(
-    scalaVersion := "2.10.0-unknown",
-    scalaBinaryVersion := "2.10.0-unknown",
+    scalaVersion := "2.10.2",
+    scalaBinaryVersion := "2.10.2",
     crossVersion := CrossVersion.Disabled,
     scalaHome := Some(file(path)),
     autoScalaLibrary := false,
@@ -130,10 +130,10 @@ object SlickBuild extends Build {
         // The Slick core tests need junit-interface, logback and the DB drivers
         "com.novocode" % "junit-interface" % "0.10-M1" % "test",
         "ch.qos.logback" % "logback-classic" % "0.9.28" % "test",
-        "com.h2database" % "h2" % "1.3.170" % "test",
-        "org.xerial" % "sqlite-jdbc" % "3.7.2" % "test",
+        "com.h2database" % "h2" % "1.3.170",
+        "org.xerial" % "sqlite-jdbc" % "3.7.2",
         "org.apache.derby" % "derby" % "10.9.1.0" % "test",
-        "org.hsqldb" % "hsqldb" % "2.2.8" % "test",
+        "org.hsqldb" % "hsqldb" % "2.2.8",
         "postgresql" % "postgresql" % "9.1-901.jdbc4" % "test",
         "mysql" % "mysql-connector-java" % "5.1.13" % "test",
         "net.sourceforge.jtds" % "jtds" % "1.2.4" % "test",
@@ -181,7 +181,7 @@ object SlickBuild extends Build {
       new Group("inProcess", notFork, InProcess)
     )
   }
-  
+
   /* FMPP Task */
   lazy val fmpp = TaskKey[Seq[File]]("fmpp")
   lazy val fmppConfig = config("fmpp") hide
