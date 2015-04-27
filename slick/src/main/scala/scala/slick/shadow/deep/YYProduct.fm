@@ -1,0 +1,122 @@
+<#assign N = 22>
+<#assign OrdN = 9>
+package scala.slick.shadow.deep
+
+import scala.language.implicitConversions
+import scala.slick.lifted.Column
+import scala.slick.lifted.Rep
+import scala.slick.lifted.Projection
+<#list 2..N as i>
+import scala.slick.lifted.Projection${i}
+import scala.slick.lifted.LiftedTuple${i}
+</#list>
+
+sealed trait YYProjection[T <: Product] extends YYRep[T] with Product {
+  def canEqual(that: Any): Boolean = that.isInstanceOf[YYProjection[_]]
+}
+
+object YYProjection {
+  def fromLiftedProjection[T <: Product](rep: Projection[T]): YYProjection[T] = 
+    rep match {
+      <#list 2..N as i>
+      case tup: Projection${i}[<#list 1..i as j>_<#if i != j>,</#if></#list>] => apply(tup)
+      </#list>
+      case _ => YYTuple.fromMixedTuple[Product](rep.asInstanceOf[Product]).asInstanceOf[YYProjection[T]]
+    }
+
+  <#list 2..N as i>
+  def apply[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](tup: Projection${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>]): YYProjection${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = 
+    new YYProjection${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] {
+      <#list 1..i as j>
+      def _${j} = YYColumn(tup._${j})
+      </#list>
+      override def underlying = tup
+    }
+  </#list>
+
+  <#list 2..N as i>
+  def fromYY[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](<#list 1..i as j>_${j}: YYColumn[T${j}]<#if i != j>,</#if></#list>): YYProjection${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = 
+    apply(<#list 1..i as j>_${j}.underlying<#if i != j> ~ </#if></#list>)
+  </#list>
+
+}
+
+<#list 2..N as i>
+trait YYProjection${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] extends 
+  Product${i}[<#list 1..i as j>YYColumn[T${j}]<#if i != j>,</#if></#list>] with YYTuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] {
+  override def toString = "YYProjection(" + <#list 1..i as j>_${j}<#if i != j> + ", " + </#if></#list> + ")"
+}
+</#list>
+
+object YYTuple {
+
+  def fromMixedTuple[T <: Product](mixed: T): YYProjection[T] = {
+    import scala.language.existentials
+    val result = mixed match {
+      <#list 2..N as i>
+      case (<#list 1..i as j>_${j}<#if i != j>,</#if></#list>) => apply(<#list 1..i as j>_${j}.asInstanceOf[Rep[_]]<#if i != j>,</#if></#list>)
+      </#list>
+    }
+    result.asInstanceOf[YYProjection[T]]
+  }
+
+  <#list 2..N as i>
+  def apply[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](<#list 1..i as j>__${j}: Rep[T${j}]<#if i != j>,</#if></#list>): YYTuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = 
+    new YYTuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] {
+      <#list 1..i as j>
+      def _${j} = YYValue.applyUntyped(__${j})
+      </#list>
+      override def underlying = new LiftedTuple${i}(<#list 1..i as j>__${j}<#if i != j>,</#if></#list>)
+    }
+  </#list>
+
+  <#list 2..N as i>
+  def fromYY[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](<#list 1..i as j>_${j}: YYRep[T${j}]<#if i != j>,</#if></#list>): YYTuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = 
+    apply(<#list 1..i as j>_${j}.underlying<#if i != j>,</#if></#list>)
+  </#list>
+}
+
+<#list 2..N as i>
+trait YYTuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] extends 
+  Product${i}[<#list 1..i as j>YYRep[T${j}]<#if i != j>,</#if></#list>] with YYProjection[(<#list 1..i as j>T${j}<#if i != j>,</#if></#list>)] {
+  override def toString = "YYTuple(" + <#list 1..i as j>_${j}<#if i != j> + ", " + </#if></#list> + ")"
+}
+</#list>
+
+trait YYOrderingTuples {
+  import scala.slick.lifted.{ Ordered => LOrdered }
+
+  <#list 2..OrdN as i>
+  def Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](<#list 1..i as j>ord${j}: YYOrdering[T${j}]<#if i != j>,</#if></#list>): YYOrdering[(<#list 1..i as j>T${j}<#if i != j>,</#if></#list>)] =
+    new YYOrdering[(<#list 1..i as j>T${j}<#if i != j>,</#if></#list>)]() {
+      override def toOrdered(x: Rep[(<#list 1..i as j>T${j}<#if i != j>,</#if></#list>)]): LOrdered = yyOrderingListToOrdered(x)((<#list 1..i as j>ord${j}<#if i != j>,</#if></#list>))
+    }
+  </#list>
+}
+
+trait YYSlickCakeTuples { self: scala.slick.shadow.YYSlickCake =>
+  <#list 2..N as i>
+  type Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = YYTuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>]
+  </#list>
+
+  <#list 2..N as i>
+  implicit def yyRepTuple${i}ToYYTuple[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](x: CakeRep[scala.Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>]]): Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = x.asInstanceOf[Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>]]
+  </#list>
+
+  <#list 2..N as i>
+  object Tuple${i} {
+    def apply[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](<#list 1..i as j>_${j}: CakeRep[T${j}]<#if i != j>,</#if></#list>) = 
+      if (<#list 1..i as j>_${j}.isInstanceOf[Column[_]]<#if i != j>&&</#if></#list>)
+        YYProjection.fromYY(<#list 1..i as j>_${j}.asInstanceOf[Column[T${j}]]<#if i != j>,</#if></#list>)
+      else
+        YYTuple.fromYY(<#list 1..i as j>_${j}<#if i != j>,</#if></#list>)
+    def unapply[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>](tup: Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>]): scala.Option[(<#list 1..i as j>YYRep[T${j}]<#if i != j>,</#if></#list>)] = Some((<#list 1..i as j>tup._${j}<#if i != j>,</#if></#list>))
+  }
+  </#list>
+
+  trait scalaYYTuples {
+    <#list 2..N as i>
+    type Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>] = scala.Tuple${i}[<#list 1..i as j>T${j}<#if i != j>,</#if></#list>]
+    </#list>
+  }
+}

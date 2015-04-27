@@ -97,7 +97,7 @@ object SlickBuild extends Build {
       test := (),
       testOnly <<= inputTask { argTask => (argTask) map { args => }}
     )).aggregate(slickProject, slickTestkitProject)
-  lazy val slickProject = Project(id = "slick", base = file("."),
+  lazy val slickProject = Project(id = "slick", base = file("slick-src"),
     settings = Project.defaultSettings ++ inConfig(config("macro"))(Defaults.configSettings) ++ sharedSettings ++ fmppSettings ++ site.settings ++ site.sphinxSupport() ++ extTarget("slick", None) ++ Seq(
       name := "Slick",
       description := "Scala Language-Integrated Connection Kit",
@@ -144,6 +144,8 @@ object SlickBuild extends Build {
       (test in Test) <<= (test in Test) dependsOn (compile in config("test-config")),
       unmanagedClasspath in Test <++= fullClasspath in config("test-config"),
       sourceGenerators in Test <+= (sourceManaged in Test, sourceDirectory in config("test-config"), fullClasspath in config("test-config"), runner in config("test-config"), streams) map { (dir, srcDir, cp, r, s) =>
+        println("************************")
+        println(dir)
         val cgDir = dir / "generated-classes"
         IO.delete(cgDir ** "*.scala" get)
         toError(r.run("scala.slick.typeproviders.test.GeneratedClasses", cp.files, Array(cgDir.getPath), s.log))
