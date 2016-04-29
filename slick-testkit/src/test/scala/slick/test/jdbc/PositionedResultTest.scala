@@ -7,7 +7,8 @@ import org.junit.Assert._
 
 class PositionedResultTest {
 
-  @Test def testMaxRows {
+  @Test
+  def testMaxRows {
     assertEquals(5, createFakePR(5, 0).length)
     assertEquals(1, createFakePR(5, 1).length)
     assertEquals(4, createFakePR(5, 4).length)
@@ -23,12 +24,11 @@ class PositionedResultTest {
         count <= len
       }
       override def getInt(columnIndex: Int): Int = columnIndex
-      override def wasNull(): Boolean = false
+      override def wasNull(): Boolean            = false
     }
     val pr = new PositionedResult(fakeRS) { def close() {} }
     new PositionedResultIterator[Int](pr, limit, true) {
       def extractValue(pr: PositionedResult) = pr.nextInt()
     }
   }
-
 }

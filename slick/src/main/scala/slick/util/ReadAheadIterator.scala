@@ -6,7 +6,7 @@ package slick.util
  */
 trait ReadAheadIterator[+T] extends BufferedIterator[T] {
 
-  private[this] var state = 0 // 0: no data, 1: cached, 2: finished
+  private[this] var state     = 0 // 0: no data, 1: cached, 2: finished
   private[this] var cached: T = null.asInstanceOf[T]
 
   protected[this] final def finished(): T = {
@@ -19,20 +19,20 @@ trait ReadAheadIterator[+T] extends BufferedIterator[T] {
 
   def head: T = {
     update()
-    if(state == 1) cached
+    if (state == 1) cached
     else throw new NoSuchElementException("head on empty iterator")
   }
 
   def headOption: Option[T] = {
     update()
-    if(state == 1) Some(cached)
+    if (state == 1) Some(cached)
     else None
   }
 
   private[this] def update() {
-    if(state == 0) {
+    if (state == 0) {
       cached = fetchNext()
-      if(state == 0) state = 1
+      if (state == 0) state = 1
     }
   }
 
@@ -43,7 +43,7 @@ trait ReadAheadIterator[+T] extends BufferedIterator[T] {
 
   def next(): T = {
     update()
-    if(state == 1) {
+    if (state == 1) {
       state = 0
       cached
     } else throw new NoSuchElementException("next on empty iterator");

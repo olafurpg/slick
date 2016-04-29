@@ -4,10 +4,13 @@ import scala.language.experimental.macros
 import scala.language.implicitConversions
 
 object MacroSupport {
-  implicit def macroSupportInterpolation(s: StringContext): MacroSupportInterpolation = new MacroSupportInterpolation(s)
+  implicit def macroSupportInterpolation(
+      s: StringContext): MacroSupportInterpolation =
+    new MacroSupportInterpolation(s)
 }
 
 class MacroSupportInterpolation(context: StringContext) {
+
   /**
    * String interpolation using the "b" prefix to build SQL statements. In
    * general, the generated string is passed to "sqlBuilder.+=". When preceded

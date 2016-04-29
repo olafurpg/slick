@@ -13,21 +13,33 @@ import slick.jdbc.JdbcProfile
 import slick.basic.{DatabaseConfig, StaticDatabaseConfig}
 
 /** A simple example that uses plain SQL queries against an in-memory
-  * H2 database. The example data comes from Oracle's JDBC tutorial at
-  * http://docs.oracle.com/javase/tutorial/jdbc/basics/tables.html. */
+ * H2 database. The example data comes from Oracle's JDBC tutorial at
+ * http://docs.oracle.com/javase/tutorial/jdbc/basics/tables.html. */
 object PlainSQL extends App {
   var out = new ArrayBuffer[String]()
   def println(s: String): Unit = out += s
 
   //#getresult
   // Case classes for our data
-  case class Supplier(id: Int, name: String, street: String, city: String, state: String, zip: String)
-  case class Coffee(name: String, supID: Int, price: Double, sales: Int, total: Int)
+  case class Supplier(id: Int,
+                      name: String,
+                      street: String,
+                      city: String,
+                      state: String,
+                      zip: String)
+  case class Coffee(
+      name: String, supID: Int, price: Double, sales: Int, total: Int)
 
   // Result set getters
-  implicit val getSupplierResult = GetResult(r => Supplier(r.nextInt, r.nextString, r.nextString,
-    r.nextString, r.nextString, r.nextString))
-  implicit val getCoffeeResult = GetResult(r => Coffee(r.<<, r.<<, r.<<, r.<<, r.<<))
+  implicit val getSupplierResult = GetResult(r =>
+        Supplier(r.nextInt,
+                 r.nextString,
+                 r.nextString,
+                 r.nextString,
+                 r.nextString,
+                 r.nextString))
+  implicit val getCoffeeResult = GetResult(
+      r => Coffee(r.<<, r.<<, r.<<, r.<<, r.<<))
   //#getresult
 
   val db = Database.forConfig("h2mem1")
@@ -35,21 +47,21 @@ object PlainSQL extends App {
     val f: Future[_] = {
 
       val a: DBIO[Unit] = DBIO.seq(
-        createSuppliers,
-        createCoffees,
-        insertSuppliers,
-        insertCoffees,
-        printAll,
-        printParameterized,
-        coffeeByName("Colombian").map { s =>
-          println(s"Coffee Colombian: $s")
-        },
-        deleteCoffee("Colombian").map { rows =>
-          println(s"Deleted $rows rows")
-        },
-        coffeeByName("Colombian").map { s =>
-          println(s"Coffee Colombian: $s")
-        }
+          createSuppliers,
+          createCoffees,
+          insertSuppliers,
+          insertCoffees,
+          printAll,
+          printParameterized,
+          coffeeByName("Colombian").map { s =>
+            println(s"Coffee Colombian: $s")
+          },
+          deleteCoffee("Colombian").map { rows =>
+            println(s"Deleted $rows rows")
+          },
+          coffeeByName("Colombian").map { s =>
+            println(s"Coffee Colombian: $s")
+          }
       )
       db.run(a)
     }
@@ -59,8 +71,7 @@ object PlainSQL extends App {
   out.foreach(Console.out.println)
 
   //#sqlu
-  def createCoffees: DBIO[Int] =
-    sqlu"""create table coffees(
+  def createCoffees: DBIO[Int] = sqlu"""create table coffees(
       name varchar not null,
       sup_id int not null,
       price double not null,
@@ -68,8 +79,7 @@ object PlainSQL extends App {
       total int not null,
       foreign key(sup_id) references suppliers(id))"""
 
-  def createSuppliers: DBIO[Int] =
-    sqlu"""create table suppliers(
+  def createSuppliers: DBIO[Int] = sqlu"""create table suppliers(
       id int not null primary key,
       name varchar not null,
       street varchar not null,
@@ -77,12 +87,13 @@ object PlainSQL extends App {
       state varchar not null,
       zip varchar not null)"""
 
-  def insertSuppliers: DBIO[Unit] = DBIO.seq(
-    // Insert some suppliers
-    sqlu"insert into suppliers values(101, 'Acme, Inc.', '99 Market Street', 'Groundsville', 'CA', '95199')",
-    sqlu"insert into suppliers values(49, 'Superior Coffee', '1 Party Place', 'Mendocino', 'CA', '95460')",
-    sqlu"insert into suppliers values(150, 'The High Ground', '100 Coffee Lane', 'Meadows', 'CA', '93966')"
-  )
+  def insertSuppliers: DBIO[Unit] =
+    DBIO.seq(
+        // Insert some suppliers
+        sqlu"insert into suppliers values(101, 'Acme, Inc.', '99 Market Street', 'Groundsville', 'CA', '95199')",
+        sqlu"insert into suppliers values(49, 'Superior Coffee', '1 Party Place', 'Mendocino', 'CA', '95460')",
+        sqlu"insert into suppliers values(150, 'The High Ground', '100 Coffee Lane', 'Meadows', 'CA', '93966')"
+    )
   //#sqlu
 
   def insertCoffees: DBIO[Unit] = {
@@ -95,11 +106,11 @@ object PlainSQL extends App {
     // "insert into coffees values (?, ?, ?, ?, ?)"
     //#sequence
     val inserts: Seq[DBIO[Int]] = Seq(
-      Coffee("Colombian", 101, 7.99, 0, 0),
-      Coffee("French_Roast", 49, 8.99, 0, 0),
-      Coffee("Espresso", 150, 9.99, 0, 0),
-      Coffee("Colombian_Decaf", 101, 8.99, 0, 0),
-      Coffee("French_Roast_Decaf", 49, 9.99, 0, 0)
+        Coffee("Colombian", 101, 7.99, 0, 0),
+        Coffee("French_Roast", 49, 8.99, 0, 0),
+        Coffee("Espresso", 150, 9.99, 0, 0),
+        Coffee("Colombian_Decaf", 101, 8.99, 0, 0),
+        Coffee("French_Roast_Decaf", 49, 9.99, 0, 0)
     ).map(insert)
 
     val combined: DBIO[Seq[Int]] = DBIO.sequence(inserts)
@@ -111,8 +122,8 @@ object PlainSQL extends App {
     // Iterate through all coffees and output them
     sql"select * from coffees".as[Coffee].map { cs =>
       println("Coffees:")
-      for(c <- cs)
-        println("* " + c.name + "\t" + c.supID + "\t" + c.price + "\t" + c.sales + "\t" + c.total)
+      for (c <- cs) println("* " + c.name + "\t" + c.supID + "\t" + c.price +
+          "\t" + c.sales + "\t" + c.total)
     }
 
   def namesByPrice(price: Double): DBIO[Seq[(String, String)]] = {
@@ -131,8 +142,7 @@ object PlainSQL extends App {
     // all coffees costing less than $9.00
     namesByPrice(9.0).flatMap { l2 =>
       println("Parameterized StaticQuery:")
-      for (t <- l2)
-        println("* " + t._1 + " supplied by " + t._2)
+      for (t <- l2) println("* " + t._1 + " supplied by " + t._2)
       supplierById(49).map(s => println(s"Supplier #49: $s"))
     }
   }
@@ -179,4 +189,4 @@ object TypedSQL extends App {
   } finally db.close
 }
 
-*/
+ */

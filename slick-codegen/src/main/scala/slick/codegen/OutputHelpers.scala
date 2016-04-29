@@ -5,7 +5,7 @@ import java.io.FileWriter
 import slick.SlickException
 
 /** Output-related code-generation utilities. */
-trait OutputHelpers{
+trait OutputHelpers {
   def code: String
 
   /** The parent type of the generated main trait. This can be overridden in subclasses. */
@@ -20,10 +20,11 @@ trait OutputHelpers{
    *  Ensures the file ends with a newline character.
    *  @group Output
    */
-  def writeStringToFile(content: String, folder:String, pkg: String, fileName: String) {
-    val folder2 : String = folder + "/" + (pkg.replace(".", "/")) + "/"
+  def writeStringToFile(
+      content: String, folder: String, pkg: String, fileName: String) {
+    val folder2: String = folder + "/" + (pkg.replace(".", "/")) + "/"
     new File(folder2).mkdirs()
-    val file = new File( folder2+fileName )
+    val file = new File(folder2 + fileName)
     if (!file.exists()) {
       file.createNewFile();
     }
@@ -45,8 +46,15 @@ trait OutputHelpers{
    * @param container The name of a trait and an object the generated code will be placed in within the specified package.
    * @param fileName Name of the output file, to which the code will be written
    */
-  def writeToFile(profile: String, folder:String, pkg: String, container:String="Tables", fileName: String="Tables.scala") {
-    writeStringToFile(packageCode(profile, pkg, container, parentType), folder, pkg, fileName)
+  def writeToFile(profile: String,
+                  folder: String,
+                  pkg: String,
+                  container: String = "Tables",
+                  fileName: String = "Tables.scala") {
+    writeStringToFile(packageCode(profile, pkg, container, parentType),
+                      folder,
+                      pkg,
+                      fileName)
   }
 
   /**
@@ -56,8 +64,11 @@ trait OutputHelpers{
    * @param pkg Scala package the generated code is placed in
    * @param container The name of a trait and an object the generated code will be placed in within the specified package.
    */
-  def packageCode(profile: String, pkg: String, container: String, parentType: Option[String]) : String = {
-      s"""
+  def packageCode(profile: String,
+                  pkg: String,
+                  container: String,
+                  parentType: Option[String]): String = {
+    s"""
 package ${pkg}
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
@@ -72,5 +83,5 @@ trait ${container}${parentType.map(t => s" extends $t").getOrElse("")} {
   ${indent(code)}
 }
       """.trim()
-    }
+  }
 }

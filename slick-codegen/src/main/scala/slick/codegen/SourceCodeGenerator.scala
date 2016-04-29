@@ -31,55 +31,80 @@ import slick.util.ConfigExtensionMethods.configExtensionMethods
  * @param model Slick data model for which code should be generated.
  */
 class SourceCodeGenerator(model: m.Model)
-                   extends AbstractSourceCodeGenerator(model) with OutputHelpers{
+    extends AbstractSourceCodeGenerator(model) with OutputHelpers {
   // "Tying the knot": making virtual classes concrete
   type Table = TableDef
   def Table = new TableDef(_)
-  class TableDef(model: m.Table) extends super.TableDef(model){
+  class TableDef(model: m.Table) extends super.TableDef(model) {
     // Using defs instead of (caching) lazy vals here to provide consitent interface to the user.
     // Performance should really not be critical in the code generator. Models shouldn't be huge.
     // Also lazy vals don't inherit docs from defs
-    type EntityType     =     EntityTypeDef
-    def  EntityType     = new EntityType{}
-    type PlainSqlMapper =     PlainSqlMapperDef
-    def  PlainSqlMapper = new PlainSqlMapper{}
-    type TableClass     =     TableClassDef
-    def  TableClass     = new TableClass{}
-    type TableValue     =     TableValueDef
-    def  TableValue     = new TableValue{}
-    type Column         =     ColumnDef
-    def  Column         = new Column(_)
-    type PrimaryKey     =     PrimaryKeyDef
-    def  PrimaryKey     = new PrimaryKey(_)
-    type ForeignKey     =     ForeignKeyDef  
-    def  ForeignKey     = new ForeignKey(_)
-    type Index          =     IndexDef  
-    def  Index          = new Index(_)
+    type EntityType = EntityTypeDef
+    def EntityType = new EntityType {}
+    type PlainSqlMapper = PlainSqlMapperDef
+    def PlainSqlMapper = new PlainSqlMapper {}
+    type TableClass = TableClassDef
+    def TableClass = new TableClass {}
+    type TableValue = TableValueDef
+    def TableValue = new TableValue {}
+    type Column = ColumnDef
+    def Column = new Column(_)
+    type PrimaryKey = PrimaryKeyDef
+    def PrimaryKey = new PrimaryKey(_)
+    type ForeignKey = ForeignKeyDef
+    def ForeignKey = new ForeignKey(_)
+    type Index = IndexDef
+    def Index = new Index(_)
   }
 }
 
 /** A runnable class to execute the code generator without further setup */
 object SourceCodeGenerator {
 
-  def run(profile: String, jdbcDriver: String, url: String, outputDir: String, pkg: String, user: Option[String], password: Option[String], ignoreInvalidDefaults: Boolean): Unit = {
-    val profileInstance: JdbcProfile =
-      Class.forName(profile + "$").getField("MODULE$").get(null).asInstanceOf[JdbcProfile]
+  def run(profile: String,
+          jdbcDriver: String,
+          url: String,
+          outputDir: String,
+          pkg: String,
+          user: Option[String],
+          password: Option[String],
+          ignoreInvalidDefaults: Boolean): Unit = {
+    val profileInstance: JdbcProfile = Class
+      .forName(profile + "$")
+      .getField("MODULE$")
+      .get(null)
+      .asInstanceOf[JdbcProfile]
     val dbFactory = profileInstance.api.Database
-    val db = dbFactory.forURL(url, driver = jdbcDriver,
-      user = user.getOrElse(null), password = password.getOrElse(null), keepAliveConnection = true)
+    val db = dbFactory.forURL(url,
+                              driver = jdbcDriver,
+                              user = user.getOrElse(null),
+                              password = password.getOrElse(null),
+                              keepAliveConnection = true)
     try {
-      val m = Await.result(db.run(profileInstance.createModel(None, ignoreInvalidDefaults)(ExecutionContext.global).withPinnedSession), Duration.Inf)
-      new SourceCodeGenerator(m).writeToFile(profile,outputDir,pkg)
+      val m = Await.result(db.run(profileInstance
+                                 .createModel(None, ignoreInvalidDefaults)(
+                                     ExecutionContext.global)
+                                 .withPinnedSession),
+                           Duration.Inf)
+      new SourceCodeGenerator(m).writeToFile(profile, outputDir, pkg)
     } finally db.close
   }
 
-  def run(uri: URI, outputDir: Option[String], ignoreInvalidDefaults: Boolean = true): Unit = {
-    val dc = DatabaseConfig.forURI[JdbcProfile](uri)
+  def run(uri: URI,
+          outputDir: Option[String],
+          ignoreInvalidDefaults: Boolean = true): Unit = {
+    val dc  = DatabaseConfig.forURI[JdbcProfile](uri)
     val pkg = dc.config.getString("codegen.package")
-    val out = outputDir.getOrElse(dc.config.getStringOr("codegen.outputDir", "."))
-    val profile = if(dc.profileIsObject) dc.profileName else "new " + dc.profileName
+    val out =
+      outputDir.getOrElse(dc.config.getStringOr("codegen.outputDir", "."))
+    val profile =
+      if (dc.profileIsObject) dc.profileName else "new " + dc.profileName
     try {
-      val m = Await.result(dc.db.run(dc.profile.createModel(None, ignoreInvalidDefaults)(ExecutionContext.global).withPinnedSession), Duration.Inf)
+      val m = Await.result(dc.db.run(dc.profile
+                                 .createModel(None, ignoreInvalidDefaults)(
+                                     ExecutionContext.global)
+                                 .withPinnedSession),
+                           Duration.Inf)
       new SourceCodeGenerator(m).writeToFile(profile, out, pkg)
     } finally dc.db.close
   }
@@ -93,33 +118,47 @@ object SourceCodeGenerator {
       case profile :: jdbcDriver :: url :: outputDir :: pkg :: Nil =>
         run(profile, jdbcDriver, url, outputDir, pkg, None, None, true)
       case profile :: jdbcDriver :: url :: outputDir :: pkg :: user :: password :: Nil =>
-        run(profile, jdbcDriver, url, outputDir, pkg, Some(user), Some(password), true)
-      case  profile:: jdbcDriver :: url :: outputDir :: pkg :: user :: password :: ignoreInvalidDefaults :: Nil =>
-        run(profile, jdbcDriver, url, outputDir, pkg, Some(user), Some(password), ignoreInvalidDefaults.toBoolean)
+        run(profile,
+            jdbcDriver,
+            url,
+            outputDir,
+            pkg,
+            Some(user),
+            Some(password),
+            true)
+      case profile :: jdbcDriver :: url :: outputDir :: pkg :: user :: password :: ignoreInvalidDefaults :: Nil =>
+        run(profile,
+            jdbcDriver,
+            url,
+            outputDir,
+            pkg,
+            Some(user),
+            Some(password),
+            ignoreInvalidDefaults.toBoolean)
       case _ => {
-        println("""
-            |Usage:
-            |  SourceCodeGenerator configURI [outputDir]
-            |  SourceCodeGenerator profile jdbcDriver url outputDir pkg [user password]
-            |
-            |Options:
-            |  configURI: A URL pointing to a standard database config file (a fragment is
-            |    resolved as a path in the config), or just a fragment used as a path in
-            |    application.conf on the class path
-            |  profile: Fully qualified name of Slick profile class, e.g. "slick.jdbc.H2Profile"
-            |  jdbcDriver: Fully qualified name of jdbc driver class, e.g. "org.h2.Driver"
-            |  url: JDBC URL, e.g. "jdbc:postgresql://localhost/test"
-            |  outputDir: Place where the package folder structure should be put
-            |  pkg: Scala package the generated code should be places in
-            |  user: database connection user name
-            |  password: database connection password
-            |
-            |When using a config file, in addition to the standard config parameters from
-            |slick.basic.DatabaseConfig you can set "codegen.package" and
-            |"codegen.outputDir". The latter can be overridden on the command line.
+          println("""
+                    |Usage:
+                    |  SourceCodeGenerator configURI [outputDir]
+                    |  SourceCodeGenerator profile jdbcDriver url outputDir pkg [user password]
+                    |
+                    |Options:
+                    |  configURI: A URL pointing to a standard database config file (a fragment is
+                    |    resolved as a path in the config), or just a fragment used as a path in
+                    |    application.conf on the class path
+                    |  profile: Fully qualified name of Slick profile class, e.g. "slick.jdbc.H2Profile"
+                    |  jdbcDriver: Fully qualified name of jdbc driver class, e.g. "org.h2.Driver"
+                    |  url: JDBC URL, e.g. "jdbc:postgresql://localhost/test"
+                    |  outputDir: Place where the package folder structure should be put
+                    |  pkg: Scala package the generated code should be places in
+                    |  user: database connection user name
+                    |  password: database connection password
+                    |
+                    |When using a config file, in addition to the standard config parameters from
+                    |slick.basic.DatabaseConfig you can set "codegen.package" and
+                    |"codegen.outputDir". The latter can be overridden on the command line.
           """.stripMargin.trim)
-        System.exit(1)
-      }
+          System.exit(1)
+        }
     }
   }
 }

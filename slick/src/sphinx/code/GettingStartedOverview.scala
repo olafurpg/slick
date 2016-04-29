@@ -15,55 +15,56 @@ import slick.jdbc.H2Profile.api._
  */
 object GettingStartedOverview extends App {
 //#quick-imports
-import slick.jdbc.H2Profile.api._
+  import slick.jdbc.H2Profile.api._
 //#quick-imports
 
 //#quick-schema
   class Coffees(tag: Tag) extends Table[(String, Double)](tag, "COFFEES") {
-    def name = column[String]("COF_NAME", O.PrimaryKey)
+    def name  = column[String]("COF_NAME", O.PrimaryKey)
     def price = column[Double]("PRICE")
-    def * = (name, price)
+    def *     = (name, price)
   }
   val coffees = TableQuery[Coffees]
 //#quick-schema
 
-  val f1 =
+  val f1 = //#quick-query
+  Database
+    .forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver")
+    .run(
 //#quick-query
-  Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver").run(
+        coffees.schema.create andThen //#quick-query
+        (for (c <- coffees; if c.price < 10.0) yield c.name).result
 //#quick-query
-    coffees.schema.create andThen
-//#quick-query
-    ( for( c <- coffees; if c.price < 10.0 ) yield c.name ).result
-//#quick-query
-    andThen
-//#quick-query
-    // or
-    coffees.filter(_.price < 10.0).map(_.name).result
-  )
+        andThen //#quick-query
+        // or
+        coffees.filter(_.price < 10.0).map(_.name).result
+    )
 //#quick-query
   Await.result(f1, Duration.Inf)
 
-  val f2 = Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver").run(
-    coffees.schema.create andThen {
-      //#what-is-slick-micro-example
-      val limit = 10.0
+  val f2 = Database
+    .forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver")
+    .run(
+        coffees.schema.create andThen {
+          //#what-is-slick-micro-example
+          val limit = 10.0
 
-      // Your query could look like this:
-      ( for( c <- coffees; if c.price < limit ) yield c.name ).result
+          // Your query could look like this:
+          (for (c <- coffees; if c.price < limit) yield c.name).result
 
-      // Equivalent SQL: select COF_NAME from COFFEES where PRICE < 10.0
-      //#what-is-slick-micro-example
-    } andThen {
-      //#what-is-slick-micro-example-plainsql
-      val limit = 10.0
+          // Equivalent SQL: select COF_NAME from COFFEES where PRICE < 10.0
+          //#what-is-slick-micro-example
+        } andThen {
+          //#what-is-slick-micro-example-plainsql
+          val limit = 10.0
 
-      sql"select COF_NAME from COFFEES where PRICE < $limit".as[String]
+          sql"select COF_NAME from COFFEES where PRICE < $limit".as[String]
 
-      // Automatically using a bind variable to be safe from SQL injection:
-      // select COF_NAME from COFFEES where PRICE < ?
-      //#what-is-slick-micro-example-plainsql
-    }
-  )
+          // Automatically using a bind variable to be safe from SQL injection:
+          // select COF_NAME from COFFEES where PRICE < ?
+          //#what-is-slick-micro-example-plainsql
+        }
+    )
   Await.result(f2, Duration.Inf)
 
   //#features-scala-collections
@@ -83,10 +84,9 @@ import slick.jdbc.H2Profile.api._
       // The result of "select PRICE from COFFEES" is a Seq of Double
       // because of the type safe column definitions
       val coffeeNames: Future[Seq[Double]] = db.run(
-        //#features-type-safe
-        coffees.schema.create andThen
-        //#features-type-safe
-        coffees.map(_.price).result
+          //#features-type-safe
+          coffees.schema.create andThen //#features-type-safe
+          coffees.map(_.price).result
       )
 
       // Query builders are type safe:
