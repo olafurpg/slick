@@ -161,7 +161,7 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     // putting `Tables` before `A` caused a StackOverflowException
     object Tables {
       val as = TableQuery[A]
-      implicit val idMapper = MappedColumnType.base[Id, Int](_.toInt, Id)
+      implicit val idMapper: tdb.profile.BaseColumnType[Id] = MappedColumnType.base[Id, Int](_.toInt, Id)
     }
     class A(tag: Tag) extends Table[Customer](tag, "INIT_A") {
       def id = column[Id]("ID", O.PrimaryKey, O.AutoInc)(Tables.idMapper)
@@ -171,7 +171,7 @@ class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
     Tables.as.schema
 
     case class Id2(toInt: Int)
-    implicit val id2Mapper = null.asInstanceOf[BaseColumnType[Id2]]
+    implicit val id2Mapper: tdb.profile.api.BaseColumnType[Id2] = null.asInstanceOf[BaseColumnType[Id2]]
     class B(tag: Tag) extends Table[Id2](tag, "INIT_A") {
       def id = column[Id2]("ID", O.PrimaryKey, O.AutoInc)
       def * = id

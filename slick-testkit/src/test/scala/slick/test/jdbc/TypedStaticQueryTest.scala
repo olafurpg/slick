@@ -61,10 +61,10 @@ class TypedStaticQueryTest {
       case class Foo(intVal: Int)
       case class Bar(strVal: String)
 
-      implicit val SetFoo = SetParameter[Foo] { (i, pp) =>
+      implicit val SetFoo: SetParameter[Foo] = SetParameter[Foo] { (i, pp) =>
         SetParameter.SetInt(i.intVal, pp)
       }
-      implicit val SetBar = SetParameter[Bar] { (s, pp) =>
+      implicit val SetBar: SetParameter[Bar] = SetParameter[Bar] { (s, pp) =>
         SetParameter.SetString(s.strVal, pp)
       }
 
@@ -104,7 +104,7 @@ class TypedStaticQueryTest {
     import dc.profile.api._
     try {
       case class Supplier(id: Int, name: String)
-      implicit val supplierGetter = (arg: (Int, String)) => Supplier(arg._1, arg._2)
+      implicit val supplierGetter: (Int, String) => Supplier = (arg: (Int, String)) => Supplier(arg._1, arg._2)
 
       def supplierForID(id: Int) =
         tsql"select SUP_ID, SUP_NAME from SUPPLIERS where SUP_ID = $id"
@@ -143,7 +143,7 @@ class TypedStaticQueryTest {
     import dc.profile.api._
     try {
       case class Supplier(id: Int, name: String)
-      implicit val supplierGetter = (arg: (Int, String)) => Supplier(arg._1, arg._2)
+      implicit val supplierGetter: (Int, String) => Supplier = (arg: (Int, String)) => Supplier(arg._1, arg._2)
 
       val testUnitDML = (x: Vector[Int]) => assertEquals(1, x.head)
 

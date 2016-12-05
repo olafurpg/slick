@@ -211,7 +211,7 @@ abstract class TestkitTest[TDB >: Null <: TestDB](implicit TdbClass: ClassTag[TD
 abstract class AsyncTest[TDB >: Null <: TestDB](implicit TdbClass: ClassTag[TDB]) extends GenericTest[TDB] {
   final override val reuseInstance = true
 
-  protected implicit def asyncTestExecutionContext = ExecutionContext.global
+  protected implicit def asyncTestExecutionContext: scala.concurrent.ExecutionContextExecutor = ExecutionContext.global
 
   /** Test Action: Get the current database session */
   object GetSession extends SynchronousDatabaseAction[TDB#Profile#Backend#Session, NoStream, TDB#Profile#Backend, Effect] {

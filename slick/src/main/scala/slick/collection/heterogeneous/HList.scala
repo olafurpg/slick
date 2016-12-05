@@ -95,7 +95,7 @@ sealed abstract class HList extends Product {
   final def apply(n: Int): Any = macro HListMacros.applyImpl
 
   /** Evaluate a function for each element of this HList. */
-  final def foreach(f: Any => Unit) {
+  final def foreach(f: Any => Unit): Unit = {
     var h = this
     while(h.nonEmpty) {
       f(h.head)
@@ -131,8 +131,8 @@ final object HList {
     def buildValue(elems: IndexedSeq[Any]) = elems.foldRight(HNil: HList)(_ :: _)
     def copy(shapes: Seq[Shape[_ <: ShapeLevel, _, _, _]]) = new HListShape(shapes)
   }
-  implicit def hnilShape[Level <: ShapeLevel] = new HListShape[Level, HNil.type, HNil.type, HNil.type](Nil)
-  implicit def hconsShape[Level <: ShapeLevel, M1, M2 <: HList, U1, U2 <: HList, P1, P2 <: HList](implicit s1: Shape[_ <: Level, M1, U1, P1], s2: HListShape[_ <: Level, M2, U2, P2]) =
+  implicit def hnilShape[Level <: ShapeLevel]: HList.HListShape[Level, HNil.type, HNil.type, HNil.type] = new HListShape[Level, HNil.type, HNil.type, HNil.type](Nil)
+  implicit def hconsShape[Level <: ShapeLevel, M1, M2 <: HList, U1, U2 <: HList, P1, P2 <: HList](implicit s1: Shape[_ <: Level, M1, U1, P1], s2: HListShape[_ <: Level, M2, U2, P2]): HList.HListShape[Level, syntax.::[M1, M2], syntax.::[U1, U2], syntax.::[P1, P2]] =
     new HListShape[Level, M1 :: M2, U1 :: U2, P1 :: P2](s1 +: s2.shapes)
 }
 // Separate object for macro impl to avoid dependency of companion class on scala.reflect, see https://github.com/xeno-by/sbt-example-paradise210/issues/1#issuecomment-21021396
