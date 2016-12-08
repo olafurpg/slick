@@ -290,23 +290,23 @@ trait JdbcTypesComponent extends RelationalTypesComponent { self: JdbcProfile =>
   }
 
   trait ImplicitColumnTypes extends super.ImplicitColumnTypes {
-    implicit def booleanColumnType = columnTypes.booleanJdbcType
-    implicit def blobColumnType = columnTypes.blobJdbcType
-    implicit def byteColumnType = columnTypes.byteJdbcType
-    implicit def byteArrayColumnType = columnTypes.byteArrayJdbcType
-    implicit def charColumnType = columnTypes.charJdbcType
-    implicit def clobColumnType = columnTypes.clobJdbcType
-    implicit def dateColumnType = columnTypes.dateJdbcType
-    implicit def doubleColumnType = columnTypes.doubleJdbcType
-    implicit def floatColumnType = columnTypes.floatJdbcType
-    implicit def intColumnType = columnTypes.intJdbcType
-    implicit def longColumnType = columnTypes.longJdbcType
-    implicit def shortColumnType = columnTypes.shortJdbcType
-    implicit def stringColumnType = columnTypes.stringJdbcType
-    implicit def timeColumnType = columnTypes.timeJdbcType
-    implicit def timestampColumnType = columnTypes.timestampJdbcType
-    implicit def uuidColumnType = columnTypes.uuidJdbcType
-    implicit def bigDecimalColumnType = columnTypes.bigDecimalJdbcType
+    implicit def booleanColumnType: JdbcTypesComponent.this.columnTypes.BooleanJdbcType = columnTypes.booleanJdbcType
+    implicit def blobColumnType: JdbcTypesComponent.this.columnTypes.BlobJdbcType = columnTypes.blobJdbcType
+    implicit def byteColumnType: JdbcTypesComponent.this.columnTypes.ByteJdbcType = columnTypes.byteJdbcType
+    implicit def byteArrayColumnType: JdbcTypesComponent.this.columnTypes.ByteArrayJdbcType = columnTypes.byteArrayJdbcType
+    implicit def charColumnType: JdbcTypesComponent.this.columnTypes.CharJdbcType = columnTypes.charJdbcType
+    implicit def clobColumnType: JdbcTypesComponent.this.columnTypes.ClobJdbcType = columnTypes.clobJdbcType
+    implicit def dateColumnType: JdbcTypesComponent.this.columnTypes.DateJdbcType = columnTypes.dateJdbcType
+    implicit def doubleColumnType: JdbcTypesComponent.this.columnTypes.DoubleJdbcType = columnTypes.doubleJdbcType
+    implicit def floatColumnType: JdbcTypesComponent.this.columnTypes.FloatJdbcType = columnTypes.floatJdbcType
+    implicit def intColumnType: JdbcTypesComponent.this.columnTypes.IntJdbcType = columnTypes.intJdbcType
+    implicit def longColumnType: JdbcTypesComponent.this.columnTypes.LongJdbcType = columnTypes.longJdbcType
+    implicit def shortColumnType: JdbcTypesComponent.this.columnTypes.ShortJdbcType = columnTypes.shortJdbcType
+    implicit def stringColumnType: JdbcTypesComponent.this.columnTypes.StringJdbcType = columnTypes.stringJdbcType
+    implicit def timeColumnType: JdbcTypesComponent.this.columnTypes.TimeJdbcType = columnTypes.timeJdbcType
+    implicit def timestampColumnType: JdbcTypesComponent.this.columnTypes.TimestampJdbcType = columnTypes.timestampJdbcType
+    implicit def uuidColumnType: JdbcTypesComponent.this.columnTypes.UUIDJdbcType = columnTypes.uuidJdbcType
+    implicit def bigDecimalColumnType: JdbcTypesComponent.this.columnTypes.BigDecimalJdbcType = columnTypes.bigDecimalJdbcType
   }
 }
 

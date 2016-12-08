@@ -167,7 +167,7 @@ trait OracleProfile extends JdbcProfile {
       cb.dropTriggerAndSequence(table)
     }
 
-    override protected def addForeignKey(fk: ForeignKey, sb: StringBuilder) {
+    override protected def addForeignKey(fk: ForeignKey, sb: StringBuilder): Unit = {
       sb append "constraint " append quoteIdentifier(fk.name) append " foreign key("
       addForeignKeyColumnList(fk.linearizedSourceColumns, sb, table.tableName)
       sb append ") references " append quoteIdentifier(fk.targetTable.tableName) append "("
@@ -200,7 +200,7 @@ trait OracleProfile extends JdbcProfile {
     var sequenceName: String = _
     var triggerName: String = _
 
-    override def appendColumn(sb: StringBuilder) {
+    override def appendColumn(sb: StringBuilder): Unit = {
       val qname = quoteIdentifier(column.name)
       sb append qname append ' '
       appendType(sb)
@@ -210,7 +210,7 @@ trait OracleProfile extends JdbcProfile {
       }
     }
 
-    override protected def appendOptions(sb: StringBuilder) {
+    override protected def appendOptions(sb: StringBuilder): Unit = {
       if(defaultLiteral ne null) sb append " DEFAULT " append defaultLiteral
       if(notNull) sb append " NOT NULL"
       if(primaryKey) sb append " PRIMARY KEY"

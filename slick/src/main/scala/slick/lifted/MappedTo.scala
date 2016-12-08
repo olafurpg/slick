@@ -23,7 +23,7 @@ object MappedToBase {
     // check fails, overriding our error (or backtracking in implicit search).
     if(!(e.tpe <:< c.typeOf[MappedToBase]))
       c.abort(c.enclosingPosition, "Work-around for SI-8351 leading to illegal macro-invocation -- You should not see this message")
-    implicit val eutag = c.TypeTag[E#Underlying](e.tpe.member(TypeName("Underlying")).typeSignatureIn(e.tpe))
+    implicit val eutag: c.TypeTag[E#Underlying] = c.TypeTag[E#Underlying](e.tpe.member(TypeName("Underlying")).typeSignatureIn(e.tpe))
     val cons = c.Expr[E#Underlying => E](Function(
       List(ValDef(Modifiers(Flag.PARAM), TermName("v"), /*Ident(eu.tpe.typeSymbol)*/TypeTree(), EmptyTree)),
       Apply(

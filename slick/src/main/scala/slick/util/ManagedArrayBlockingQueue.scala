@@ -155,7 +155,7 @@ class ManagedArrayBlockingQueue[E >: Null <: PrioritizedRunnable](maximumInUse: 
     }
   }
 
-  override def clear() {
+  override def clear(): Unit = {
     locked {
       itemQueue.clear()
       highPrioItemQueue.clear()

@@ -25,16 +25,16 @@ trait MemoryQueryingProfile extends BasicProfile { self: MemoryQueryingProfile =
   val api: API
 
   trait ImplicitColumnTypes {
-    implicit def booleanColumnType = ScalaBaseType.booleanType
-    implicit def bigDecimalColumnType = ScalaBaseType.bigDecimalType
-    implicit def byteColumnType = ScalaBaseType.byteType
-    implicit def charColumnType = ScalaBaseType.charType
-    implicit def doubleColumnType = ScalaBaseType.doubleType
-    implicit def floatColumnType = ScalaBaseType.floatType
-    implicit def intColumnType = ScalaBaseType.intType
-    implicit def longColumnType = ScalaBaseType.longType
-    implicit def shortColumnType = ScalaBaseType.shortType
-    implicit def stringColumnType = ScalaBaseType.stringType
+    implicit def booleanColumnType: slick.ast.ScalaBaseType[Boolean] = ScalaBaseType.booleanType
+    implicit def bigDecimalColumnType: slick.ast.ScalaNumericType[BigDecimal] = ScalaBaseType.bigDecimalType
+    implicit def byteColumnType: slick.ast.ScalaNumericType[Byte] = ScalaBaseType.byteType
+    implicit def charColumnType: slick.ast.ScalaBaseType[Char] = ScalaBaseType.charType
+    implicit def doubleColumnType: slick.ast.ScalaNumericType[Double] = ScalaBaseType.doubleType
+    implicit def floatColumnType: slick.ast.ScalaNumericType[Float] = ScalaBaseType.floatType
+    implicit def intColumnType: slick.ast.ScalaNumericType[Int] = ScalaBaseType.intType
+    implicit def longColumnType: slick.ast.ScalaNumericType[Long] = ScalaBaseType.longType
+    implicit def shortColumnType: slick.ast.ScalaNumericType[Short] = ScalaBaseType.shortType
+    implicit def stringColumnType: slick.ast.ScalaBaseType[String] = ScalaBaseType.stringType
   }
 
   /* internal: */

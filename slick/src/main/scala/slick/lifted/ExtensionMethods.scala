@@ -12,17 +12,17 @@ trait ExtensionMethods[B1, P1] extends Any {
   protected[this] def c: Rep[P1]
   @inline protected[this] def n = c.toNode
   @inline protected[this] def tpe[T](r: Rep[T]): TypedType[T] = r.asInstanceOf[Rep.TypedRep[_]].tpe.asInstanceOf[TypedType[T]]
-  @inline protected[this] implicit def p1Type = tpe(c)
+  @inline protected[this] implicit def p1Type: slick.ast.TypedType[P1] = tpe(c)
   protected[this] implicit def b1Type: TypedType[B1]
   protected[this] type o = OptionMapperDSL.arg[B1, P1]
 }
 
 trait BaseExtensionMethods[B1] extends Any with ExtensionMethods[B1, B1] {
-  protected[this] implicit def b1Type = p1Type
+  protected[this] implicit def b1Type: slick.ast.TypedType[B1] = p1Type
 }
 
 trait OptionExtensionMethods[B1] extends Any with ExtensionMethods[B1, Option[B1]] {
-  protected[this] implicit def b1Type = p1Type.asInstanceOf[OptionType].elementType.asInstanceOf[TypedType[B1]]
+  protected[this] implicit def b1Type: slick.ast.TypedType[B1] = p1Type.asInstanceOf[OptionType].elementType.asInstanceOf[TypedType[B1]]
 }
 
 /** Extension methods for all columns */
@@ -97,7 +97,7 @@ final class OptionNumericColumnExtensionMethods[B1](val c: Rep[Option[B1]]) exte
 
 /** Extension methods for Rep[Boolean] and Rep[Option[Boolean]] */
 final class BooleanColumnExtensionMethods[P1](val c: Rep[P1]) extends AnyVal with ExtensionMethods[Boolean, P1] {
-  protected[this] implicit def b1Type = implicitly[TypedType[Boolean]]
+  protected[this] implicit def b1Type: slick.ast.TypedType[Boolean] = implicitly[TypedType[Boolean]]
 
   def &&[P2, R](b: Rep[P2])(implicit om: o#arg[Boolean, P2]#to[Boolean, R]) =
     om.column(Library.And, n, b.toNode)
@@ -108,7 +108,7 @@ final class BooleanColumnExtensionMethods[P1](val c: Rep[P1]) extends AnyVal wit
 
 /** Extension methods for Rep[String] and Rep[Option[String]] */
 final class StringColumnExtensionMethods[P1](val c: Rep[P1]) extends AnyVal with ExtensionMethods[String, P1] {
-  protected[this] implicit def b1Type = implicitly[TypedType[String]]
+  protected[this] implicit def b1Type: slick.ast.TypedType[String] = implicitly[TypedType[String]]
 
   def length[R](implicit om: o#to[Int, R]) =
     om.column(Library.Length, n)
