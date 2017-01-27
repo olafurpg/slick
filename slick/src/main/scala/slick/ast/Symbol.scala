@@ -1,10 +1,10 @@
 package slick.ast
 
-import Util._
-import slick.util.ConstArray
 import scala.collection.mutable.HashMap
 import scala.reflect.ClassTag
 import scala.util.DynamicVariable
+
+import slick.util.ConstArray
 
 /** A symbol which can be used in the AST. It can be either a TypeSymbol or a TermSymbol. */
 sealed trait Symbol {

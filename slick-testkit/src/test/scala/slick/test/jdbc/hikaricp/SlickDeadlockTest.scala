@@ -1,16 +1,21 @@
 package slick.test.jdbc.hikaricp
 
+import scala.concurrent.Await
+import scala.concurrent.Future
+import scala.concurrent.duration._
+
 import java.sql.Blob
 import java.util.concurrent.TimeUnit
+
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 import javax.sql.rowset.serial.SerialBlob
-
-import com.typesafe.slick.testkit.util.{AsyncTest, JdbcTestDB}
-import org.junit.{After, Before, Ignore, Test}
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import slick.jdbc.H2Profile.api._
-import slick.lifted.{ProvenShape, TableQuery}
-
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import slick.lifted.ProvenShape
+import slick.lifted.TableQuery
 
 class SlickDeadlockTest extends AsyncTest[JdbcTestDB] {
 

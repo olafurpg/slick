@@ -1,14 +1,19 @@
 package slick.relational
 
-import slick.ast._
-import slick.basic.{BasicActionComponent, BasicProfile}
-import slick.compiler.{EmulateOuterJoins, Phase, QueryCompiler}
-import slick.dbio._
-import slick.lifted.FunctionSymbolExtensionMethods._
-import slick.lifted._
+import scala.language.higherKinds
+import scala.language.implicitConversions
 
-import scala.language.{existentials, higherKinds, implicitConversions}
 import scala.reflect.ClassTag
+
+import slick.ast._
+import slick.basic.BasicActionComponent
+import slick.basic.BasicProfile
+import slick.compiler.EmulateOuterJoins
+import slick.compiler.Phase
+import slick.compiler.QueryCompiler
+import slick.dbio._
+import slick.lifted._
+import slick.lifted.FunctionSymbolExtensionMethods._
 
 /** A profile for relational databases that does not assume the existence
   * of SQL (or any other text-based language for executing statements).

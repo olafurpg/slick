@@ -1,16 +1,12 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{AsyncTest, JdbcTestDB}
-
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 import org.junit.Assert._
-
-import scala.concurrent.{ExecutionContext, Await}
-import scala.concurrent.duration.Duration
-
 import slick.ast.ColumnOption
-import slick.model._
-import slick.jdbc.{SQLiteProfile, meta}
+import slick.jdbc.SQLiteProfile
 import slick.jdbc.meta.MTable
+import slick.model._
 import slick.relational.RelationalProfile
 import slick.sql.SqlProfile
 

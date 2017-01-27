@@ -1,18 +1,19 @@
 package slick.jdbc
 
-import java.util.UUID
-import java.sql.{PreparedStatement, ResultSet}
-
 import scala.concurrent.ExecutionContext
 
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.util.UUID
+
 import slick.ast._
-import slick.ast.Util._
 import slick.basic.Capability
-import slick.compiler.{Phase, CompilerState}
+import slick.compiler.CompilerState
+import slick.compiler.Phase
 import slick.dbio._
-import slick.jdbc.meta.{MIndexInfo, MColumn, MTable}
-import slick.lifted._
-import slick.model.Model
+import slick.jdbc.meta.MColumn
+import slick.jdbc.meta.MIndexInfo
+import slick.jdbc.meta.MTable
 import slick.relational.RelationalProfile
 import slick.util.ConstArray
 import slick.util.MacroSupport.macroSupportInterpolation

@@ -1,24 +1,30 @@
 package slick.jdbc
 
 import scala.concurrent.ExecutionContext
-import scala.reflect.{ClassTag,classTag}
-import java.sql.{Timestamp, Date, Time, ResultSet}
+import scala.reflect.ClassTag
+import scala.reflect.classTag
+
+import java.sql.Date
+import java.sql.ResultSet
+import java.sql.Time
+import java.sql.Timestamp
 
 import com.typesafe.config.Config
-
 import slick.ast._
 import slick.ast.Util._
 import slick.basic.Capability
 import slick.compiler._
 import slick.dbio._
-import slick.jdbc.meta.{MColumn, MTable}
+import slick.jdbc.meta.MColumn
+import slick.jdbc.meta.MTable
 import slick.lifted._
-import slick.model.Model
 import slick.relational.RelationalProfile
 import slick.sql.SqlCapabilities
-import slick.util.{SlickLogger, ConstArray, GlobalConfig}
-import slick.util.MacroSupport.macroSupportInterpolation
+import slick.util.ConstArray
+import slick.util.GlobalConfig
+import slick.util.SlickLogger
 import slick.util.ConfigExtensionMethods._
+import slick.util.MacroSupport.macroSupportInterpolation
 
 /** Slick profile for Microsoft SQL Server.
   *

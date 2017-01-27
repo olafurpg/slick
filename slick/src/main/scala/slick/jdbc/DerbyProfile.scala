@@ -6,11 +6,11 @@ import slick.SlickException
 import slick.ast._
 import slick.ast.TypeUtil._
 import slick.basic.Capability
+import slick.compiler.CompilerState
+import slick.compiler.Phase
 import slick.dbio._
-import slick.compiler.{Phase, QueryCompiler, CompilerState}
 import slick.jdbc.meta.MTable
 import slick.lifted._
-import slick.model.Model
 import slick.relational.RelationalCapabilities
 import slick.sql.SqlCapabilities
 import slick.util.MacroSupport.macroSupportInterpolation

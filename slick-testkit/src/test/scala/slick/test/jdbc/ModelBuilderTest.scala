@@ -1,15 +1,16 @@
 package slick.test.jdbc
 
-import org.junit.Test
-import org.junit.Assert._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import slick.testutil._
-import com.typesafe.slick.testkit.util.{DBTest, DBTestObject, JdbcTestDB}
-import com.typesafe.slick.testkit.util.StandardTestDBs._
-
 import scala.util.Failure
+
+import com.typesafe.slick.testkit.util.DBTest
+import com.typesafe.slick.testkit.util.DBTestObject
+import com.typesafe.slick.testkit.util.JdbcTestDB
+import com.typesafe.slick.testkit.util.StandardTestDBs._
+import org.junit.Test
+import org.junit.Assert._
 
 object ModelBuilderTest extends DBTestObject(H2Mem)
 

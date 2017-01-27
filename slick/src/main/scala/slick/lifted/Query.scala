@@ -1,14 +1,15 @@
 package slick.lifted
 
-import slick.util.ConstArray
-
 import scala.language.higherKinds
 import scala.language.experimental.macros
+
 import scala.annotation.implicitNotFound
 import scala.reflect.macros.blackbox.Context
-import slick.ast.{Join => AJoin, _}
+
 import FunctionSymbolExtensionMethods._
-import ScalaBaseType._
+import slick.ast.{Join => AJoin, _}
+import slick.ast.ScalaBaseType._
+import slick.util.ConstArray
 
 sealed trait QueryBase[T] extends Rep[T]
 

@@ -1,11 +1,11 @@
 package slick.compiler
 
-import slick.util.ConstArray
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.HashMap
 
-import scala.collection.mutable.{ArrayBuffer, HashMap}
 import slick.ast._
-import Util._
-import TypeUtil._
+import slick.ast.TypeUtil._
+import slick.util.ConstArray
 
 /** Flatten all `Pure` node contents into a single `StructNode`.
   *

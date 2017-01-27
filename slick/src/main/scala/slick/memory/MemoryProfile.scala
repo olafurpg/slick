@@ -1,17 +1,22 @@
 package slick.memory
 
-import scala.language.{implicitConversions, existentials}
+import scala.language.existentials
+
 import scala.collection.mutable.Builder
 import scala.reflect.ClassTag
-import scala.util.control.NonFatal
 
 import slick.ast._
 import slick.ast.TypeUtil._
-import slick.basic.{FixedBasicAction, FixedBasicStreamingAction}
+import slick.basic.FixedBasicAction
+import slick.basic.FixedBasicStreamingAction
 import slick.compiler._
 import slick.dbio._
-import slick.relational.{RelationalProfile, ResultConverterCompiler, ResultConverter, CompiledMapping}
-import slick.util.{DumpInfo, ??}
+import slick.relational.CompiledMapping
+import slick.relational.RelationalProfile
+import slick.relational.ResultConverter
+import slick.relational.ResultConverterCompiler
+import slick.util.??
+import slick.util.DumpInfo
 
 /** A profile for interpreted queries on top of the in-memory database. */
 trait MemoryProfile extends RelationalProfile with MemoryQueryingProfile { self: MemoryProfile =>

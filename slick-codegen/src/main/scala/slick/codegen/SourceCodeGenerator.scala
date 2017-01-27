@@ -1,13 +1,13 @@
 package slick.codegen
 
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+
 import java.net.URI
 
-import scala.concurrent.{ExecutionContext, Await}
-import scala.concurrent.duration.Duration
-import scala.util.Try
-
-import slick.basic.DatabaseConfig
 import slick.{model => m}
+import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 import slick.util.ConfigExtensionMethods.configExtensionMethods
 

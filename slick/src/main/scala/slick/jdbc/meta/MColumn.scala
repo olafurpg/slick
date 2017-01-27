@@ -2,7 +2,8 @@ package slick.jdbc.meta
 
 import java.sql._
 
-import slick.jdbc.{ResultSetAction, JdbcTypesComponent}
+import slick.jdbc.JdbcTypesComponent
+import slick.jdbc.ResultSetAction
 
 /** A wrapper for a row in the ResultSet returned by DatabaseMetaData.getColumns(). */
 case class MColumn(

@@ -1,6 +1,7 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{JdbcTestDB, AsyncTest}
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 
 class InsertTest extends AsyncTest[JdbcTestDB] {
   import tdb.profile.api._

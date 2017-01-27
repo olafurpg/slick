@@ -1,12 +1,15 @@
 package slick.test.codegen
 
-import org.junit.Test
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import slick.codegen.SourceCodeGenerator
-import com.typesafe.slick.testkit.util.{DBTest, DBTestObject, JdbcTestDB}
+
+import com.typesafe.slick.testkit.util.DBTest
+import com.typesafe.slick.testkit.util.DBTestObject
+import com.typesafe.slick.testkit.util.JdbcTestDB
 import com.typesafe.slick.testkit.util.StandardTestDBs._
+import org.junit.Test
+import slick.codegen.SourceCodeGenerator
 
 object CodeGeneratorAllTest extends DBTestObject(H2Mem, SQLiteMem, Postgres, MySQL, DerbyMem, HsqldbMem)
 

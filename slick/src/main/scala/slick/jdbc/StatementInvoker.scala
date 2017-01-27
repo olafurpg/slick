@@ -1,10 +1,13 @@
 package slick.jdbc
 
-import java.sql.PreparedStatement
-import slick.util.{TableDump, SlickLogger, CloseableIterator}
-import slick.SlickException
-import org.slf4j.LoggerFactory
 import scala.collection.mutable.ArrayBuffer
+
+import java.sql.PreparedStatement
+
+import org.slf4j.LoggerFactory
+import slick.util.CloseableIterator
+import slick.util.SlickLogger
+import slick.util.TableDump
 
 private[jdbc] object StatementInvoker {
   val maxLogResults = 5

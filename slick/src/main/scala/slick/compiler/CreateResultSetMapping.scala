@@ -2,8 +2,7 @@ package slick.compiler
 
 import slick.SlickException
 import slick.ast._
-import Util._
-import TypeUtil._
+import slick.ast.TypeUtil._
 import slick.util.ConstArray
 
 /** Create a ResultSetMapping root node, ensure that the top-level server-side node returns a

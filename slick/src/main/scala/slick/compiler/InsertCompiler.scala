@@ -1,11 +1,12 @@
 package slick.compiler
 
-import slick.ast._
-import scala.collection.mutable.ArrayBuffer
-import slick.{SlickTreeException, SlickException}
-import slick.util.{ConstArray, SlickLogger}
 import org.slf4j.LoggerFactory
-import Util._
+import slick.SlickException
+import slick.SlickTreeException
+import slick.ast._
+import slick.ast.Util._
+import slick.util.ConstArray
+import slick.util.SlickLogger
 
 /** A custom compiler for INSERT statements. We could reuse the standard
   * phases with a minor modification instead, but this is much faster. */

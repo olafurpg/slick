@@ -1,7 +1,9 @@
 package slick.jdbc.meta
 
 import java.sql._
-import slick.jdbc.{JdbcBackend, ResultSetAction, Invoker}
+
+import slick.jdbc.JdbcBackend
+import slick.jdbc.ResultSetAction
 import slick.model.ForeignKeyAction
 
 /** A wrapper for a row in the ResultSet returned by

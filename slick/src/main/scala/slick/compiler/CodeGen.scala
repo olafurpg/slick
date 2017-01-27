@@ -1,7 +1,7 @@
 package slick.compiler
 
-import slick.ast.TypeUtil.:@
 import slick.ast._
+import slick.ast.TypeUtil.:@
 import slick.util.SlickLogger
 
 /** A standard skeleton for a code generator phase. */

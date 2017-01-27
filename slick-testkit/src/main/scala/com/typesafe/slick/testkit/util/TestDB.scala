@@ -1,25 +1,28 @@
 package com.typesafe.slick.testkit.util
 
-import java.lang.reflect.Method
-
-import com.typesafe.config.Config
-
-import org.junit.Assert
+import scala.collection.mutable
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 import java.io._
-import java.net.{URL, URLClassLoader}
-import java.sql.{Connection, Driver}
+import java.net.URL
+import java.net.URLClassLoader
+import java.sql.Connection
+import java.sql.Driver
 import java.util.Properties
 import java.util.concurrent.ExecutionException
 import java.util.zip.GZIPInputStream
 
-import scala.collection.mutable
-import scala.concurrent.{Await, Future, ExecutionContext}
-
-import slick.SlickException
-import slick.basic.{BasicProfile, Capability}
-import slick.dbio.{NoStream, DBIOAction, DBIO}
-import slick.jdbc.{JdbcProfile, ResultSetAction, JdbcDataSource, SimpleJdbcAction}
+import com.typesafe.config.Config
+import slick.basic.BasicProfile
+import slick.basic.Capability
+import slick.dbio.DBIO
+import slick.dbio.DBIOAction
+import slick.dbio.NoStream
+import slick.jdbc.JdbcDataSource
+import slick.jdbc.JdbcProfile
+import slick.jdbc.ResultSetAction
 import slick.jdbc.GetResult._
 import slick.relational.RelationalProfile
 import slick.sql.SqlProfile

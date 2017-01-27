@@ -1,17 +1,18 @@
 package slick.test.jdbc
 
+import scala.collection.JavaConverters._
+import scala.concurrent.Await
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
+
 import javax.management.ObjectName
-
-import org.junit.Assert._
 import org.junit.Test
+import org.junit.Assert._
 import slick.jdbc.H2Profile.api._
-
-import scala.concurrent.{Future, Await}
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.collection.JavaConverters._
 
 class MBeansTest {
 

@@ -1,15 +1,16 @@
 package slick.util
 
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.util.control.NonFatal
+
 import java.io.Closeable
 import java.lang.management.ManagementFactory
 import java.util.concurrent._
-import javax.management.{InstanceNotFoundException, ObjectName}
-
-import scala.concurrent.duration._
-import scala.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
-import scala.util.control.NonFatal
+import javax.management.InstanceNotFoundException
+import javax.management.ObjectName
 
 /** A connection pool for asynchronous execution of blocking I/O actions.
   * This is used for the asynchronous query execution API on top of blocking back-ends like JDBC. */

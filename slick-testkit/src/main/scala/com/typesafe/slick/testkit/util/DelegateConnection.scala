@@ -1,7 +1,7 @@
 package com.typesafe.slick.testkit.util
 
-import java.sql.{Array => _, _}
 import java.util
+import java.sql.{Array => _, _}
 import java.util.Properties
 import java.util.concurrent.Executor
 

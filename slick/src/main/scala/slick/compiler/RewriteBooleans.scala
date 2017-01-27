@@ -1,8 +1,7 @@
 package slick.compiler
 
 import slick.ast._
-import Util.nodeToNodeOps
-import TypeUtil._
+import slick.ast.TypeUtil._
 
 /** For SQL back-ends which do not support real boolean types for fields and general expressions
   * but which do have special boolean expressions and operators, this phase injects conversions

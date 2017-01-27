@@ -1,22 +1,23 @@
 package slick.jdbc
 
-import java.util.UUID
-
 import scala.concurrent.ExecutionContext
-import scala.language.implicitConversions
 
 import java.sql.{Array => _, _}
+import java.util.UUID
 
 import slick.SlickException
 import slick.ast._
-import slick.ast.Util._
-import slick.compiler.{CompilerState, Phase, QueryCompiler}
-import slick.dbio._
-import slick.jdbc.meta.{MColumn, MTable}
-import slick.lifted._
-import slick.model.{ForeignKeyAction, Model}
-import slick.relational.{RelationalCapabilities, ResultConverter, RelationalProfile}
 import slick.basic.Capability
+import slick.compiler.CompilerState
+import slick.compiler.Phase
+import slick.dbio._
+import slick.jdbc.meta.MColumn
+import slick.jdbc.meta.MTable
+import slick.lifted._
+import slick.model.ForeignKeyAction
+import slick.relational.RelationalCapabilities
+import slick.relational.RelationalProfile
+import slick.relational.ResultConverter
 import slick.util.ConstArray
 import slick.util.MacroSupport.macroSupportInterpolation
 

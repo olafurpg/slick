@@ -2,33 +2,40 @@ package com.typesafe.slick.testkit.util
 
 import scala.language.existentials
 
-import java.lang.reflect.Method
-import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, ExecutionException, TimeUnit}
-import java.util.concurrent.atomic.AtomicInteger
-
-import scala.concurrent.{Promise, ExecutionContext, Await, Future, blocking}
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
-import scala.util.{Failure, Success}
+import scala.util.Failure
+import scala.util.Success
 import scala.util.control.NonFatal
 
-import slick.SlickTreeException
-import slick.basic.Capability
-import slick.dbio._
-import slick.jdbc.{JdbcProfile, JdbcCapabilities, JdbcBackend}
-import slick.lifted.Rep
-import slick.util.DumpInfo
-import slick.relational.{RelationalProfile, RelationalCapabilities}
-import slick.sql.{SqlProfile, SqlCapabilities}
+import java.lang.reflect.Method
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
+import org.junit.Assert
 import org.junit.runner.Description
 import org.junit.runner.notification.RunNotifier
 import org.junit.runners.model._
-import org.junit.Assert
-
+import org.reactivestreams.Publisher
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
 import org.slf4j.MDC
-
-import org.reactivestreams.{Subscription, Subscriber, Publisher}
+import slick.SlickTreeException
+import slick.basic.Capability
+import slick.dbio._
+import slick.jdbc.JdbcBackend
+import slick.jdbc.JdbcCapabilities
+import slick.lifted.Rep
+import slick.relational.RelationalCapabilities
+import slick.sql.SqlCapabilities
+import slick.util.DumpInfo
 
 /** JUnit runner for the Slick driver test kit. */
 class Testkit(clazz: Class[_ <: ProfileTest], runnerBuilder: RunnerBuilder) extends SimpleParentRunner[TestMethod](clazz) {

@@ -1,8 +1,11 @@
 package slick.testutil
 
-import org.junit.{Test, Assert}
-import java.io._
 import scala.Console
+
+import java.io._
+
+import org.junit.Assert
+import org.junit.Test
 
 /**
  * A JUnit test which compares the console output against a recorded test run.

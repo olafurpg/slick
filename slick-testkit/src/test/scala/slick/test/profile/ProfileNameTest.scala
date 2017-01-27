@@ -1,8 +1,9 @@
 package slick.test.profile
 
-import org.junit.Assert._
 import org.junit.Test
-import slick.jdbc.{H2Profile, SQLiteProfile}
+import org.junit.Assert._
+import slick.jdbc.H2Profile
+import slick.jdbc.SQLiteProfile
 
 class ProfileNameTest {
 

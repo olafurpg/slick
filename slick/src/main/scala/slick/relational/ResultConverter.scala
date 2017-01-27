@@ -1,10 +1,9 @@
 package slick.relational
 
-import scala.language.existentials
 import slick.SlickException
-import slick.ast._
-import slick.util.{Dumpable, DumpInfo, TupleSupport}
-import java.io.{StringWriter, OutputStreamWriter, PrintWriter}
+import slick.util.DumpInfo
+import slick.util.Dumpable
+import slick.util.TupleSupport
 
 /** A `ResultConverter` is used to read data from a result, update a result,
   * and set parameters of a query. */

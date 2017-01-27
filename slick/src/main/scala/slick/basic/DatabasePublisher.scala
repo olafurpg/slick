@@ -1,11 +1,13 @@
 package slick.basic
 
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.util.Failure
+import scala.util.Success
+
 import org.reactivestreams._
-
-import scala.concurrent.{Promise, Future, ExecutionContext}
-
 import slick.dbio.DBIO
-import scala.util.{Failure, Success}
 
 /** A Reactive Streams `Publisher` for database Actions. */
 abstract class DatabasePublisher[T] extends Publisher[T] { self =>

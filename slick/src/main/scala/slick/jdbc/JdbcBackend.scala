@@ -1,25 +1,23 @@
 package slick.jdbc
 
-import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-import org.reactivestreams.Subscriber
-
-import scala.concurrent.{ExecutionContext, Future}
-
-import java.util.Properties
 import java.sql.{Array => _, _}
-import javax.sql.DataSource
-import javax.naming.InitialContext
+import java.util.Properties
 
-import slick.dbio._
-import slick.basic.DatabasePublisher
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import javax.naming.InitialContext
+import javax.sql.DataSource
+import org.reactivestreams.Subscriber
+import org.slf4j.LoggerFactory
 import slick.SlickException
+import slick.basic.DatabasePublisher
+import slick.dbio._
 import slick.relational.RelationalBackend
 import slick.util._
 import slick.util.ConfigExtensionMethods._
-
-import org.slf4j.LoggerFactory
-import com.typesafe.config.{ConfigFactory, Config}
 
 /** A JDBC-based database back-end that is used by [[slick.jdbc.JdbcProfile]]. */
 trait JdbcBackend extends RelationalBackend {

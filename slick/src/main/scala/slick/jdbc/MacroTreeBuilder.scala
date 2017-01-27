@@ -1,7 +1,5 @@
 package slick.jdbc
 
-import scala.language.experimental.macros
-
 import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox.Context

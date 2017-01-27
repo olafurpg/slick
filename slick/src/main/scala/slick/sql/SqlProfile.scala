@@ -1,13 +1,18 @@
 package slick.sql
 
-import slick.basic.{BasicStreamingAction, BasicAction}
-import slick.compiler.QueryCompiler
-import slick.relational.{RelationalActionComponent, RelationalTableComponent, RelationalProfile}
-
 import scala.language.higherKinds
+
+import slick.ast.ColumnOption
+import slick.ast.Symbol
+import slick.ast.SymbolNamer
+import slick.ast.TableNode
+import slick.basic.BasicAction
+import slick.basic.BasicStreamingAction
+import slick.compiler.QueryCompiler
 import slick.dbio._
-import slick.ast.{TableNode, Symbol, SymbolNamer, Node, ColumnOption}
-import slick.lifted.AbstractTable
+import slick.relational.RelationalActionComponent
+import slick.relational.RelationalProfile
+import slick.relational.RelationalTableComponent
 import slick.util.DumpInfo
 
 /** Abstract profile for SQL-based databases. */

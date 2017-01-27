@@ -1,21 +1,21 @@
 package com.typesafe.slick.testkit.util
 
-import java.io.File
-import java.util.logging.{Level, Logger}
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+
 import java.sql.SQLException
+import java.util.logging.Level
+import java.util.logging.Logger
+
+import org.junit.Assert
 import slick.compiler.Phase
 import slick.dbio._
-import slick.driver.JdbcProfile
-import slick.memory.MemoryProfile
 import slick.jdbc._
 import slick.jdbc.GetResult._
 import slick.jdbc.meta.MTable
-import org.junit.Assert
+import slick.memory.MemoryProfile
 import slick.util.ConfigExtensionMethods._
-
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
 
 object StandardTestDBs {
   lazy val H2Mem = new H2TestDB("h2mem", false) {

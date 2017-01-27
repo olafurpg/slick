@@ -1,12 +1,10 @@
 package slick.ast
 
-import slick.ast.TypeUtil.:@
-import slick.util.ConstArray
-
-import scala.collection
-import scala.collection.mutable
 import scala.language.implicitConversions
-import scala.collection.mutable.ArrayBuffer
+
+import scala.collection.mutable
+
+import slick.util.ConstArray
 
 /**
  * Utility methods for AST manipulation.

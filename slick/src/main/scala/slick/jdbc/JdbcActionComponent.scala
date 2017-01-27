@@ -1,24 +1,31 @@
 package slick.jdbc
 
-import slick.sql.{FixedSqlStreamingAction, FixedSqlAction, SqlActionComponent}
-
-import scala.language.{existentials, higherKinds}
-
-import java.sql.{PreparedStatement, Statement}
+import scala.language.existentials
+import scala.language.higherKinds
 
 import scala.collection.mutable.Builder
-import scala.concurrent.Future
-import scala.util.Try
 import scala.util.control.NonFatal
 
+import java.sql.PreparedStatement
+import java.sql.Statement
+
 import slick.SlickException
-import slick.dbio._
 import slick.ast._
-import slick.ast.Util._
 import slick.ast.TypeUtil.:@
-import slick.lifted.{CompiledStreamingExecutable, Query, FlatShapeLevel, Shape}
-import slick.relational.{ResultConverter, CompiledMapping}
-import slick.util.{CloseableIterator, DumpInfo, SQLBuilder, ignoreFollowOnError}
+import slick.ast.Util._
+import slick.dbio._
+import slick.lifted.CompiledStreamingExecutable
+import slick.lifted.FlatShapeLevel
+import slick.lifted.Query
+import slick.lifted.Shape
+import slick.relational.CompiledMapping
+import slick.relational.ResultConverter
+import slick.sql.FixedSqlAction
+import slick.sql.FixedSqlStreamingAction
+import slick.sql.SqlActionComponent
+import slick.util.DumpInfo
+import slick.util.SQLBuilder
+import slick.util.ignoreFollowOnError
 
 trait JdbcActionComponent extends SqlActionComponent { self: JdbcProfile =>
 

@@ -1,6 +1,7 @@
 package slick.jdbc.meta
 
-import slick.jdbc.{PositionedResult, ResultSetAction}
+import slick.jdbc.PositionedResult
+import slick.jdbc.ResultSetAction
 import slick.jdbc.GetResult.GetString
 
 /**

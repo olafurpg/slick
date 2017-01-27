@@ -1,14 +1,20 @@
 package slick.ast
 
-import scala.language.{implicitConversions, higherKinds}
-import slick.SlickException
-import scala.collection.generic.CanBuild
-import scala.collection.mutable.{Builder, ArrayBuilder}
-import scala.reflect.{ClassTag, classTag => mkClassTag}
-import Util._
-import scala.collection.mutable.ArrayBuffer
+import scala.language.higherKinds
+import scala.language.implicitConversions
+
 import scala.annotation.implicitNotFound
-import slick.util.{DumpInfo, Dumpable, TupleSupport, ConstArray}
+import scala.collection.generic.CanBuild
+import scala.collection.mutable.ArrayBuilder
+import scala.collection.mutable.Builder
+import scala.reflect.ClassTag
+import scala.reflect.{classTag => mkClassTag}
+
+import slick.SlickException
+import slick.util.ConstArray
+import slick.util.DumpInfo
+import slick.util.Dumpable
+import slick.util.TupleSupport
 
 /** Super-trait for all types */
 trait Type extends Dumpable {

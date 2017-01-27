@@ -1,15 +1,17 @@
 package slick.jdbc
 
 import java.io.Closeable
+import java.sql.Connection
+import java.sql.Driver
+import java.sql.DriverManager
+import java.sql.SQLException
 import java.util.Properties
-import java.util.concurrent.TimeUnit
-import java.sql.{Connection, Driver, DriverManager, SQLException}
-import javax.sql.DataSource
 
 import com.typesafe.config.Config
+import javax.sql.DataSource
+import slick.SlickException
 import slick.util._
 import slick.util.ConfigExtensionMethods._
-import slick.SlickException
 
 /** A `JdbcDataSource` provides a way to create a `Connection` object for a database. It is
   * similar to a `javax.sql.DataSource` but simpler. Unlike [[JdbcBackend.DatabaseDef]] it is not a

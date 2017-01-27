@@ -1,8 +1,11 @@
 package slick.lifted
 
-import java.sql.{Date, Time}
-import slick.ast.{TypedType, Library}
+import java.sql.Date
+import java.sql.Time
+
 import FunctionSymbolExtensionMethods._
+import slick.ast.Library
+import slick.ast.TypedType
 import slick.ast.ScalaBaseType._
 
 /** Contains stand-alone database functions for use in queries. Functions which

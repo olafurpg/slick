@@ -1,13 +1,19 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{JdbcTestDB, AsyncTest}
-import java.io.{ObjectInputStream, ObjectOutputStream, ByteArrayOutputStream}
-import java.sql.{Blob, Date, Time, Timestamp}
-import java.util.UUID
-import javax.sql.rowset.serial.SerialBlob
-import org.junit.Assert._
-
 import scala.concurrent.Future
+
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.sql.Blob
+import java.sql.Date
+import java.sql.Time
+import java.sql.Timestamp
+import java.util.UUID
+
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
+import javax.sql.rowset.serial.SerialBlob
 
 /** Data type related tests which are specific to JdbcProfile */
 class JdbcTypeTest extends AsyncTest[JdbcTestDB] {

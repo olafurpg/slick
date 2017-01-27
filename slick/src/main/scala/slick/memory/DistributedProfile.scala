@@ -1,17 +1,21 @@
 package slick.memory
 
-import scala.language.{implicitConversions, existentials}
-
-import scala.collection.mutable.{Builder, HashMap}
+import scala.collection.mutable.Builder
+import scala.collection.mutable.HashMap
 
 import slick.SlickException
 import slick.ast._
 import slick.ast.TypeUtil._
-import slick.basic.{FixedBasicAction, FixedBasicStreamingAction}
+import slick.basic.FixedBasicAction
+import slick.basic.FixedBasicStreamingAction
 import slick.compiler._
 import slick.dbio._
-import slick.relational.{RelationalProfile, ResultConverter, CompiledMapping}
-import slick.util.{DumpInfo, RefId, ??}
+import slick.relational.CompiledMapping
+import slick.relational.RelationalProfile
+import slick.relational.ResultConverter
+import slick.util.??
+import slick.util.DumpInfo
+import slick.util.RefId
 
 /** A profile for distributed queries. */
 class DistributedProfile(val profiles: RelationalProfile*) extends MemoryQueryingProfile { self: DistributedProfile =>

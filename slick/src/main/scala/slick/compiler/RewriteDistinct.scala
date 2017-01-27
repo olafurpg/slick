@@ -1,10 +1,10 @@
 package slick.compiler
 
-import slick.ast.Library.AggregateFunctionSymbol
+import slick.ast._
 import slick.ast.TypeUtil._
 import slick.ast.Util._
-import slick.ast._
-import slick.util.{Ellipsis, ConstArray}
+import slick.util.ConstArray
+import slick.util.Ellipsis
 
 /** Rewrite "distinct on" to "distinct" or "group by" */
 class RewriteDistinct extends Phase {

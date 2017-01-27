@@ -1,19 +1,14 @@
 package slick.test.codegen
 
-import java.io.File
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import java.sql.Blob
 
-import com.typesafe.slick.testkit.util.{TestCodeGenerator, InternalJdbcTestDB, StandardTestDBs, JdbcTestDB}
-
-import scala.concurrent.{Future, Await}
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.io.{Codec, Source}
+import com.typesafe.slick.testkit.util.JdbcTestDB
+import com.typesafe.slick.testkit.util.StandardTestDBs
+import com.typesafe.slick.testkit.util.TestCodeGenerator
+import slick.codegen.SourceCodeGenerator
 import slick.dbio.DBIO
-import slick.codegen.{OutputHelpers, SourceCodeGenerator}
-import slick.jdbc.JdbcBackend
-import slick.jdbc.meta.MTable
-import slick.model.Model
 
 /** Generates files for GeneratedCodeTest */
 object GenerateMainSources extends TestCodeGenerator {

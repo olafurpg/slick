@@ -1,8 +1,7 @@
 package slick.codegen
-import java.io.File
 import java.io.BufferedWriter
+import java.io.File
 import java.io.FileWriter
-import slick.SlickException
 
 /** Output-related code-generation utilities. */
 trait OutputHelpers{

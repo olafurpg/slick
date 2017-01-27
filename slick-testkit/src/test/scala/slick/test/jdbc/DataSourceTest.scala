@@ -1,19 +1,21 @@
 package slick.test.jdbc
 
-import java.io.PrintWriter
-import java.sql.{Connection, Driver, DriverPropertyInfo, SQLException}
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
+import java.sql.Connection
+import java.sql.Driver
+import java.sql.DriverPropertyInfo
+import java.sql.SQLException
 import java.util.Properties
 import java.util.logging.Logger
-import javax.sql.DataSource
 
 import com.typesafe.config.ConfigFactory
 import org.junit.Test
 import org.junit.Assert._
 import slick.basic.DatabaseConfig
-import slick.jdbc.{JdbcBackend, JdbcProfile}
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import slick.jdbc.JdbcBackend
+import slick.jdbc.JdbcProfile
 
 class DataSourceTest {
   @Test def testDataSourceJdbcDataSource: Unit = {

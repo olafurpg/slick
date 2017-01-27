@@ -1,10 +1,9 @@
 package slick.lifted
 
-import slick.ast._
-import slick.ast.Filter
-import slick.model
-
 import scala.collection.mutable.ArrayBuffer
+
+import slick.model
+import slick.ast._
 
 // workaround until deprecated lifted.ForeignKeyAction is removed
 

@@ -1,8 +1,9 @@
 package slick.jdbc
 
 import java.sql.ResultSet
-import slick.dbio.{Effect, NoStream, SynchronousDatabaseAction}
+
 import slick.basic.BasicStreamingAction
+import slick.dbio.Effect
 import slick.util.CloseableIterator
 
 /** An invoker which calls a function to retrieve a ResultSet. This can be used

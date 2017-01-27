@@ -1,9 +1,8 @@
 package com.typesafe.slick.testkit.tests
 
-import org.junit.{Test, Assert}
-import org.junit.Assert._
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 import slick.jdbc.meta._
-import com.typesafe.slick.testkit.util.{TestDB, JdbcTestDB, AsyncTest}
 
 class JdbcMetaTest extends AsyncTest[JdbcTestDB] {
   import tdb.profile.api._

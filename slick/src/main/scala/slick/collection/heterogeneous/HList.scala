@@ -2,10 +2,14 @@ package slick.collection.heterogeneous
 
 import scala.language.higherKinds
 import scala.language.experimental.macros
+
 import scala.annotation.unchecked.{uncheckedVariance => uv}
-import scala.reflect.macros.whitebox.Context
-import slick.lifted.{MappedScalaProductShape, Shape, ShapeLevel}
 import scala.reflect.ClassTag
+import scala.reflect.macros.whitebox.Context
+
+import slick.lifted.MappedScalaProductShape
+import slick.lifted.Shape
+import slick.lifted.ShapeLevel
 
 /** A heterogenous list where each element has its own type. */
 sealed abstract class HList extends Product {

@@ -1,24 +1,28 @@
 package slick.jdbc
 
-import com.typesafe.config.Config
-
 import scala.concurrent.ExecutionContext
 
+import com.typesafe.config.Config
 import slick.SlickException
 import slick.ast._
-import slick.ast.Util._
 import slick.ast.TypeUtil._
+import slick.ast.Util._
 import slick.basic.Capability
-import slick.compiler.{Phase, ResolveZipJoins, CompilerState}
-import slick.jdbc.meta.{MPrimaryKey, MColumn, MTable}
+import slick.compiler.CompilerState
+import slick.compiler.Phase
+import slick.compiler.ResolveZipJoins
+import slick.jdbc.meta.MColumn
+import slick.jdbc.meta.MPrimaryKey
+import slick.jdbc.meta.MTable
 import slick.lifted._
-import slick.model.Model
-import slick.relational.{RelationalProfile, RelationalCapabilities}
+import slick.relational.RelationalCapabilities
+import slick.relational.RelationalProfile
 import slick.sql.SqlCapabilities
-import slick.util.{SlickLogger, GlobalConfig, ConstArray}
-import slick.util.MacroSupport.macroSupportInterpolation
+import slick.util.ConstArray
+import slick.util.GlobalConfig
+import slick.util.SlickLogger
 import slick.util.ConfigExtensionMethods.configExtensionMethods
-import slick.util.SQLBuilder.Result
+import slick.util.MacroSupport.macroSupportInterpolation
 
 /** Slick profile for MySQL.
   *

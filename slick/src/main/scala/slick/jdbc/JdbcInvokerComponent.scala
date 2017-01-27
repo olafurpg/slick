@@ -1,10 +1,16 @@
 package slick.jdbc
 
-import scala.language.{higherKinds, existentials}
+import scala.language.existentials
+
 import java.sql.PreparedStatement
-import slick.ast.{CompiledStatement, ResultSetMapping, Node, ParameterSwitch}
+
+import slick.ast.CompiledStatement
+import slick.ast.Node
+import slick.ast.ParameterSwitch
+import slick.ast.ResultSetMapping
+import slick.relational.CompiledMapping
+import slick.relational.ResultConverter
 import slick.util.SQLBuilder
-import slick.relational.{ResultConverter, CompiledMapping}
 
 trait JdbcInvokerComponent { self: JdbcProfile =>
 
