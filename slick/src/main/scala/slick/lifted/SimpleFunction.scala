@@ -1,7 +1,7 @@
 package slick.lifted
 
-import slick.jdbc.JdbcStatementBuilderComponent
 import slick.ast._
+import slick.jdbc.JdbcStatementBuilderComponent
 import slick.util._
 
 /** Base class for SimpleFunction/BinaryOperator/Expression implementations. */

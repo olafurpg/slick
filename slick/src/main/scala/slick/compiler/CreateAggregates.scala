@@ -1,10 +1,12 @@
 package slick.compiler
 
+import slick.ast._
 import slick.ast.Library.AggregateFunctionSymbol
 import slick.ast.TypeUtil._
 import slick.ast.Util._
-import slick.ast._
-import slick.util.{ConstArray, Ellipsis, ??}
+import slick.util.??
+import slick.util.ConstArray
+import slick.util.Ellipsis
 
 /** Rewrite aggregation function calls to Aggregate nodes. */
 class CreateAggregates extends Phase {

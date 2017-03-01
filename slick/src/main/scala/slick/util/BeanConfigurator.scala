@@ -1,12 +1,11 @@
 package slick.util
 
+import scala.collection.JavaConverters._
+
 import java.beans.Introspector
 import java.util.Properties
 
-import scala.collection.JavaConverters._
-
 import com.typesafe.config.ConfigFactory
-
 import slick.SlickException
 
 /** Configure Java Beans reflectively, using Typesafe Config for data type conversions. */

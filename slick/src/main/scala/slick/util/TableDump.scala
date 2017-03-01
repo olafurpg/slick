@@ -1,6 +1,7 @@
 package slick.util
 
 import scala.collection.mutable.ArrayBuffer
+
 import LogUtil._
 
 /** Utility methods for creating result set debug output. */

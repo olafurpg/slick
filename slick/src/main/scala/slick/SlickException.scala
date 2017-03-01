@@ -1,6 +1,9 @@
 package slick
 
-import slick.util.{GlobalConfig, DumpInfo, TreePrinter, Dumpable}
+import slick.util.DumpInfo
+import slick.util.Dumpable
+import slick.util.GlobalConfig
+import slick.util.TreePrinter
 
 /** All Exceptions that are thrown directly by Slick are of type `SlickException`.
   * Other Exceptions originating in non-Slick code are generally not wrapped but

@@ -1,9 +1,10 @@
 package slick.compiler
 
 import slick.ast._
-import slick.ast.Util._
 import slick.ast.TypeUtil._
-import slick.util.{ConstArray, Ellipsis}
+import slick.ast.Util._
+import slick.util.ConstArray
+import slick.util.Ellipsis
 
 /** Reorder certain stream operations for more efficient merging in `mergeToComprehensions`. */
 class ReorderOperations extends Phase {

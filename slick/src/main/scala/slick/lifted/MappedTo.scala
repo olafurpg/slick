@@ -1,6 +1,7 @@
 package slick.lifted
 
 import scala.language.experimental.macros
+
 import scala.reflect.macros.blackbox.Context
 import scala.util.control.NonFatal
 

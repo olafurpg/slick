@@ -1,7 +1,8 @@
 package slick.util
 
-import java.io.Closeable
 import scala.util.control.NonFatal
+
+import java.io.Closeable
 
 /**
  * An Iterator with a `close` method to close the underlying data source.

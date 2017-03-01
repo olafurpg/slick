@@ -1,6 +1,7 @@
 package slick.jdbc
 
-import java.sql.{Connection, ResultSet}
+import java.sql.Connection
+import java.sql.ResultSet
 
 /** Represents a transaction isolation level. */
 sealed abstract class TransactionIsolation(val intValue: Int)

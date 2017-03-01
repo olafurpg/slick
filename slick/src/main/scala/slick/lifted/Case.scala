@@ -1,7 +1,13 @@
 package slick.lifted
 
-import slick.ast.{LiteralNode, IfThenElse, Node, BaseTypedType, OptionType, TypedType, OptionApply}
 import slick.SlickException
+import slick.ast.BaseTypedType
+import slick.ast.IfThenElse
+import slick.ast.LiteralNode
+import slick.ast.Node
+import slick.ast.OptionApply
+import slick.ast.OptionType
+import slick.ast.TypedType
 import slick.util.ConstArray
 
 /** `Case` provides a DSL for conditional statements in the query language.

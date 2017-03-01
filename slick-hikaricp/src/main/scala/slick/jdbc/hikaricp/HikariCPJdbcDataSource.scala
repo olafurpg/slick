@@ -1,14 +1,16 @@
 package slick.jdbc.hikaricp
 
-import java.sql.{Connection, Driver}
+import java.sql.Connection
+import java.sql.Driver
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
 
 import com.typesafe.config.Config
 import slick.SlickException
-import slick.jdbc.{JdbcDataSource, JdbcDataSourceFactory}
-import slick.util.ConfigExtensionMethods._
+import slick.jdbc.JdbcDataSource
+import slick.jdbc.JdbcDataSourceFactory
 import slick.util.Logging
+import slick.util.ConfigExtensionMethods._
 
 /** A JdbcDataSource for a HikariCP connection pool.
   * See `slick.jdbc.JdbcBackend#Database.forConfig` for documentation on the config parameters. */

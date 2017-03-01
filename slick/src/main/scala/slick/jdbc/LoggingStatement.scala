@@ -1,14 +1,21 @@
 package slick.jdbc
 
-import slick.util.TableDump
-
-import scala.collection.mutable.ArrayBuffer
 import scala.language.reflectiveCalls
 
-import java.io.{InputStream, Reader}
-import java.util.Calendar
+import scala.collection.mutable.ArrayBuffer
+
 import java.{sql => js}
-import java.sql.{PreparedStatement, Connection, SQLWarning, ResultSet, Statement, Timestamp}
+import java.io.InputStream
+import java.io.Reader
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLWarning
+import java.sql.Statement
+import java.sql.Timestamp
+import java.util.Calendar
+
+import slick.util.TableDump
 
 /** A wrapper for `java.sql.Statement` that logs statements and benchmark results
   * to the appropriate [[JdbcBackend]] loggers. */

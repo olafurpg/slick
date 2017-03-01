@@ -1,7 +1,9 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{AsyncTest, RelationalTestDB}
-import slick.jdbc.{PostgresProfile, H2Profile}
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.RelationalTestDB
+import slick.jdbc.H2Profile
+import slick.jdbc.PostgresProfile
 
 class AggregateTest extends AsyncTest[RelationalTestDB] {
   import tdb.profile.api._

@@ -4,6 +4,7 @@ package slick.util
  * An iterator on top of a data source which does not offer a hasNext()
  * method without doing a next()
  */
+
 trait ReadAheadIterator[+T] extends BufferedIterator[T] {
 
   private[this] var state = 0 // 0: no data, 1: cached, 2: finished

@@ -1,16 +1,24 @@
 package slick.lifted
 
-import slick.relational.{ProductResultConverter, SimpleFastPathResultConverter, ResultConverterDomain, TypeMappingResultConverter}
-
-import scala.language.{existentials, implicitConversions, higherKinds}
+import scala.language.existentials
+import scala.language.higherKinds
+import scala.language.implicitConversions
 import scala.language.experimental.macros
+
 import scala.annotation.implicitNotFound
 import scala.annotation.unchecked.uncheckedVariance
-import scala.reflect.macros.blackbox.Context
-import slick.SlickException
-import slick.util.{ConstArray, ProductWrapper, TupleSupport}
-import slick.ast._
 import scala.reflect.ClassTag
+import scala.reflect.macros.blackbox.Context
+
+import slick.SlickException
+import slick.ast._
+import slick.relational.ProductResultConverter
+import slick.relational.ResultConverterDomain
+import slick.relational.SimpleFastPathResultConverter
+import slick.relational.TypeMappingResultConverter
+import slick.util.ConstArray
+import slick.util.ProductWrapper
+import slick.util.TupleSupport
 
 /** A type class that encodes the unpacking `Mixed => Unpacked` of a
  * `Query[Mixed]` to its result element type `Unpacked` and the packing to a

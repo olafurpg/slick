@@ -1,10 +1,11 @@
 package slick.relational
 
 import scala.language.existentials
-import slick.ast._
-import slick.SlickException
-import slick.util.SlickLogger
+
 import org.slf4j.LoggerFactory
+import slick.SlickException
+import slick.ast._
+import slick.util.SlickLogger
 
 /** Create a ResultConverter for parameters and result sets. Subclasses have
   * to provide profile-specific createColumnConverter implementations. */

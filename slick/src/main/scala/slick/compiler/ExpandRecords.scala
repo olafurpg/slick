@@ -1,7 +1,7 @@
 package slick.compiler
 
 import slick.ast._
-import Util._
+import slick.ast.Util._
 
 /** Expand paths of record types to reference all fields individually and
   * recreate the record structure at the call site. */

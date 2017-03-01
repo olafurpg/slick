@@ -1,8 +1,9 @@
 package slick.jdbc.meta
 
-import slick.dbio.Effect
-import slick.jdbc.{ResultSetAction, Invoker}
 import slick.basic.BasicStreamingAction
+import slick.dbio.Effect
+import slick.jdbc.Invoker
+import slick.jdbc.ResultSetAction
 
 /** A wrapper for a row in the ResultSet returned by DatabaseMetaData.getPrimaryKeys(). */
 case class MPrimaryKey(table: MQName, column: String, keySeq: Short, pkName: Option[String])

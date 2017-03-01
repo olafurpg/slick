@@ -1,7 +1,7 @@
 package slick.util
 
-import scala.language.experimental.macros
 import scala.language.implicitConversions
+import scala.language.experimental.macros
 
 object MacroSupport {
   implicit def macroSupportInterpolation(s: StringContext): MacroSupportInterpolation = new MacroSupportInterpolation(s)

@@ -1,10 +1,19 @@
 package slick.jdbc
 
 import scala.language.higherKinds
+
 import scala.collection.generic.CanBuildFrom
-import java.sql.{ResultSet, Blob, Clob, Date, Time, Timestamp}
+
 import java.io.Closeable
-import slick.util.{ReadAheadIterator, CloseableIterator}
+import java.sql.Blob
+import java.sql.Clob
+import java.sql.Date
+import java.sql.ResultSet
+import java.sql.Time
+import java.sql.Timestamp
+
+import slick.util.CloseableIterator
+import slick.util.ReadAheadIterator
 
 /**
  * A database result positioned at a row and column.

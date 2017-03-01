@@ -1,12 +1,14 @@
 package slick.compiler
 
+import scala.util.control.NonFatal
+
 import slick.SlickException
 import slick.ast._
-import slick.ast.Util._
 import slick.ast.TypeUtil._
-import slick.util.{ConstArray, Ellipsis, ??}
-
-import scala.util.control.NonFatal
+import slick.ast.Util._
+import slick.util.??
+import slick.util.ConstArray
+import slick.util.Ellipsis
 
 /** Lift applicable operations at the top level to the client side. */
 class HoistClientOps extends Phase {

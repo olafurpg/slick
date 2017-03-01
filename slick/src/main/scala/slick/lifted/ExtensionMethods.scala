@@ -1,12 +1,13 @@
 package slick.lifted
 
-import slick.util.ConstArray
+import scala.language.higherKinds
+import scala.language.implicitConversions
 
-import scala.language.{implicitConversions, higherKinds}
-import slick.ast._
 import FunctionSymbolExtensionMethods._
-import ScalaBaseType._
 import slick.SlickException
+import slick.ast._
+import slick.ast.ScalaBaseType._
+import slick.util.ConstArray
 
 trait ExtensionMethods[B1, P1] extends Any {
   protected[this] def c: Rep[P1]

@@ -1,12 +1,14 @@
 package slick.compiler
 
-import slick.util.{ConstArray, Ellipsis}
-import slick.{SlickTreeException, SlickException}
-import slick.ast._
-import Util._
-import TypeUtil._
-
 import scala.collection.mutable.ArrayBuffer
+
+import slick.SlickException
+import slick.SlickTreeException
+import slick.ast._
+import slick.ast.TypeUtil._
+import slick.ast.Util._
+import slick.util.ConstArray
+import slick.util.Ellipsis
 
 /** Rewrite monadic joins to applicative joins. After this phase all `Bind` nodes are of the
   * form `Bind(_, _, Pure(_, _))` (i.e. `flatMap` has been reduced to `map`). */

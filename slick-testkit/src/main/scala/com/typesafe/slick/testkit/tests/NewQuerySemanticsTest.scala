@@ -1,8 +1,8 @@
 package com.typesafe.slick.testkit.tests
 
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.RelationalTestDB
 import slick.jdbc.H2Profile
-
-import com.typesafe.slick.testkit.util.{RelationalTestDB, AsyncTest}
 
 class NewQuerySemanticsTest extends AsyncTest[RelationalTestDB] {
   import tdb.profile.api._

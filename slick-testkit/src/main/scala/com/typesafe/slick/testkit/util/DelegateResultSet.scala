@@ -1,10 +1,11 @@
 package com.typesafe.slick.testkit.util
 
 import java.io._
-import java.sql.{Array => SQLArray, _}
-import java.util.{Map, Calendar}
 import java.math.BigDecimal
 import java.net.URL
+import java.sql.{Array => SQLArray, _}
+import java.util.Calendar
+import java.util.Map
 
 /** An implementation of ResultSet which delegates all calls to another ResultSet.
   * Individual methods can be overridden in subclasses to implement custom behavior.
