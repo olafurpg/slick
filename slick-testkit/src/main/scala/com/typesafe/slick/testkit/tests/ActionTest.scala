@@ -1,11 +1,13 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{AsyncTest, RelationalTestDB, StandardTestDBs}
-import slick.dbio.DBIOAction
-import slick.dbio.Effect.Read
-
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
+
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.RelationalTestDB
+import com.typesafe.slick.testkit.util.StandardTestDBs
+import slick.dbio.DBIOAction
+import slick.dbio.Effect.Read
 
 class ActionTest extends AsyncTest[RelationalTestDB] {
   import tdb.profile.api._

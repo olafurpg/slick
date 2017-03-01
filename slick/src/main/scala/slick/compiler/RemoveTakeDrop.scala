@@ -1,12 +1,12 @@
 package slick.compiler
 
+import scala.collection.mutable
+
 import slick.SlickException
 import slick.ast._
-import Util._
-import TypeUtil._
-import QueryParameter.constOp
-
-import scala.collection.mutable
+import slick.ast.QueryParameter.constOp
+import slick.ast.TypeUtil._
+import slick.ast.Util._
 
 /** Replace all occurrences of `Take` and `Drop` with row number computations based on
   * `zipWithIndex` operations. */

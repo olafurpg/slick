@@ -1,12 +1,16 @@
 package com.typesafe.slick.testkit.util
 
-import java.util.concurrent.TimeUnit
-
-import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
-import java.io.{FileInputStream, File}
-import java.util.Properties
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
+
+import java.io.File
+import java.io.FileInputStream
+import java.util.Properties
+import java.util.concurrent.TimeUnit
+
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigValueFactory
 import slick.SlickException
 
 /** Manages the configuration for TestKit tests.

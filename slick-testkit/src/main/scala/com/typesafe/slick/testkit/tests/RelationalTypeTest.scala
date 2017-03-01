@@ -1,7 +1,8 @@
 package com.typesafe.slick.testkit.tests
 
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.RelationalTestDB
 import slick.ast.NumericTypedType
-import com.typesafe.slick.testkit.util.{RelationalTestDB, AsyncTest}
 
 /** Data type related test cases for RelationalProfile */
 class RelationalTypeTest extends AsyncTest[RelationalTestDB] {

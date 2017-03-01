@@ -4,8 +4,11 @@ import scala.collection.mutable.Builder
 import scala.util.control.NonFatal
 
 import slick.dbio._
-import slick.sql.{FixedSqlAction, FixedSqlStreamingAction}
-import slick.util.{DumpInfo, CloseableIterator, ignoreFollowOnError}
+import slick.sql.FixedSqlAction
+import slick.sql.FixedSqlStreamingAction
+import slick.util.CloseableIterator
+import slick.util.DumpInfo
+import slick.util.ignoreFollowOnError
 
 /** A streaming Action that wraps an Invoker.
   * It is used for the Lifted Embedding, Direct Embedding, Plain SQL queries, and JDBC metadata.

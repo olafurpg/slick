@@ -1,8 +1,8 @@
 package slick.compiler
 
 import slick.SlickTreeException
-import slick.ast.Util._
 import slick.ast._
+import slick.ast.Util._
 
 /** Verify that all monadic joins have been transformed into applicative joins and that the
   * resulting tree does not contain references to unreachable symbols. */

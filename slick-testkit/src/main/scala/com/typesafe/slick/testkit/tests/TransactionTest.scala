@@ -1,7 +1,7 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{AsyncTest, JdbcTestDB}
-
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 import slick.jdbc.TransactionIsolation
 
 class TransactionTest extends AsyncTest[JdbcTestDB] {

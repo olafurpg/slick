@@ -1,8 +1,8 @@
 package slick.compiler
 
 import slick.ast._
-import Util._
-import TypeUtil._
+import slick.ast.TypeUtil._
+import slick.ast.Util._
 import slick.util.ConstArray
 
 /** Convert unreferenced StructNodes to single columns or ProductNodes (which is needed for

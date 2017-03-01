@@ -1,11 +1,13 @@
 package slick.test.jdbc
 
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+
 import org.junit.Test
 import org.junit.Assert._
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
-import slick.basic.{DatabaseConfig, StaticDatabaseConfig}
+import slick.basic.DatabaseConfig
+import slick.basic.StaticDatabaseConfig
 import slick.collection.heterogeneous.HNil
 import slick.collection.heterogeneous.syntax._
 import slick.jdbc.JdbcProfile

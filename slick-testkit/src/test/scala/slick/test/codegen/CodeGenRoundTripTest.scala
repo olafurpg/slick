@@ -1,11 +1,14 @@
 package slick.test.codegen
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import com.typesafe.slick.testkit.util.DBTest
+import com.typesafe.slick.testkit.util.DBTestObject
+import com.typesafe.slick.testkit.util.JdbcTestDB
+import com.typesafe.slick.testkit.util.StandardTestDBs._
 import org.junit.Test
 import org.junit.Assert._
 import slick.collection.heterogeneous._
-import com.typesafe.slick.testkit.util.{DBTest, DBTestObject, JdbcTestDB}
-import com.typesafe.slick.testkit.util.StandardTestDBs._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object CodeGeneratorRoundTripTest extends DBTestObject(H2Mem, SQLiteMem, Postgres, MySQL, DerbyMem, HsqldbMem)
 

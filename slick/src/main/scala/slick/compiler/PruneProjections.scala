@@ -1,8 +1,8 @@
 package slick.compiler
 
 import slick.ast._
-import Util._
-import TypeUtil._
+import slick.ast.TypeUtil._
+import slick.ast.Util._
 
 /** Remove unreferenced fields from StructNodes. */
 class PruneProjections extends Phase {

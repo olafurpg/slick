@@ -1,9 +1,10 @@
 package com.typesafe.slick.testkit.tests
 
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 import org.junit.Assert
 import org.junit.Assert._
 import slick.jdbc.GetResult
-import com.typesafe.slick.testkit.util.{JdbcTestDB, AsyncTest}
 
 class PlainSQLTest extends AsyncTest[JdbcTestDB] {
   import tdb.profile.api._

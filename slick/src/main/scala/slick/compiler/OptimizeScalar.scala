@@ -1,8 +1,8 @@
 package slick.compiler
 
+import slick.ast._
 import slick.ast.TypeUtil._
 import slick.ast.Util._
-import slick.ast._
 import slick.util.ConstArray
 
 /** Optimize scalar expressions */

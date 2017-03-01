@@ -1,9 +1,9 @@
 package slick.benchmark
 
+import com.typesafe.slick.testkit.util.DelegateResultSet
 import slick.ast._
 import slick.jdbc._
 import slick.relational._
-import com.typesafe.slick.testkit.util.DelegateResultSet
 import slick.util.TreePrinter
 
 @deprecated("Using deprecated .simple API", "3.0")

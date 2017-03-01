@@ -1,21 +1,26 @@
 package slick.jdbc
 
-import java.sql.{Timestamp, Time, Date}
-import slick.relational.RelationalCapabilities
-import slick.sql.SqlCapabilities
-
 import scala.concurrent.ExecutionContext
+
+import java.sql.Date
+import java.sql.Time
+import java.sql.Timestamp
+
 import slick.SlickException
-import slick.basic.Capability
-import slick.dbio._
-import slick.lifted._
 import slick.ast._
-import slick.util.MacroSupport.macroSupportInterpolation
+import slick.basic.Capability
 import slick.compiler.CompilerState
+import slick.dbio._
+import slick.jdbc.meta.MColumn
+import slick.jdbc.meta.MPrimaryKey
+import slick.jdbc.meta.MTable
+import slick.lifted._
 import slick.model.Model
-import slick.jdbc.meta.{MPrimaryKey, MColumn, MTable}
+import slick.relational.RelationalCapabilities
 import slick.relational.RelationalProfile
+import slick.sql.SqlCapabilities
 import slick.sql.SqlProfile
+import slick.util.MacroSupport.macroSupportInterpolation
 
 /** Slick profile for SQLite.
   *

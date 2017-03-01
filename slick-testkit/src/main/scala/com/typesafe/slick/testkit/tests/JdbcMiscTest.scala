@@ -1,8 +1,11 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{JdbcTestDB, AsyncTest}
-
-import slick.jdbc.{ResultSetHoldability, ResultSetConcurrency, ResultSetType, JdbcBackend}
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
+import slick.jdbc.JdbcBackend
+import slick.jdbc.ResultSetConcurrency
+import slick.jdbc.ResultSetHoldability
+import slick.jdbc.ResultSetType
 
 class JdbcMiscTest extends AsyncTest[JdbcTestDB] {
   import tdb.profile.api._

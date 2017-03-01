@@ -1,6 +1,7 @@
 package slick.util
 
 /** Utilities for logging and creating tree & table dumps. */
+
 private[slick] object LogUtil {
   val (cNormal, cBlack, cRed, cGreen, cYellow, cBlue, cMagenta, cCyan) =
     if(GlobalConfig.ansiDump) ("\u001B[0m", "\u001B[30m", "\u001B[31m", "\u001B[32m", "\u001B[33m", "\u001B[34m", "\u001B[35m", "\u001B[36m")

@@ -1,11 +1,11 @@
 package slick.compiler
 
-import slick.ast._
-import Util._
-import TypeUtil._
-import slick.util.ConstArray
-
 import scala.collection.mutable
+
+import slick.ast._
+import slick.ast.TypeUtil._
+import slick.ast.Util._
+import slick.util.ConstArray
 
 /** Expand table-valued expressions in the result type to their star projection and compute the
   * missing structural expansions of table types. After this phase the AST should always be

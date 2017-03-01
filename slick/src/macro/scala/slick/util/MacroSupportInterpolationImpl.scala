@@ -1,8 +1,8 @@
 package slick.util
 
-import scala.reflect.macros.blackbox.Context
-import scala.reflect.NameTransformer
 import scala.collection.mutable.ListBuffer
+import scala.reflect.NameTransformer
+import scala.reflect.macros.blackbox.Context
 
 object MacroSupportInterpolationImpl {
   def b(ctx: Context)(args: ctx.Expr[Any]*): ctx.Expr[Unit] = {

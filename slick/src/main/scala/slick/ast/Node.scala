@@ -1,12 +1,18 @@
 package slick.ast
 
-import scala.collection.mutable.ListBuffer
 import scala.language.existentials
+
+import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
-import slick.SlickException
-import slick.util.{Logging, Dumpable, DumpInfo, GlobalConfig, ConstArray}
-import Util._
+
 import TypeUtil._
+import Util._
+import slick.SlickException
+import slick.util.ConstArray
+import slick.util.DumpInfo
+import slick.util.Dumpable
+import slick.util.GlobalConfig
+import slick.util.Logging
 
 /** A node in the Slick AST.
   * Every Node has a number of child nodes and an optional type annotation. */

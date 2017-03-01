@@ -2,7 +2,7 @@ package slick.compiler
 
 import slick.SlickException
 import slick.ast._
-import Util._
+import slick.ast.Util._
 import slick.util.ConstArray
 
 /** Specialize the AST for edge cases of query parameters. This is required for

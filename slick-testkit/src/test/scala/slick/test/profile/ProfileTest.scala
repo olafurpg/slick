@@ -1,7 +1,9 @@
 package slick.test.profile
 
+import com.typesafe.slick.testkit.util.ProfileTest
+import com.typesafe.slick.testkit.util.StandardTestDBs
+import com.typesafe.slick.testkit.util.Testkit
 import org.junit.runner.RunWith
-import com.typesafe.slick.testkit.util.{StandardTestDBs, ProfileTest, Testkit}
 
 @RunWith(classOf[Testkit])
 class H2MemTest extends ProfileTest(StandardTestDBs.H2Mem)

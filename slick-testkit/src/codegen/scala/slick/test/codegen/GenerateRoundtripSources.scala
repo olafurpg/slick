@@ -1,8 +1,9 @@
 package slick.test.codegen
 
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+
 import slick.codegen.SourceCodeGenerator
 import slick.jdbc.JdbcProfile
 

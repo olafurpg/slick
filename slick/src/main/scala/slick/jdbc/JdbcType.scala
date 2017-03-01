@@ -1,7 +1,10 @@
 package slick.jdbc
 
-import java.sql.{PreparedStatement, ResultSet}
-import slick.ast.{FieldSymbol, BaseTypedType}
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+
+import slick.ast.BaseTypedType
+import slick.ast.FieldSymbol
 
 /** A JdbcType object represents a Scala type that can be used as a column type in the database.
   * Implicit JdbcTypes for the standard types are provided by the profile. */

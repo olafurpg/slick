@@ -1,13 +1,18 @@
 package slick.memory
 
-import java.util.regex.Pattern
-import org.slf4j.LoggerFactory
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, HashMap}
-import slick.ast._
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.HashMap
+
+import java.util.regex.Pattern
+
+import org.slf4j.LoggerFactory
 import slick.SlickException
-import slick.util.{ConstArray, SlickLogger, Logging}
-import TypeUtil.typeToTypeUtil
+import slick.ast._
+import slick.ast.TypeUtil.typeToTypeUtil
+import slick.util.ConstArray
+import slick.util.Logging
+import slick.util.SlickLogger
 
 /** A query interpreter for MemoryProfile and for client-side operations
   * that need to be run as part of distributed queries against multiple

@@ -1,10 +1,10 @@
 package slick.benchmark
 
+import scala.collection.mutable.HashMap
+
 import slick.compiler._
 import slick.jdbc.H2Profile
 import slick.jdbc.H2Profile.api._
-
-import scala.collection.mutable.HashMap
 
 /** Test query compiler performance with all queries from NewQuerySemanticsTest */
 object CompilerBenchmark {

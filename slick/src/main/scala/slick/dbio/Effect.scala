@@ -5,6 +5,7 @@ package slick.dbio
   * `Write with Transactional`. The standard Slick back-ends do not restrict the evaluation of
   * actions based on effects but they can be used in user-level code (e.g. for ensuring that all
   * writes go to a master database but reads can also be performed by a slave). */
+
 trait Effect
 
 object Effect {

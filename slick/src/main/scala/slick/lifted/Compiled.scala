@@ -1,7 +1,10 @@
 package slick.lifted
 
-import scala.language.{implicitConversions, higherKinds}
+import scala.language.higherKinds
+import scala.language.implicitConversions
+
 import scala.annotation.implicitNotFound
+
 import slick.ast.Node
 import slick.basic.BasicProfile
 import slick.compiler.QueryCompiler

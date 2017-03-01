@@ -1,5 +1,6 @@
 package slick
 
+
 package object profile {
   @deprecated("Use type `slick.basic.BasicProfile` instead of `slick.profile.BasicDriver`", "3.2")
   type BasicDriver = slick.basic.BasicProfile

@@ -1,13 +1,20 @@
 package slick.jdbc
 
-import java.sql.{Blob, Clob, Date, Time, Timestamp, ResultSet, PreparedStatement}
-import java.util.UUID
-
 import scala.reflect.ClassTag
+
+import java.sql.Blob
+import java.sql.Clob
+import java.sql.Date
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.Time
+import java.sql.Timestamp
+import java.util.UUID
 
 import slick.SlickException
 import slick.ast._
-import slick.relational.{RelationalProfile, RelationalTypesComponent}
+import slick.relational.RelationalProfile
+import slick.relational.RelationalTypesComponent
 
 trait JdbcTypesComponent extends RelationalTypesComponent { self: JdbcProfile =>
 

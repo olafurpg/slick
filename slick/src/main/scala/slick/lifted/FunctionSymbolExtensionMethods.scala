@@ -1,7 +1,10 @@
 package slick.lifted
 
 import scala.language.implicitConversions
-import slick.ast.{TypedType, Node, FunctionSymbol}
+
+import slick.ast.FunctionSymbol
+import slick.ast.Node
+import slick.ast.TypedType
 
 /** Utility methods for internal use in the lifted embedding */
 final class FunctionSymbolExtensionMethods(val fs: FunctionSymbol) /*extends AnyVal*/ {

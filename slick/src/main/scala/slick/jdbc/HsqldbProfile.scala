@@ -1,18 +1,21 @@
 package slick.jdbc
 
+import scala.concurrent.ExecutionContext
+
 import java.sql.Types
 
-import scala.concurrent.ExecutionContext
 import slick.SlickException
 import slick.ast._
 import slick.basic.Capability
-import slick.compiler.{Phase, CompilerState}
+import slick.compiler.CompilerState
+import slick.compiler.Phase
 import slick.dbio._
 import slick.jdbc.meta.MTable
 import slick.lifted._
 import slick.model.Model
 import slick.relational.RelationalProfile
-import slick.sql.{SqlProfile, SqlCapabilities}
+import slick.sql.SqlCapabilities
+import slick.sql.SqlProfile
 import slick.util.ConstArray
 import slick.util.MacroSupport.macroSupportInterpolation
 

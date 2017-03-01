@@ -1,10 +1,12 @@
 package slick.compiler
 
 import scala.collection.immutable.HashMap
-import slick.SlickException
-import slick.util._
-import slick.ast.{SymbolNamer, Node}
+
 import org.slf4j.LoggerFactory
+import slick.SlickException
+import slick.ast.Node
+import slick.ast.SymbolNamer
+import slick.util._
 
 /** An immutable, stateless query compiler consisting of a series of phases */
 class QueryCompiler(val phases: Vector[Phase]) extends Logging {

@@ -1,6 +1,7 @@
 package slick.jdbc.meta
 
 import java.sql._
+
 import slick.jdbc.ResultSetAction
 
 /** A wrapper for a row in the ResultSet returned by DatabaseMetaData.getProcedures(). */

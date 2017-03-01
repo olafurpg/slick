@@ -1,13 +1,19 @@
 package slick.jdbc
 
+import scala.language.higherKinds
+import scala.language.implicitConversions
+
 import scala.collection.mutable.Builder
-import scala.language.{implicitConversions, higherKinds}
 
 import slick.ast._
 import slick.ast.TypeUtil.:@
-import slick.compiler.{Phase, QueryCompiler, InsertCompiler}
+import slick.compiler.InsertCompiler
+import slick.compiler.Phase
+import slick.compiler.QueryCompiler
 import slick.lifted._
-import slick.relational.{RelationalProfile, CompiledMapping, SimpleFastPathResultConverter}
+import slick.relational.CompiledMapping
+import slick.relational.RelationalProfile
+import slick.relational.SimpleFastPathResultConverter
 import slick.sql.SqlProfile
 
 /** Abstract profile for accessing SQL databases via JDBC. */

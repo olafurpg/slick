@@ -1,17 +1,18 @@
 package com.typesafe.slick.testkit.util
 
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.io.{Codec, Source}
+import scala.concurrent.duration.Duration
+import scala.io.Codec
+import scala.io.Source
 
 import java.util.concurrent.ExecutionException
 
-import slick.codegen.{OutputHelpers, SourceCodeGenerator}
+import org.junit.Test
+import slick.codegen.OutputHelpers
+import slick.codegen.SourceCodeGenerator
 import slick.dbio._
 import slick.model.Model
-
-import org.junit.Test
 
 trait TestCodeGenerator {
   def packageName: String

@@ -6,8 +6,10 @@ import slick.SlickException
 import slick.ast._
 import slick.ast.TypeUtil._
 import slick.basic.Capability
+import slick.compiler.CompilerState
+import slick.compiler.Phase
+import slick.compiler.QueryCompiler
 import slick.dbio._
-import slick.compiler.{Phase, QueryCompiler, CompilerState}
 import slick.jdbc.meta.MTable
 import slick.lifted._
 import slick.model.Model
