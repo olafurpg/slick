@@ -1,12 +1,14 @@
 package slick.compiler
 
-import slick.util.{ConstArrayOp, ConstArray}
-import slick.{SlickTreeException, SlickException}
-import slick.ast._
-import Util._
-import TypeUtil._
-
 import scala.collection.mutable
+
+import slick.SlickException
+import slick.SlickTreeException
+import slick.ast._
+import slick.ast.TypeUtil._
+import slick.ast.Util._
+import slick.util.ConstArray
+import slick.util.ConstArrayOp
 
 /** Expand sum types and their catamorphisms to equivalent product type operations. */
 class ExpandSums extends Phase {

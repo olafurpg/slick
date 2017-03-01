@@ -1,5 +1,6 @@
 package slick
 
+
 package object driver {
   @deprecated("Use type `slick.jdbc.JdbcProfile` instead of `slick.driver.JdbcDriver`", "3.2")
   type JdbcDriver = slick.jdbc.JdbcProfile

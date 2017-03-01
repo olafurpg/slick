@@ -1,6 +1,9 @@
 package slick.util
 
-import java.io.{OutputStreamWriter, StringWriter, PrintWriter}
+import java.io.OutputStreamWriter
+import java.io.PrintWriter
+import java.io.StringWriter
+
 import LogUtil._
 
 /** Create a readable printout of a tree. */

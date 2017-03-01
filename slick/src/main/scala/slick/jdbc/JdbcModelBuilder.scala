@@ -1,18 +1,19 @@
 package slick.jdbc
 
-import org.slf4j.LoggerFactory
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import scala.reflect.ClassTag
+import scala.util.Failure
+import scala.util.Success
 
-import scala.util.{Failure, Success}
 import java.sql.DatabaseMetaData
 
+import org.slf4j.LoggerFactory
 import slick.SlickException
+import slick.{model => m}
 import slick.ast.ColumnOption
 import slick.dbio._
 import slick.jdbc.meta._
-import slick.{model => m}
 import slick.relational.RelationalProfile
 import slick.sql.SqlProfile
 import slick.util.Logging

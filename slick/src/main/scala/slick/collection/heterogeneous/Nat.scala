@@ -2,6 +2,7 @@ package slick.collection.heterogeneous
 
 import scala.language.higherKinds
 import scala.language.experimental.macros
+
 import scala.reflect.macros.whitebox.Context
 
 /** Natural numbers for indexing in HLists.

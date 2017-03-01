@@ -1,9 +1,9 @@
 package slick.test.collection.heterogenous
 
 import org.junit.Test
-import slick.collection.heterogeneous._
-import syntax._
 import org.junit.Assert._
+import slick.collection.heterogeneous._
+import slick.collection.heterogeneous.syntax._
 
 class HListTest {
   @Test

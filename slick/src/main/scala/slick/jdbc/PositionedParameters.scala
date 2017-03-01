@@ -1,6 +1,12 @@
 package slick.jdbc
 
-import java.sql.{PreparedStatement, Date, Time, Timestamp, Types, Blob, Clob}
+import java.sql.Blob
+import java.sql.Clob
+import java.sql.Date
+import java.sql.PreparedStatement
+import java.sql.Time
+import java.sql.Timestamp
+import java.sql.Types
 
 /** A wrapper for a JDBC `PreparedStatement` which allows inceremental setting of
   * parameters without having to sepcify the column index each time. */

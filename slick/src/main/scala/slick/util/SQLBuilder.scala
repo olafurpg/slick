@@ -1,7 +1,8 @@
 package slick.util
 
-import java.sql.PreparedStatement
 import scala.collection.mutable.ArrayBuffer
+
+import java.sql.PreparedStatement
 
 final class SQLBuilder { self =>
   import SQLBuilder._

@@ -1,6 +1,8 @@
 package slick.jdbc
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+
 import slick.dbio.DBIO
 import slick.jdbc.meta.MTable
 import slick.model.Model

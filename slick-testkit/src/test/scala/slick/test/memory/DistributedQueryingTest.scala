@@ -1,14 +1,17 @@
 package slick.test.memory
 
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+
+import com.typesafe.slick.testkit.util.StandardTestDBs
 import org.junit.Test
 import org.junit.Assert._
-import com.typesafe.slick.testkit.util.StandardTestDBs
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
-import slick.memory.{DistributedBackend, DistributedProfile}
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
-import ExecutionContext.Implicits.global
+import slick.memory.DistributedBackend
+import slick.memory.DistributedProfile
 
 /** Test for the DistributedProfile */
 class DistributedQueryingTest {

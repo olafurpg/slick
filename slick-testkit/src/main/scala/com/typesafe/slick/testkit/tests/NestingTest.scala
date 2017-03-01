@@ -1,8 +1,9 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{RelationalTestDB, AsyncTest}
-
 import scala.concurrent.Future
+
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.RelationalTestDB
 
 class NestingTest extends AsyncTest[RelationalTestDB] {
   import tdb.profile.api._

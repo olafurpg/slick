@@ -1,18 +1,22 @@
 package slick.basic
 
 import scala.language.experimental.macros
-import scala.annotation.{StaticAnnotation, Annotation}
+
+import scala.annotation.Annotation
+import scala.annotation.StaticAnnotation
 import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox.Context
 import scala.util.control.NonFatal
 
-import java.net.{URL, URI}
+import java.net.URI
+import java.net.URL
 
-import slick.util.{SlickLogger, ClassLoaderUtil}
-import slick.util.ConfigExtensionMethods.configExtensionMethods
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import slick.SlickException
-
-import com.typesafe.config.{ConfigFactory, Config}
+import slick.util.ClassLoaderUtil
+import slick.util.SlickLogger
+import slick.util.ConfigExtensionMethods.configExtensionMethods
 
 /** A configuration for a Database plus a matching Profile. */
 trait DatabaseConfig[P <: BasicProfile] {

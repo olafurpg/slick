@@ -1,25 +1,31 @@
 package slick.basic
 
-import slick.util.AsyncExecutor.{Priority, Continuation, Fresh, WithConnection}
-
 import scala.language.existentials
 
-import java.io.Closeable
-import java.util.concurrent.atomic.{AtomicReferenceArray, AtomicBoolean, AtomicLong}
-
-import com.typesafe.config.Config
-
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.{Promise, ExecutionContext, Future}
-import scala.util.{Try, Success, Failure}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 import scala.util.control.NonFatal
 
-import org.slf4j.LoggerFactory
-import org.reactivestreams._
+import java.io.Closeable
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReferenceArray
 
+import com.typesafe.config.Config
+import org.reactivestreams._
+import org.slf4j.LoggerFactory
 import slick.SlickException
 import slick.dbio._
 import slick.util._
+import slick.util.AsyncExecutor.Continuation
+import slick.util.AsyncExecutor.Fresh
+import slick.util.AsyncExecutor.Priority
+import slick.util.AsyncExecutor.WithConnection
 
 /** Backend for the basic database and session handling features.
   * Concrete backends like `JdbcBackend` extend this type and provide concrete

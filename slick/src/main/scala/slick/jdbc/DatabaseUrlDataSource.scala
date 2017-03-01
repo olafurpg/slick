@@ -4,6 +4,7 @@ package slick.jdbc
   * both stand-alone and as a source for a connection pool. This implementation is design
   * specifically to handle a non-JDBC Database URL in the format defined by the libpq standard.
   */
+
 class DatabaseUrlDataSource extends DriverDataSource(null) {
 
   private val PostgresFullUrl = "^postgres://([a-zA-Z0-9_]+):([^@]+)@([^/]+)/([^\\s]+)$".r

@@ -1,8 +1,9 @@
 package slick.util
 
-import java.util.concurrent.{BlockingQueue, TimeUnit}
-import java.util.concurrent.locks._
 import java.util
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks._
 
 import slick.util.AsyncExecutor._
 

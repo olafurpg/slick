@@ -1,7 +1,11 @@
 package com.typesafe.slick.testkit.tests
 
-import java.sql.{Time, Date, Timestamp}
-import com.typesafe.slick.testkit.util.{JdbcTestDB, AsyncTest}
+import java.sql.Date
+import java.sql.Time
+import java.sql.Timestamp
+
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 
 class JdbcScalarFunctionTest extends AsyncTest[JdbcTestDB] {
   import tdb.profile.api._

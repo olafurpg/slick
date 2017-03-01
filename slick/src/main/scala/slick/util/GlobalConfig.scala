@@ -1,11 +1,14 @@
 package slick.util
 
+import scala.language.implicitConversions
+
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
-import scala.language.implicitConversions
-import com.typesafe.config._
-import java.util.concurrent.TimeUnit
+
 import java.util.Properties
+import java.util.concurrent.TimeUnit
+
+import com.typesafe.config._
 
 /** Singleton object with Slick's configuration, loaded from the application config.
   * This includes configuration for the global profile objects and settings for debug logging.

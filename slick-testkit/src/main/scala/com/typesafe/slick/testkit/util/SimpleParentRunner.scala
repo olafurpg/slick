@@ -1,11 +1,16 @@
 package com.typesafe.slick.testkit.util
 
-import org.junit.runner.{Runner, Description}
-import org.junit.runner.notification.{StoppedByUserException, Failure, RunNotifier}
-import org.junit.runner.manipulation._
-import org.junit.runners.model._
 import scala.collection.JavaConverters._
+
 import java.lang.reflect.InvocationTargetException
+
+import org.junit.runner.Description
+import org.junit.runner.Runner
+import org.junit.runner.manipulation._
+import org.junit.runner.notification.Failure
+import org.junit.runner.notification.RunNotifier
+import org.junit.runner.notification.StoppedByUserException
+import org.junit.runners.model._
 
 /**
  * A JUnit Runner similar to JUnit's own ParentRunner but simpler, more

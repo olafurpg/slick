@@ -1,9 +1,10 @@
 package slick.test.jdbc
 
-import slick.jdbc.{PositionedResult, PositionedResultIterator}
 import com.typesafe.slick.testkit.util.DelegateResultSet
 import org.junit.Test
 import org.junit.Assert._
+import slick.jdbc.PositionedResult
+import slick.jdbc.PositionedResultIterator
 
 class PositionedResultTest {
 

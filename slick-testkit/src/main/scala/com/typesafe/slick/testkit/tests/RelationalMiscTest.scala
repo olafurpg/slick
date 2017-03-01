@@ -2,7 +2,8 @@ package com.typesafe.slick.testkit.tests
 
 import scala.language.higherKinds
 
-import com.typesafe.slick.testkit.util.{RelationalTestDB, AsyncTest}
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.RelationalTestDB
 
 class RelationalMiscTest extends AsyncTest[RelationalTestDB] {
   import tdb.profile.api._

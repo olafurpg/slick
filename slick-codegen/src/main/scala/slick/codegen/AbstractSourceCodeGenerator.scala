@@ -1,8 +1,8 @@
 package slick.codegen
 
 import slick.SlickException
-import slick.ast.ColumnOption
 import slick.{model => m}
+import slick.ast.ColumnOption
 import slick.model.ForeignKeyAction
 import slick.relational.RelationalProfile
 import slick.sql.SqlProfile

@@ -1,8 +1,8 @@
 package slick.test.jdbc
 
 import org.junit.Test
-import slick.jdbc.JdbcProfile
 import org.junit.Assert._
+import slick.jdbc.JdbcProfile
 
 class SqlActionBuilderTest {
 

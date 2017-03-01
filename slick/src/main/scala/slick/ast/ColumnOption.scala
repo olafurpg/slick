@@ -1,5 +1,6 @@
 package slick.ast
 
+
 abstract class ColumnOption[+T]
 
 /** The basic column options that influence profile-independent parts of query compilation.

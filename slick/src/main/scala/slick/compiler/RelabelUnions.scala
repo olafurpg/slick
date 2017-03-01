@@ -1,7 +1,7 @@
 package slick.compiler
 
 import slick.ast._
-import Util._
+import slick.ast.Util._
 
 /** Assign the AnonSymbols of fields from the left side of a Union to the
   * right side. This ensures that both sides are protected when we prune

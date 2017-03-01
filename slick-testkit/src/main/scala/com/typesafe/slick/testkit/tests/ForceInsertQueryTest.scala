@@ -1,6 +1,7 @@
 package com.typesafe.slick.testkit.tests
 
-import com.typesafe.slick.testkit.util.{AsyncTest, JdbcTestDB}
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
 
 class ForceInsertQueryTest extends AsyncTest[JdbcTestDB] {
 

@@ -3,13 +3,15 @@ package slick.jdbc
 import scala.concurrent.ExecutionContext
 
 import slick.ast._
-import slick.compiler.{CompilerState, QueryCompiler, Phase}
+import slick.basic.Capability
+import slick.compiler.CompilerState
+import slick.compiler.Phase
+import slick.compiler.QueryCompiler
 import slick.dbio._
 import slick.jdbc.meta.MTable
 import slick.lifted._
 import slick.model.Model
 import slick.relational.RelationalCapabilities
-import slick.basic.Capability
 import slick.util.MacroSupport.macroSupportInterpolation
 
 /** Slick profile for IBM DB2 UDB.

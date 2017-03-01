@@ -1,15 +1,15 @@
 package com.typesafe.slick.testkit.util
 
-import slick.dbio.DBIO
-
 import scala.collection.JavaConversions
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-import org.junit.{Before, After}
+import org.junit.After
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
+import slick.dbio.DBIO
 
 @RunWith(classOf[Parameterized])
 abstract class DBTest {

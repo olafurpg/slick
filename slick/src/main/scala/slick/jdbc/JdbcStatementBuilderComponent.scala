@@ -1,14 +1,25 @@
 package slick.jdbc
 
-import scala.language.{existentials, implicitConversions, higherKinds}
+import scala.language.existentials
+import scala.language.higherKinds
+import scala.language.implicitConversions
+
 import scala.collection.mutable.HashMap
+
 import slick.SlickException
 import slick.ast._
-import slick.ast.Util.nodeToNodeOps
 import slick.ast.TypeUtil._
-import slick.compiler.{RewriteBooleans, CodeGen, Phase, CompilerState, QueryCompiler}
+import slick.ast.Util.nodeToNodeOps
+import slick.compiler.CodeGen
+import slick.compiler.CompilerState
+import slick.compiler.Phase
+import slick.compiler.QueryCompiler
+import slick.compiler.RewriteBooleans
 import slick.lifted._
-import slick.relational.{RelationalProfile, RelationalCapabilities, ResultConverter, CompiledMapping}
+import slick.relational.CompiledMapping
+import slick.relational.RelationalCapabilities
+import slick.relational.RelationalProfile
+import slick.relational.ResultConverter
 import slick.sql.SqlProfile
 import slick.util._
 import slick.util.MacroSupport.macroSupportInterpolation

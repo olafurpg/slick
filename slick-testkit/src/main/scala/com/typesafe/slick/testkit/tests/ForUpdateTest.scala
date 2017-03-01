@@ -1,16 +1,24 @@
 package com.typesafe.slick.testkit.tests
 
-import java.util.concurrent.{CountDownLatch, LinkedBlockingQueue, TimeUnit, ThreadPoolExecutor}
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.util.Failure
 
-import com.typesafe.slick.testkit.util.{TestkitConfig, AsyncTest, JdbcTestDB}
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+
+import com.typesafe.slick.testkit.util.AsyncTest
+import com.typesafe.slick.testkit.util.JdbcTestDB
+import com.typesafe.slick.testkit.util.TestkitConfig
 import org.junit.Assert
 import slick.dbio.DBIOAction
-import slick.jdbc.{SQLServerProfile, TransactionIsolation}
+import slick.jdbc.SQLServerProfile
+import slick.jdbc.TransactionIsolation
 import slick.util.Logging
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.Failure
 
 
 class ForUpdateTest extends AsyncTest[JdbcTestDB] with Logging {

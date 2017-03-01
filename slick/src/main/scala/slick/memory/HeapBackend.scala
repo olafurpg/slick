@@ -1,19 +1,23 @@
 package slick.memory
 
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.HashSet
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+
 import java.util.concurrent.atomic.AtomicLong
 
 import com.typesafe.config.Config
-
 import org.reactivestreams.Subscriber
-
-import scala.collection.mutable.{ArrayBuffer, HashMap, HashSet}
-import scala.concurrent.{Future, ExecutionContext}
-
 import slick.SlickException
 import slick.ast._
 import slick.dbio._
-import slick.lifted.{PrimaryKey, Constraint, Index}
-import slick.relational.{RelationalProfile, RelationalBackend}
+import slick.lifted.Constraint
+import slick.lifted.Index
+import slick.lifted.PrimaryKey
+import slick.relational.RelationalBackend
+import slick.relational.RelationalProfile
 import slick.util.Logging
 
 /** A simple database engine that stores data in heap data structures. */

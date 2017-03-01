@@ -1,11 +1,12 @@
 package slick.compiler
 
-import slick.SlickTreeException
-import slick.ast.Util._
-import slick.ast._
-import slick.util.{Dumpable, RefId}
-
 import scala.collection.mutable
+
+import slick.SlickTreeException
+import slick.ast._
+import slick.ast.Util._
+import slick.util.Dumpable
+import slick.util.RefId
 
 /** Optional phase which verifies that retyping the tree does not change any types. Useful for
   * debugging type-related problems with large trees. */

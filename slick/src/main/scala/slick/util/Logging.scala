@@ -1,8 +1,9 @@
 package slick.util
 
-import org.slf4j.{Logger => Slf4jLogger, LoggerFactory}
-
 import scala.reflect.ClassTag
+
+import org.slf4j.{Logger => Slf4jLogger}
+import org.slf4j.LoggerFactory
 
 final class SlickLogger(val slf4jLogger: Slf4jLogger) {
   @inline
