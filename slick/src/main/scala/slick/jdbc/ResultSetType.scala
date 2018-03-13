@@ -1,18 +1,19 @@
 package slick.jdbc
 
 import java.sql.ResultSet
+import slick.jdbc.ResultSetType
 
 /** Represents a result set type. */
 sealed abstract class ResultSetType(val intValue: Int) { self =>
   /** Return this `ResultSetType`, unless it is `Auto` in which case
     * the specified result set type is returned instead. */
-  def withDefault(r: ResultSetType) = this
+  def withDefault(r: ResultSetType): ResultSetType = this
 }
 
 object ResultSetType {
   /** The current result set type of the JDBC driver */
   case object Auto extends ResultSetType(ResultSet.TYPE_FORWARD_ONLY) {
-    override def withDefault(r: ResultSetType) = r
+    override def withDefault(r: ResultSetType): ResultSetType = r
   }
 
   /** Represents a result set type that only allows result sets to be read sequentially

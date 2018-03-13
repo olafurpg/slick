@@ -6,6 +6,7 @@ import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.immutable
 import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
+import slick.util.ConstArray
 
 /** An efficient immutable array implementation which is used in the AST. Semantics are generally
   * the same as for Scala collections but for performance reasons it does not implement any
@@ -19,9 +20,9 @@ final class ConstArray[+T] private[util] (a: Array[Any], val length: Int) extend
 
   def lengthCompare(n: Int): Int = length.compare(n)
 
-  def isEmpty = length == 0
+  def isEmpty: Boolean = length == 0
 
-  def nonEmpty = length != 0
+  def nonEmpty: Boolean = length != 0
 
   def foreach[R](f: T => R): Unit = {
     var i = 0
@@ -166,7 +167,7 @@ final class ConstArray[+T] private[util] (a: Array[Any], val length: Int) extend
     }
   }
 
-  override def toString = a.mkString("ConstArray(", ", ", ")")
+  override def toString: String = a.mkString("ConstArray(", ", ", ")")
 
   def iterator: Iterator[T] = new Iterator[T] {
     private[this] var pos = 0
@@ -244,9 +245,9 @@ final class ConstArray[+T] private[util] (a: Array[Any], val length: Int) extend
     }
   }
 
-  def mkString(sep: String) = iterator.mkString(sep)
+  def mkString(sep: String): String = iterator.mkString(sep)
 
-  def mkString(start: String, sep: String, end: String) = iterator.mkString(start, sep, end)
+  def mkString(start: String, sep: String, end: String): String = iterator.mkString(start, sep, end)
 
   def foldLeft[B](z: B)(op: (B, T) => B): B = {
     var v = z
@@ -271,8 +272,8 @@ final class ConstArray[+T] private[util] (a: Array[Any], val length: Int) extend
   ///////////////////////////////////////////////////////// conversion
 
   def toSeq: immutable.IndexedSeq[T] = new immutable.IndexedSeq[T] {
-    def apply(idx: Int) = self(idx)
-    def length = self.length
+    def apply(idx: Int): T = self(idx)
+    def length: Int = self.length
   }
 
   def toSet: immutable.HashSet[T @uncheckedVariance] = {
@@ -349,13 +350,13 @@ final class ConstArray[+T] private[util] (a: Array[Any], val length: Int) extend
     } else new ConstArray(Arrays.copyOfRange[AnyRef](a.asInstanceOf[Array[AnyRef]], from, until).asInstanceOf[Array[Any]])
   }
 
-  def tail = slice(1, length)
+  def tail: ConstArray[T] = slice(1, length)
 
-  def init = slice(0, length-1)
+  def init: ConstArray[T] = slice(0, length-1)
 
-  def take(n: Int) = slice(0, math.min(n, length))
+  def take(n: Int): ConstArray[T] = slice(0, math.min(n, length))
 
-  def drop(n: Int) =
+  def drop(n: Int): ConstArray[T] =
     if(n >= length) ConstArray.empty else slice(n, length-n)
 
   ///////////////////////////////////////////////////////// Equals
@@ -364,7 +365,7 @@ final class ConstArray[+T] private[util] (a: Array[Any], val length: Int) extend
 
   private[this] var _hashCode: Int = 0
 
-  override def hashCode = {
+  override def hashCode: Int = {
     if(_hashCode != 0) _hashCode
     else {
       val h = MurmurHash3.productHash(this)
@@ -389,7 +390,7 @@ final class ConstArray[+T] private[util] (a: Array[Any], val length: Int) extend
 
   ///////////////////////////////////////////////////////// Product
 
-  def productArity = length
+  def productArity: Int = length
 
   def productElement(i: Int): Any = apply(i)
 
@@ -481,7 +482,7 @@ final class ConstArrayBuilder[T](initialCapacity: Int = 16, growFactor: Double =
   private[this] var a: Array[Any] = new Array[Any](initialCapacity)
   private[this] var len: Int = 0
 
-  def length = len
+  def length: Int = len
 
   def result: ConstArray[T] =
     if(len == 0) ConstArray.empty

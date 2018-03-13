@@ -2,6 +2,8 @@ package slick.compiler
 
 import slick.ast._
 import TypeUtil._
+import slick.ast.{ FunctionSymbol, Node }
+import slick.compiler.CompilerState
 
 /** For SQL back-ends which do not support real boolean types for fields and general expressions
   * but which do have special boolean expressions and operators, this phase injects conversions
@@ -15,7 +17,7 @@ class RewriteBooleans extends Phase {
   import RewriteBooleans._
   val name = "rewriteBooleans"
 
-  def apply(state: CompilerState) =
+  def apply(state: CompilerState): CompilerState =
     state.map { n => ClientSideOp.mapServerSide(n)(rewriteRec) }
 
   def rewriteRec(n: Node): Node = {
@@ -46,14 +48,14 @@ class RewriteBooleans extends Phase {
 
   /** Create a conversion to a fake boolean, cancelling out an existing
     * conversion to a real boolean. */
-  def toFake(n: Node) = n match {
+  def toFake(n: Node): Node = n match {
     case ToRealBoolean(ch) => ch
     case _ => ToFakeBoolean.typed(n.nodeType, n).infer()
   }
 
   /** Create a conversion to a real boolean, cancelling out an existing
     * conversion to a fake boolean. */
-  def toReal(n: Node) = n match {
+  def toReal(n: Node): Node = n match {
     case ToFakeBoolean(ch) => ch
     case _ => ToRealBoolean.typed(n.nodeType, n).infer()
   }
@@ -68,6 +70,6 @@ class RewriteBooleans extends Phase {
 }
 
 object RewriteBooleans {
-  val ToFakeBoolean = new FunctionSymbol("RewriteBooleans.ToFakeBoolean")
-  val ToRealBoolean = new FunctionSymbol("RewriteBooleans.ToRealBoolean")
+  val ToFakeBoolean: FunctionSymbol = new FunctionSymbol("RewriteBooleans.ToFakeBoolean")
+  val ToRealBoolean: FunctionSymbol = new FunctionSymbol("RewriteBooleans.ToRealBoolean")
 }

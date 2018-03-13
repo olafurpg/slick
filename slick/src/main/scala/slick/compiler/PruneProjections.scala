@@ -3,12 +3,13 @@ package slick.compiler
 import slick.ast._
 import Util._
 import TypeUtil._
+import slick.compiler.CompilerState
 
 /** Remove unreferenced fields from StructNodes. */
 class PruneProjections extends Phase {
   val name = "pruneProjections"
 
-  def apply(state: CompilerState) = state.map { n => ClientSideOp.mapServerSide(n, true) { n =>
+  def apply(state: CompilerState): CompilerState = state.map { n => ClientSideOp.mapServerSide(n, true) { n =>
     val referenced = n.collect[(TypeSymbol, TermSymbol)] { case Select(_ :@ NominalType(s, _), f) => (s, f) }.toSet
     val allTSyms = n.collect[TypeSymbol] { case p: Pure => p.identity }.toSet
     val unrefTSyms = allTSyms -- referenced.map(_._1)

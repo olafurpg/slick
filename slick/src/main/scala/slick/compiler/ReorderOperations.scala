@@ -4,12 +4,13 @@ import slick.ast._
 import slick.ast.Util._
 import slick.ast.TypeUtil._
 import slick.util.{ConstArray, Ellipsis}
+import slick.compiler.CompilerState
 
 /** Reorder certain stream operations for more efficient merging in `mergeToComprehensions`. */
 class ReorderOperations extends Phase {
   val name = "reorderOperations"
 
-  def apply(state: CompilerState) = state.map(convert)
+  def apply(state: CompilerState): CompilerState = state.map(convert)
 
   def convert(tree: Node): Node = tree.replace({ case n => convert1(n) }, keepType = true, bottomUp = true)
 
@@ -86,7 +87,7 @@ class ReorderOperations extends Phase {
     case n => n
   }
 
-  def isAliasingOrLiteral(base: TermSymbol, defs: ConstArray[(TermSymbol, Node)]) = {
+  def isAliasingOrLiteral(base: TermSymbol, defs: ConstArray[(TermSymbol, Node)]): Boolean = {
     val r = defs.iterator.map(_._2).forall {
       case FwdPath(s :: _) if s == base => true
       case _: LiteralNode => true
@@ -97,7 +98,7 @@ class ReorderOperations extends Phase {
     r
   }
 
-  def isDistinctnessPreserving(base: TermSymbol, defs: ConstArray[(TermSymbol, Node)], tpe: Type) = {
+  def isDistinctnessPreserving(base: TermSymbol, defs: ConstArray[(TermSymbol, Node)], tpe: Type): Boolean = {
     val usedFields = defs.flatMap(_._2.collect[TermSymbol] {
       case Select(Ref(s), f) if s == base => f
     })

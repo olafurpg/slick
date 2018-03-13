@@ -8,6 +8,8 @@ import slick.ast._
 import slick.SlickException
 import slick.util.{ConstArray, SlickLogger, Logging}
 import TypeUtil.typeToTypeUtil
+import java.lang
+import slick.ast.TermSymbol
 
 /** A query interpreter for MemoryProfile and for client-side operations
   * that need to be run as part of distributed queries against multiple
@@ -22,10 +24,10 @@ import TypeUtil.typeToTypeUtil
   * @param params The query parameters
   */
 class QueryInterpreter(db: HeapBackend#Database, params: Any) extends Logging {
-  override protected[this] lazy val logger = new SlickLogger(LoggerFactory.getLogger(classOf[QueryInterpreter]))
+  override protected[this] lazy val logger: SlickLogger = new SlickLogger(LoggerFactory.getLogger(classOf[QueryInterpreter]))
   import QueryInterpreter._
 
-  val scope = new HashMap[TermSymbol, Any]
+  val scope: HashMap[TermSymbol, Any] = new HashMap[TermSymbol, Any]
   var indent = 0
   type Coll = Iterable[Any]
 
@@ -337,7 +339,7 @@ class QueryInterpreter(db: HeapBackend#Database, params: Any) extends Logging {
     res
   }
 
-  def evalFunction(sym: TermSymbol, args: Seq[(Type, Any)], retType: Type) = sym match {
+  def evalFunction(sym: TermSymbol, args: Seq[(Type, Any)], retType: Type): Any = sym match {
     case Library.== => args(0)._2 == args(1)._2
     case Library.< => args(0)._1.asInstanceOf[ScalaBaseType[Any]].ordering.lt(args(0)._2, args(1)._2)
     case Library.<= => args(0)._1.asInstanceOf[ScalaBaseType[Any]].ordering.lteq(args(0)._2, args(1)._2)
@@ -453,7 +455,7 @@ class QueryInterpreter(db: HeapBackend#Database, params: Any) extends Logging {
       new ProductValue(el.toSeq.map(tpe => createNullRow(tpe)))
   }
 
-  def asBoolean(v: Any) = v match {
+  def asBoolean(v: Any): Boolean = v match {
     case b: Boolean => b
     case Some(b: Boolean) => b
     case None => false
@@ -484,17 +486,17 @@ object QueryInterpreter {
   class ProductValue(private val data: IndexedSeq[Any]) extends (Int => Any) {
     def length: Int = data.length
     def apply(idx: Int): Any = data(idx)
-    override def toString = "ProductValue("+data.mkString(", ")+")"
-    override def equals(other: Any) = other match {
+    override def toString: lang.String = "ProductValue("+data.mkString(", ")+")"
+    override def equals(other: Any): Boolean = other match {
       case p: ProductValue => data == p.data
       case _ => false
     }
-    override def hashCode = data.hashCode()
+    override def hashCode: Int = data.hashCode()
   }
 
   /** The representation for StructType values in the interpreter */
   class StructValue(data: IndexedSeq[Any], symbolToIndex: (TermSymbol => Int)) extends ProductValue(data) {
     def getBySymbol(sym: TermSymbol): Any = apply(symbolToIndex(sym))
-    override def toString = "StructValue("+data.mkString(", ")+"){"+symbolToIndex+"}"
+    override def toString: lang.String = "StructValue("+data.mkString(", ")+"){"+symbolToIndex+"}"
   }
 }

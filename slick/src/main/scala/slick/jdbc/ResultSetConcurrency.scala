@@ -1,18 +1,19 @@
 package slick.jdbc
 
 import java.sql.ResultSet
+import slick.jdbc.ResultSetConcurrency
 
 /** Represents a result set concurrency mode. */
 sealed abstract class ResultSetConcurrency(val intValue: Int) { self =>
   /** Return this `ResultSetConcurrency`, unless it is `Auto` in which case
     * the specified concurrency mode is returned instead. */
-  def withDefault(r: ResultSetConcurrency) = this
+  def withDefault(r: ResultSetConcurrency): ResultSetConcurrency = this
 }
 
 object ResultSetConcurrency {
   /** The current concurrency mode of the JDBC driver */
   case object Auto extends ResultSetConcurrency(ResultSet.CONCUR_READ_ONLY) {
-    override def withDefault(r: ResultSetConcurrency) = r
+    override def withDefault(r: ResultSetConcurrency): ResultSetConcurrency = r
   }
 
   /** The concurrency mode which indicates that the result set may <em>not</em> be updated. */

@@ -3,6 +3,11 @@ package slick.jdbc.meta
 import java.sql._
 
 import slick.jdbc.{ResultSetAction, JdbcTypesComponent}
+import java.lang
+import scala.`package`.Vector
+import slick.basic.BasicStreamingAction
+import slick.dbio.Effect.Read
+import slick.jdbc.meta.{ MColumn, MColumnPrivilege }
 
 /** A wrapper for a row in the ResultSet returned by DatabaseMetaData.getColumns(). */
 case class MColumn(
@@ -11,12 +16,12 @@ case class MColumn(
   columnDef: Option[String], charOctetLength: Int, ordinalPosition: Int, isNullable: Option[Boolean], scope: Option[MQName],
   sourceDataType: Option[Any], isAutoInc: Option[Boolean]) {
 
-  def sqlTypeName = JdbcTypesComponent.typeNames.get(sqlType)
-  def getColumnPrivileges = MColumnPrivilege.getColumnPrivileges(table, name)
+  def sqlTypeName: Option[lang.String] = JdbcTypesComponent.typeNames.get(sqlType)
+  def getColumnPrivileges: BasicStreamingAction[Vector[MColumnPrivilege], MColumnPrivilege, Read] = MColumnPrivilege.getColumnPrivileges(table, name)
 }
 
 object MColumn {
-  def getColumns(tablePattern: MQName, columnPattern: String) = ResultSetAction[MColumn](
+  def getColumns(tablePattern: MQName, columnPattern: String): BasicStreamingAction[Vector[MColumn], MColumn, Read] = ResultSetAction[MColumn](
       _.metaData.getColumns(tablePattern.catalog_?, tablePattern.schema_?, tablePattern.name, columnPattern)) { r =>
       MColumn(MQName.from(r), r.<<, r.<<, r.<<, r.<<, r.skip.<<, r.<<, r.nextInt match {
           case DatabaseMetaData.columnNoNulls => Some(false)

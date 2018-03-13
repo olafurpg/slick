@@ -5,6 +5,8 @@ import slick.ast._
 import slick.SlickException
 import slick.util.SlickLogger
 import org.slf4j.LoggerFactory
+import slick.relational.CompiledMapping
+import slick.util.DumpInfo
 
 /** Create a ResultConverter for parameters and result sets. Subclasses have
   * to provide profile-specific createColumnConverter implementations. */
@@ -58,14 +60,14 @@ trait ResultConverterCompiler[Domain <: ResultConverterDomain] {
 }
 
 object ResultConverterCompiler {
-  protected lazy val logger = new SlickLogger(LoggerFactory.getLogger(classOf[ResultConverterCompiler[_]]))
+  protected lazy val logger: SlickLogger = new SlickLogger(LoggerFactory.getLogger(classOf[ResultConverterCompiler[_]]))
 }
 
 /** A node that wraps a ResultConverter */
 final case class CompiledMapping(converter: ResultConverter[_ <: ResultConverterDomain, _], buildType: Type) extends NullaryNode with SimplyTypedNode {
   type Self = CompiledMapping
-  def rebuild = copy()
-  override def getDumpInfo = {
+  def rebuild: CompiledMapping = copy()
+  override def getDumpInfo: DumpInfo = {
     val di = super.getDumpInfo
     di.copy(mainInfo = "", children = di.children ++ Vector(("converter", converter)))
   }

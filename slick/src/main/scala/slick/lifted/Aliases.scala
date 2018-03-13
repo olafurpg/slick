@@ -2,34 +2,36 @@ package slick
 package lifted
 
 import scala.language.higherKinds
+import slick.{ dbio, lifted, model, util }
+import slick.dbio.DBIOAction
 
 /** Aliases for lifted embedding features. This trait can be mixed into aliasing
   * objects which simplify the use of the lifted embedding. */
 trait Aliases {
   type Query[+E, U, C[_]] = lifted.Query[E, U, C]
-  val Query = lifted.Query
+  val Query: lifted.Query.type = lifted.Query
   type TableQuery[E <: AbstractTable[_]] = lifted.TableQuery[E]
-  val TableQuery = lifted.TableQuery
+  val TableQuery: lifted.TableQuery.type = lifted.TableQuery
   type Compiled[T] = lifted.Compiled[T]
-  val Compiled = lifted.Compiled
+  val Compiled: lifted.Compiled.type = lifted.Compiled
   type ConstColumn[T] = lifted.ConstColumn[T]
   type LiteralColumn[T] = lifted.LiteralColumn[T]
-  val LiteralColumn = lifted.LiteralColumn
-  val Case = lifted.Case
+  val LiteralColumn: lifted.LiteralColumn.type = lifted.LiteralColumn
+  val Case: lifted.Case.type = lifted.Case
   type Rep[T] = lifted.Rep[T]
-  val Rep = lifted.Rep
-  val Functions = lifted.Functions
+  val Rep: lifted.Rep.type = lifted.Rep
+  val Functions: lifted.Functions.type = lifted.Functions
   type Parameters[PU, PP] = lifted.Parameters[PU, PP]
-  val Parameters = lifted.Parameters
+  val Parameters: lifted.Parameters.type = lifted.Parameters
   type SimpleFunction = lifted.SimpleFunction
-  val SimpleFunction = lifted.SimpleFunction
+  val SimpleFunction: lifted.SimpleFunction.type = lifted.SimpleFunction
   type SimpleBinaryOperator = lifted.SimpleBinaryOperator
-  val SimpleBinaryOperator = lifted.SimpleBinaryOperator
+  val SimpleBinaryOperator: lifted.SimpleBinaryOperator.type = lifted.SimpleBinaryOperator
   type SimpleExpression = lifted.SimpleExpression
-  val SimpleExpression = lifted.SimpleExpression
+  val SimpleExpression: lifted.SimpleExpression.type = lifted.SimpleExpression
   type SimpleLiteral = lifted.SimpleLiteral
-  val SimpleLiteral = lifted.SimpleLiteral
-  val TupleMethods = util.TupleMethods
+  val SimpleLiteral: lifted.SimpleLiteral.type = lifted.SimpleLiteral
+  val TupleMethods: util.TupleMethods.type = util.TupleMethods
   type Tag = lifted.Tag
   type Shape[Level <: ShapeLevel, -M, U, P] = lifted.Shape[Level, M, U, P]
   type MappedProductShape[Level <: ShapeLevel, C, M <: C, U <: C, P <: C] = lifted.MappedProductShape[Level, C, M, U, P]
@@ -42,17 +44,17 @@ trait Aliases {
   type ColumnsShapeLevel = lifted.ColumnsShapeLevel
   type Isomorphism[A, B] = lifted.Isomorphism[A, B]
   type MappedTo[T] = lifted.MappedTo[T]
-  val ForeignKeyAction = slick.model.ForeignKeyAction
+  val ForeignKeyAction: model.ForeignKeyAction.type = slick.model.ForeignKeyAction
   type ForeignKeyAction = slick.model.ForeignKeyAction
 
   type DBIO[+R] = dbio.DBIO[R]
   type StreamingDBIO[+R, +T] = dbio.StreamingDBIO[R, T]
   type DBIOAction[+R, +S <: dbio.NoStream, -E <: dbio.Effect] = dbio.DBIOAction[R, S, E]
-  val DBIO = dbio.DBIO
+  val DBIO: DBIOAction.type = dbio.DBIO
   type Effect = dbio.Effect
-  val Effect = dbio.Effect
+  val Effect: dbio.Effect.type = dbio.Effect
   type NoStream = dbio.NoStream
   type Streaming[+T] = dbio.Streaming[T]
   type AsyncExecutor = util.AsyncExecutor
-  val AsyncExecutor = util.AsyncExecutor
+  val AsyncExecutor: util.AsyncExecutor.type = util.AsyncExecutor
 }

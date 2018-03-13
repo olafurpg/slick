@@ -1,13 +1,14 @@
 package slick.compiler
 
 import slick.ast._
+import slick.compiler.CompilerState
 
 /** Inject the proper orderings into the RowNumber nodes produced earlier by
   * the resolveFixJoins phase. */
 class FixRowNumberOrdering extends Phase {
   val name = "fixRowNumberOrdering"
 
-  def apply(state: CompilerState) =
+  def apply(state: CompilerState): CompilerState =
     if(state.get(Phase.resolveZipJoins).getOrElse(false)) state.map(n => fix(n)) else state
 
   /** Push ORDER BY into RowNumbers in ordered Comprehensions. */

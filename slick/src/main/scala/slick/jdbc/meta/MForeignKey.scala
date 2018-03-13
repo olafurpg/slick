@@ -3,6 +3,10 @@ package slick.jdbc.meta
 import java.sql._
 import slick.jdbc.{JdbcBackend, ResultSetAction}
 import slick.model.ForeignKeyAction
+import scala.`package`.Vector
+import slick.basic.BasicStreamingAction
+import slick.dbio.Effect.Read
+import slick.jdbc.meta.MForeignKey
 
 /** A wrapper for a row in the ResultSet returned by
   * DatabaseMetaData.getImportedKeys/getExportedKeys/getCrossReference(). */
@@ -13,13 +17,13 @@ case class MForeignKey(
 
 object MForeignKey {
 
-  def getImportedKeys(table: MQName) =
+  def getImportedKeys(table: MQName): BasicStreamingAction[Vector[MForeignKey], MForeignKey, Read] =
     createAction(_.metaData.getImportedKeys(table.catalog_?, table.schema_?, table.name))
 
-  def getExportedKeys(table: MQName) =
+  def getExportedKeys(table: MQName): BasicStreamingAction[Vector[MForeignKey], MForeignKey, Read] =
     createAction(_.metaData.getExportedKeys(table.catalog_?, table.schema_?, table.name))
 
-  def getCrossReference(parentTable: MQName, foreignTable: MQName) =
+  def getCrossReference(parentTable: MQName, foreignTable: MQName): BasicStreamingAction[Vector[MForeignKey], MForeignKey, Read] =
     createAction(_.metaData.getCrossReference(
       parentTable.catalog_?, parentTable.schema_?, parentTable.name,
       foreignTable.catalog_?, foreignTable.schema_?, foreignTable.name))

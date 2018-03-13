@@ -15,6 +15,9 @@ import slick.sql.SqlCapabilities
 import slick.relational.RelationalProfile
 import slick.util.ConstArray
 import slick.util.MacroSupport.macroSupportInterpolation
+import java.lang
+import scala.collection.immutable
+import slick.compiler.QueryCompiler
 
 /** Slick profile for <a href="http://www.hsqldb.org/">HyperSQL</a>
   * (starting with version 2.0).
@@ -42,8 +45,8 @@ trait HsqldbProfile extends JdbcProfile {
 
   class ModelBuilder(mTables: Seq[MTable], ignoreInvalidDefaults: Boolean)(implicit ec: ExecutionContext) extends JdbcModelBuilder(mTables, ignoreInvalidDefaults) {
     override def createTableNamer(mTable: MTable): TableNamer = new TableNamer(mTable) {
-      override def schema = super.schema.filter(_ != "PUBLIC") // remove default schema
-      override def catalog = super.catalog.filter(_ != "PUBLIC") // remove default catalog
+      override def schema: Option[String] = super.schema.filter(_ != "PUBLIC") // remove default schema
+      override def catalog: Option[String] = super.catalog.filter(_ != "PUBLIC") // remove default catalog
     }
   }
 
@@ -53,9 +56,9 @@ trait HsqldbProfile extends JdbcProfile {
   override def defaultTables(implicit ec: ExecutionContext): DBIO[Seq[MTable]] =
     MTable.getTables(None, None, None, Some(Seq("TABLE")))
 
-  override protected def computeQueryCompiler =
+  override protected def computeQueryCompiler: QueryCompiler =
     super.computeQueryCompiler.replace(Phase.resolveZipJoinsRownumStyle) + Phase.specializeParameters - Phase.fixRowNumberOrdering
-  override val columnTypes = new JdbcTypes
+  override val columnTypes: HsqldbProfile.this.JdbcTypes = new JdbcTypes
   override def createQueryBuilder(n: Node, state: CompilerState): QueryBuilder = new QueryBuilder(n, state)
   override def createTableDDLBuilder(table: Table[_]): TableDDLBuilder = new TableDDLBuilder(table)
   override def createSequenceDDLBuilder(seq: Sequence[_]): SequenceDDLBuilder[_] = new SequenceDDLBuilder(seq)
@@ -63,7 +66,7 @@ trait HsqldbProfile extends JdbcProfile {
   override protected lazy val useServerSideUpsert = true
   override protected lazy val useServerSideUpsertReturning = false
 
-  override val scalarFrom = Some("(VALUES (0))")
+  override val scalarFrom: Some[lang.String] = Some("(VALUES (0))")
 
   override def defaultSqlTypeName(tmd: JdbcType[_], sym: Option[FieldSymbol]): String = tmd.sqlType match {
     case java.sql.Types.VARCHAR =>
@@ -73,10 +76,10 @@ trait HsqldbProfile extends JdbcProfile {
   }
 
   class QueryBuilder(tree: Node, state: CompilerState) extends super.QueryBuilder(tree, state) {
-    override protected val concatOperator = Some("||")
+    override protected val concatOperator: Some[lang.String] = Some("||")
     override protected val alwaysAliasSubqueries = false
     override protected val supportsLiteralGroupBy = true
-    override protected val quotedJdbcFns = Some(Nil)
+    override protected val quotedJdbcFns: Some[immutable.Nil.type] = Some(Nil)
 
     override def expr(c: Node, skipParens: Boolean = false): Unit = c match {
       case l @ LiteralNode(v: String) if (v ne null) && jdbcTypeFor(l.nodeType).sqlType != Types.CHAR =>
@@ -111,7 +114,7 @@ trait HsqldbProfile extends JdbcProfile {
       }
     }
 
-    override protected def buildFetchOffsetClause(fetch: Option[Node], offset: Option[Node]) = (fetch, offset) match {
+    override protected def buildFetchOffsetClause(fetch: Option[Node], offset: Option[Node]): Unit = (fetch, offset) match {
       case (Some(t), Some(d)) => b"\nlimit $t offset $d"
       case (Some(t), None   ) => b"\nlimit $t"
       case (None, Some(d)   ) => b"\noffset $d"
@@ -120,17 +123,17 @@ trait HsqldbProfile extends JdbcProfile {
   }
 
   class JdbcTypes extends super.JdbcTypes {
-    override val byteArrayJdbcType = new ByteArrayJdbcType {
+    override val byteArrayJdbcType: JdbcTypes.this.ByteArrayJdbcType = new ByteArrayJdbcType {
       override def sqlTypeName(sym: Option[FieldSymbol]) = "LONGVARBINARY"
     }
-    override val uuidJdbcType = new UUIDJdbcType {
-      override def sqlType = java.sql.Types.BINARY
+    override val uuidJdbcType: JdbcTypes.this.UUIDJdbcType = new UUIDJdbcType {
+      override def sqlType: Int = java.sql.Types.BINARY
       override def sqlTypeName(sym: Option[FieldSymbol]) = "BINARY(16)"
     }
   }
 
   class TableDDLBuilder(table: Table[_]) extends super.TableDDLBuilder(table) {
-    override protected def createIndex(idx: Index) = {
+    override protected def createIndex(idx: Index): String = {
       if(idx.unique) {
         /* Create a UNIQUE CONSTRAINT (with an automatically generated backing
          * index) because Hsqldb does not allow a FOREIGN KEY CONSTRAINT to

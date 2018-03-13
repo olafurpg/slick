@@ -6,6 +6,11 @@ import scala.annotation.unchecked.{uncheckedVariance => uv}
 import scala.reflect.macros.whitebox.Context
 import slick.lifted.{MappedScalaProductShape, Shape, ShapeLevel}
 import scala.reflect.ClassTag
+import java.lang
+import scala.collection.immutable
+import slick.collection.heterogeneous.{ HCons, HList, HNil }
+import slick.collection.heterogeneous.HList.HListShape
+import slick.collection.heterogeneous.syntax.::
 
 /** A heterogenous list where each element has its own type. */
 sealed abstract class HList extends Product {
@@ -50,7 +55,7 @@ sealed abstract class HList extends Product {
   def toList: List[Any]
 
   /** Check if this list is empty. */
-  final def isEmpty = !nonEmpty
+  final def isEmpty: Boolean = !nonEmpty
 
   /** Get the length of this list as a `Nat`. */
   @inline final def length: Length = Nat._unsafe[Length](productArity)
@@ -70,7 +75,7 @@ sealed abstract class HList extends Product {
   /** Concatenate another HList to this HList, returning a new HList. */
   final def ::: [L <: HList](l: L): ::: [L] = l.fold[HList, PrependHead, Self](
     new TypedFunction2[HList, HList, HList, PrependHead] {
-      def apply[P1 <: HList, P2 <: HList](p1: P1, p2: P2) = p1.head :: p2
+      def apply[P1 <: HList, P2 <: HList](p1: P1, p2: P2): p2.::[p1.Head] = p1.head :: p2
     }, self)
 
   /** Drop the first `n` elements from this HList. */
@@ -103,7 +108,7 @@ sealed abstract class HList extends Product {
     }
   }
 
-  override final def toString = {
+  override final def toString: lang.String = {
     val b = new StringBuffer
     foreach { v =>
       v match {
@@ -117,22 +122,22 @@ sealed abstract class HList extends Product {
   }
 
   override final lazy val hashCode: Int = toList.hashCode
-  override final def equals(that: Any) = that match {
+  override final def equals(that: Any): Boolean = that match {
     case that: HList => toList == that.toList
     case _ => false
   }
-  final def canEqual(that: Any) = that.isInstanceOf[HList]
+  final def canEqual(that: Any): Boolean = that.isInstanceOf[HList]
 }
 
 final object HList {
   import syntax._
 
   final class HListShape[Level <: ShapeLevel, M <: HList, U <: HList : ClassTag, P <: HList](val shapes: Seq[Shape[_ <: ShapeLevel, _, _, _]]) extends MappedScalaProductShape[Level, HList, M, U, P] {
-    def buildValue(elems: IndexedSeq[Any]) = elems.foldRight(HNil: HList)(_ :: _)
-    def copy(shapes: Seq[Shape[_ <: ShapeLevel, _, _, _]]) = new HListShape(shapes)
+    def buildValue(elems: IndexedSeq[Any]): HList = elems.foldRight(HNil: HList)(_ :: _)
+    def copy(shapes: Seq[Shape[_ <: ShapeLevel, _, _, _]]): HListShape[Level, Nothing, U, Nothing] = new HListShape(shapes)
   }
-  implicit def hnilShape[Level <: ShapeLevel] = new HListShape[Level, HNil.type, HNil.type, HNil.type](Nil)
-  implicit def hconsShape[Level <: ShapeLevel, M1, M2 <: HList, U1, U2 <: HList, P1, P2 <: HList](implicit s1: Shape[_ <: Level, M1, U1, P1], s2: HListShape[_ <: Level, M2, U2, P2]) =
+  implicit def hnilShape[Level <: ShapeLevel]: HListShape[Level, HNil.type, HNil.type, HNil.type] = new HListShape[Level, HNil.type, HNil.type, HNil.type](Nil)
+  implicit def hconsShape[Level <: ShapeLevel, M1, M2 <: HList, U1, U2 <: HList, P1, P2 <: HList](implicit s1: Shape[_ <: Level, M1, U1, P1], s2: HListShape[_ <: Level, M2, U2, P2]): HListShape[Level, ::[M1, M2], ::[U1, U2], ::[P1, P2]] =
     new HListShape[Level, M1 :: M2, U1 :: U2, P1 :: P2](s1 +: s2.shapes)
 }
 // Separate object for macro impl to avoid dependency of companion class on scala.reflect, see https://github.com/xeno-by/sbt-example-paradise210/issues/1#issuecomment-21021396
@@ -167,7 +172,7 @@ final class HCons[@specialized +H, +T <: HList](val head: H, val tail: T) extend
   type Tail = T @uv
   type Fold[U, F[_ <: HList, _ <: U] <: U, Z <: U] = F[Self @uv, (T @uv)#Fold[U, F, Z]]
 
-  def self = this
+  def self: HCons[H, T] = this
   def fold[U, F[_ <: HList, _ <: U] <: U, Z <: U](f: TypedFunction2[HList, U, U, F], z: Z): Fold[U, F, Z] @uv =
     f.apply[Self, T#Fold[U, F, Z]](self, tail.fold[U, F, Z](f, z))
   def toList: List[Any] = head :: tail.toList
@@ -175,7 +180,7 @@ final class HCons[@specialized +H, +T <: HList](val head: H, val tail: T) extend
 }
 
 object HCons {
-  def unapply[H, T <: HList](l: HCons[H, T]) = Some((l.head, l.tail))
+  def unapply[H, T <: HList](l: HCons[H, T]): Some[(H, T)] = Some((l.head, l.tail))
 }
 
 /** The empty `HList` */
@@ -185,10 +190,10 @@ final object HNil extends HList {
   type Tail = Nothing
   type Fold[U, F[_ <: HList, _ <: U] <: U, Z <: U] = Z
 
-  def self = HNil
-  def head = throw new NoSuchElementException("HNil.head")
-  def tail = throw new NoSuchElementException("HNil.tail")
-  def fold[U, F[_ <: HList, _ <: U] <: U, Z <: U](f: TypedFunction2[HList, U, U, F], z: Z) = z
-  def toList = Nil
+  def self: HNil.type = HNil
+  def head: Nothing = throw new NoSuchElementException("HNil.head")
+  def tail: Nothing = throw new NoSuchElementException("HNil.tail")
+  def fold[U, F[_ <: HList, _ <: U] <: U, Z <: U](f: TypedFunction2[HList, U, U, F], z: Z): Z = z
+  def toList: immutable.Nil.type = Nil
   def nonEmpty = false
 }

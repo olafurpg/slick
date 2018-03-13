@@ -7,12 +7,13 @@ import slick.ast.TypeUtil._
 import slick.util.{ConstArray, Ellipsis}
 
 import scala.util.control.NonFatal
+import slick.compiler.CompilerState
 
 /** Lift applicable operations at the top level to the client side. */
 class HoistClientOps extends Phase {
   val name = "hoistClientOps"
 
-  def apply(state: CompilerState) = state.map(ClientSideOp.mapResultSetMapping(_) { rsm =>
+  def apply(state: CompilerState): CompilerState = state.map(ClientSideOp.mapResultSetMapping(_) { rsm =>
     val from1 = shuffle(rsm.from)
     from1 match {
       case Bind(s2, from2, Pure(StructNode(defs2), ts2)) =>

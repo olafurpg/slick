@@ -8,13 +8,17 @@ import slick.compiler._
 import slick.relational._
 import slick.util.{??, ConstArray}
 import TypeUtil._
+import scala.`package`.BigDecimal
+import slick.ast.{ Node, ScalaBaseType, ScalaNumericType }
+import slick.relational.CompiledMapping
+import slick.util.DumpInfo
 
 /** The querying (read-only) part that can be shared between MemoryProfile and DistributedProfile. */
 trait MemoryQueryingProfile extends BasicProfile { self: MemoryQueryingProfile =>
 
   type ColumnType[T] = ScalaType[T]
   type BaseColumnType[T] = ScalaType[T] with BaseTypedType[T]
-  def compileInsert(tree: Node) = insertCompiler.run(tree).tree
+  def compileInsert(tree: Node): Node = insertCompiler.run(tree).tree
   type CompiledInsert = Node
 
   trait API extends super.API with ImplicitColumnTypes
@@ -22,16 +26,16 @@ trait MemoryQueryingProfile extends BasicProfile { self: MemoryQueryingProfile =
   val api: API
 
   trait ImplicitColumnTypes {
-    implicit def booleanColumnType = ScalaBaseType.booleanType
-    implicit def bigDecimalColumnType = ScalaBaseType.bigDecimalType
-    implicit def byteColumnType = ScalaBaseType.byteType
-    implicit def charColumnType = ScalaBaseType.charType
-    implicit def doubleColumnType = ScalaBaseType.doubleType
-    implicit def floatColumnType = ScalaBaseType.floatType
-    implicit def intColumnType = ScalaBaseType.intType
-    implicit def longColumnType = ScalaBaseType.longType
-    implicit def shortColumnType = ScalaBaseType.shortType
-    implicit def stringColumnType = ScalaBaseType.stringType
+    implicit def booleanColumnType: ScalaBaseType[Boolean] = ScalaBaseType.booleanType
+    implicit def bigDecimalColumnType: ScalaNumericType[BigDecimal] = ScalaBaseType.bigDecimalType
+    implicit def byteColumnType: ScalaNumericType[Byte] = ScalaBaseType.byteType
+    implicit def charColumnType: ScalaBaseType[Char] = ScalaBaseType.charType
+    implicit def doubleColumnType: ScalaNumericType[Double] = ScalaBaseType.doubleType
+    implicit def floatColumnType: ScalaNumericType[Float] = ScalaBaseType.floatType
+    implicit def intColumnType: ScalaNumericType[Int] = ScalaBaseType.intType
+    implicit def longColumnType: ScalaNumericType[Long] = ScalaBaseType.longType
+    implicit def shortColumnType: ScalaNumericType[Short] = ScalaBaseType.shortType
+    implicit def stringColumnType: ScalaBaseType[String] = ScalaBaseType.stringType
   }
 
   /* internal: */
@@ -47,7 +51,7 @@ trait MemoryQueryingProfile extends BasicProfile { self: MemoryQueryingProfile =
   class MemoryCodeGen extends CodeGen with ResultConverterCompiler[MemoryResultConverterDomain] {
     override def apply(state: CompilerState): CompilerState = state.map(n => retype(apply(n, state))).withWellTyped(false)
 
-    def compileServerSideAndMapping(serverSide: Node, mapping: Option[Node], state: CompilerState) = (serverSide, mapping.map(compileMapping))
+    def compileServerSideAndMapping(serverSide: Node, mapping: Option[Node], state: CompilerState): (Node, Option[CompiledMapping]) = (serverSide, mapping.map(compileMapping))
 
     def retype(n: Node): Node = {
       val n2 = transformSimpleGrouping(n)
@@ -55,7 +59,7 @@ trait MemoryQueryingProfile extends BasicProfile { self: MemoryQueryingProfile =
       n3 :@ trType(n3.nodeType)
     }
 
-    def transformSimpleGrouping(n: Node) = n match {
+    def transformSimpleGrouping(n: Node): Node = n match {
       case Bind(gen, g: GroupBy, p @ Pure((_: ProductNode | _: StructNode), _)) =>
         val p2 = transformCountAll(gen, p)
         if(p2 eq p) n else Bind(gen, g, p2).infer(typeChildren = true)
@@ -86,7 +90,7 @@ trait MemoryQueryingProfile extends BasicProfile { self: MemoryQueryingProfile =
       new QueryResultConverter(idx, typeInfoFor(n.nodeType.structural).nullable)
 
     class QueryResultConverter(ridx: Int, nullable: Boolean) extends ResultConverter[MemoryResultConverterDomain, Any] {
-      def read(pr: MemoryResultConverterDomain#Reader) = {
+      def read(pr: MemoryResultConverterDomain#Reader): Any = {
         val v = pr(ridx-1)
         if(!nullable && (v.asInstanceOf[AnyRef] eq null)) throw new SlickException("Read null value for non-nullable column")
 
@@ -94,9 +98,9 @@ trait MemoryQueryingProfile extends BasicProfile { self: MemoryQueryingProfile =
         if(!nullable && v.isInstanceOf[Option[_]]) v.asInstanceOf[Option[_]].get
         else v
       }
-      def update(value: Any, pr: MemoryResultConverterDomain#Updater) = ??
-      def set(value: Any, pp: MemoryResultConverterDomain#Writer) = ??
-      override def getDumpInfo = super.getDumpInfo.copy(mainInfo = s"ridx=$ridx, nullable=$nullable")
+      def update(value: Any, pr: MemoryResultConverterDomain#Updater): Nothing = ??
+      def set(value: Any, pp: MemoryResultConverterDomain#Writer): Nothing = ??
+      override def getDumpInfo: DumpInfo = super.getDumpInfo.copy(mainInfo = s"ridx=$ridx, nullable=$nullable")
       def width = 1
     }
   }

@@ -7,17 +7,19 @@ import Util._
 import TypeUtil._
 
 import scala.collection.mutable
+import slick.ast.LiteralNode
+import slick.compiler.CompilerState
 
 /** Expand sum types and their catamorphisms to equivalent product type operations. */
 class ExpandSums extends Phase {
   val name = "expandSums"
 
-  def apply(state: CompilerState) =
+  def apply(state: CompilerState): CompilerState =
     if(state.get(Phase.assignUniqueSymbols).map(_.nonPrimitiveOption).getOrElse(true)) state.map(expandSums)
     else state
 
-  val Disc1 = LiteralNode(ScalaBaseType.optionDiscType.optionType, Option(1))
-  val DiscNone = LiteralNode(ScalaBaseType.optionDiscType.optionType, None)
+  val Disc1: LiteralNode = LiteralNode(ScalaBaseType.optionDiscType.optionType, Option(1))
+  val DiscNone: LiteralNode = LiteralNode(ScalaBaseType.optionDiscType.optionType, None)
 
   def expandSums(n: Node): Node = {
     var multi = false

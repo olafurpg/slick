@@ -4,6 +4,7 @@ import slick.ast._
 import Util._
 import TypeUtil._
 import slick.util.ConstArray
+import slick.compiler.CompilerState
 
 /** An optional phase which rewrites outer joins into more commonly supported
   * operations for use on databases that lack outer join support.
@@ -15,7 +16,7 @@ import slick.util.ConstArray
 class EmulateOuterJoins(val useLeftJoin: Boolean, val useRightJoin: Boolean) extends Phase {
   val name = "emulateOuterJoins"
 
-  def apply(state: CompilerState) = state.map(tree => ClientSideOp.mapServerSide(tree, true){ n =>
+  def apply(state: CompilerState): CompilerState = state.map(tree => ClientSideOp.mapServerSide(tree, true){ n =>
     val n2 = convert(n)
     if(n2 eq n) n2 else Phase.forceOuterBinds.apply(n2)
   })

@@ -9,6 +9,7 @@ import com.typesafe.config.Config
 import slick.util._
 import slick.util.ConfigExtensionMethods._
 import slick.SlickException
+import java.lang
 
 /** A `JdbcDataSource` provides a way to create a `Connection` object for a database. It is
   * similar to a `javax.sql.DataSource` but simpler. Unlike [[JdbcBackend.DatabaseDef]] it is not a
@@ -139,7 +140,7 @@ class DriverJdbcDataSource(url: String, user: String, password: String, prop: Pr
 
   if(driver eq null) registerDriver(driverName, url)
 
-  val connectionProps = if(prop.ne(null) && user.eq(null) && password.eq(null)) prop else {
+  val connectionProps: Properties = if(prop.ne(null) && user.eq(null) && password.eq(null)) prop else {
     val p = new Properties(prop)
     if(user ne null) p.setProperty("user", user)
     if(password ne null) p.setProperty("password", password)
@@ -191,7 +192,7 @@ object DriverJdbcDataSource extends JdbcDataSourceFactory {
 
 /** Set parameters on a new Connection. This is used by [[DataSourceJdbcDataSource]]. */
 class ConnectionPreparer(c: Config) extends (Connection => Unit) {
-  val isolation = c.getStringOpt("isolation").map {
+  val isolation: Option[Int] = c.getStringOpt("isolation").map {
     case "NONE" => Connection.TRANSACTION_NONE
     case "READ_COMMITTED" => Connection.TRANSACTION_READ_COMMITTED
     case "READ_UNCOMMITTED" => Connection.TRANSACTION_READ_UNCOMMITTED
@@ -199,10 +200,10 @@ class ConnectionPreparer(c: Config) extends (Connection => Unit) {
     case "SERIALIZABLE" => Connection.TRANSACTION_SERIALIZABLE
     case unknown => throw new SlickException(s"Unknown transaction isolation level [$unknown]")
   }
-  val catalog = c.getStringOpt("catalog").orElse(c.getStringOpt("defaultCatalog"))
-  val readOnly = c.getBooleanOpt("readOnly")
+  val catalog: Option[lang.String] = c.getStringOpt("catalog").orElse(c.getStringOpt("defaultCatalog"))
+  val readOnly: Option[Boolean] = c.getBooleanOpt("readOnly")
 
-  val isLive = isolation.isDefined || catalog.isDefined || readOnly.isDefined
+  val isLive: Boolean = isolation.isDefined || catalog.isDefined || readOnly.isDefined
 
   def apply(c: Connection): Unit = if(isLive) {
     isolation.foreach(c.setTransactionIsolation)

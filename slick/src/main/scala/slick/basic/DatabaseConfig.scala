@@ -104,8 +104,8 @@ object DatabaseConfig {
       val profile: P = untypedP.asInstanceOf[P]
       val driver: P = untypedP.asInstanceOf[P]
       lazy val config: Config = if(path.isEmpty) root else root.getConfig(path)
-      def profileName = if(profileIsObject) n.substring(0, n.length-1) else n
-      def profileIsObject = n.endsWith("$")
+      def profileName: String = if(profileIsObject) n.substring(0, n.length-1) else n
+      def profileIsObject: Boolean = n.endsWith("$")
     }
   }
 

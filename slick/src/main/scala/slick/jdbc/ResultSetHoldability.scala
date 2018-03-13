@@ -1,18 +1,19 @@
 package slick.jdbc
 
 import java.sql.ResultSet
+import slick.jdbc.ResultSetHoldability
 
 /** Represents a result set holdability mode .*/
 sealed abstract class ResultSetHoldability(val intValue: Int) { self =>
   /** Return this `ResultSetHoldability`, unless it is `Auto` in which case
     * the specified holdability mode is returned instead. */
-  def withDefault(r: ResultSetHoldability) = this
+  def withDefault(r: ResultSetHoldability): ResultSetHoldability = this
 }
 
 object ResultSetHoldability {
   /** The current holdability mode of the JDBC driver */
   case object Auto extends ResultSetHoldability(0) {
-    override def withDefault(r: ResultSetHoldability) = r
+    override def withDefault(r: ResultSetHoldability): ResultSetHoldability = r
   }
 
   /** The default holdability mode of the JDBC driver */

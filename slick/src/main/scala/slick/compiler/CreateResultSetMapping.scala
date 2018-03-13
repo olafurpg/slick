@@ -4,6 +4,7 @@ import slick.SlickException
 import slick.ast._
 import TypeUtil._
 import slick.util.ConstArray
+import slick.compiler.CompilerState
 
 /** Create a ResultSetMapping root node, ensure that the top-level server-side node returns a
   * collection, and hoist client-side type conversions into the ResultSetMapping. The original
@@ -11,7 +12,7 @@ import slick.util.ConstArray
 class CreateResultSetMapping extends Phase {
   val name = "createResultSetMapping"
 
-  def apply(state: CompilerState) = state.map { n =>
+  def apply(state: CompilerState): CompilerState = state.map { n =>
     val tpe = state.get(Phase.removeMappedTypes).get
     ClientSideOp.mapServerSide(n, keepType = false) { ch =>
       val syms = ch.nodeType.structural match {
@@ -71,7 +72,7 @@ class RemoveMappedTypes extends Phase {
   val name = "removeMappedTypes"
   type State = Type
 
-  def apply(state: CompilerState) =
+  def apply(state: CompilerState): CompilerState =
     if(state.get(Phase.assignUniqueSymbols).map(_.typeMapping).getOrElse(true))
       state.withNode(removeTypeMapping(state.tree)) + (this -> state.tree.nodeType)
     else state + (this -> state.tree.nodeType)

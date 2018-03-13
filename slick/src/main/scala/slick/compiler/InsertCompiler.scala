@@ -5,15 +5,16 @@ import slick.{SlickTreeException, SlickException}
 import slick.util.{ConstArray, SlickLogger}
 import org.slf4j.LoggerFactory
 import Util._
+import slick.compiler.CompilerState
 
 /** A custom compiler for INSERT statements. We could reuse the standard
   * phases with a minor modification instead, but this is much faster. */
 class InsertCompiler(val mode: InsertCompiler.Mode) extends Phase {
   val name = "insertCompiler"
 
-  override protected[this] lazy val logger = new SlickLogger(LoggerFactory.getLogger(classOf[CodeGen]))
+  override protected[this] lazy val logger: SlickLogger = new SlickLogger(LoggerFactory.getLogger(classOf[CodeGen]))
 
-  def apply(state: CompilerState) = state.map { tree =>
+  def apply(state: CompilerState): CompilerState = state.map { tree =>
     val tableSym, linearSym = new AnonSymbol
     val tref = Ref(tableSym)
     val rref = Ref(linearSym)
@@ -71,10 +72,10 @@ object InsertCompiler {
   }
   /** Include only non-AutoInc columns. For use in standard (soft) inserts. */
   case object NonAutoInc extends Mode {
-    def apply(fs: FieldSymbol) = !fs.options.contains(ColumnOption.AutoInc)
+    def apply(fs: FieldSymbol): Boolean = !fs.options.contains(ColumnOption.AutoInc)
   }
   /** Include only primary keys. For use in the insertOrUpdate emulation. */
   case object PrimaryKeys extends Mode {
-    def apply(fs: FieldSymbol) = fs.options.contains(ColumnOption.PrimaryKey)
+    def apply(fs: FieldSymbol): Boolean = fs.options.contains(ColumnOption.PrimaryKey)
   }
 }

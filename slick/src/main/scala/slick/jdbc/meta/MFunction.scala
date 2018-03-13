@@ -2,15 +2,19 @@ package slick.jdbc.meta
 
 import java.sql._
 import slick.jdbc.ResultSetAction
+import scala.`package`.Vector
+import slick.basic.BasicStreamingAction
+import slick.dbio.Effect.Read
+import slick.jdbc.meta.{ MFunction, MFunctionColumn }
 
 /** A wrapper for a row in the ResultSet returned by DatabaseMetaData.getFunctions(). */
 case class MFunction(name: MQName, remarks: String, returnsTable: Option[Boolean], specificName: String) {
-  def getFunctionColumns(columnNamePattern: String = "%") =
+  def getFunctionColumns(columnNamePattern: String = "%"): BasicStreamingAction[Vector[MFunctionColumn], MFunctionColumn, Read] =
     MFunctionColumn.getFunctionColumns(name, columnNamePattern)
 }
 
 object MFunction {
-  def getFunctions(namePattern: MQName) = {
+  def getFunctions(namePattern: MQName): BasicStreamingAction[Vector[MFunction], MFunction, Read] = {
     ResultSetAction[MFunction] { s =>
       try s.metaData.getFunctions(namePattern.catalog_?, namePattern.schema_?, namePattern.name)
       catch { case _: AbstractMethodError => null }

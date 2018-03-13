@@ -2,13 +2,15 @@ package slick.util
 
 import java.io.{OutputStreamWriter, StringWriter, PrintWriter}
 import LogUtil._
+import java.lang
+import slick.util.{ DumpInfo, TreePrinter }
 
 /** Create a readable printout of a tree. */
 case class TreePrinter(name: String = "", prefix: String = "", firstPrefix: String = null,
                        narrow: (Dumpable => Dumpable) = identity, mark: (Dumpable => Boolean) = (_ => false)) {
   import TreePrinter._
 
-  def get(n: Dumpable) = {
+  def get(n: Dumpable): lang.String = {
     val buf = new StringWriter
     print(n, new PrintWriter(buf))
     buf.getBuffer.toString
@@ -64,7 +66,7 @@ case class TreePrinter(name: String = "", prefix: String = "", firstPrefix: Stri
 }
 
 object TreePrinter {
-  def default = new TreePrinter
+  def default: TreePrinter = new TreePrinter
 
   private[TreePrinter] val (childPrefix1, childPrefix2, lastChildPrefix1, lastChildPrefix2, multi1, multi2) =
     if(GlobalConfig.unicodeDump) ("\u2523 ", "\u2503 ", "\u2517 ", "  ", "\u250f ", "\u2507 ")
@@ -79,19 +81,19 @@ trait Dumpable {
 
 /** The information required for dumping a single object */
 case class DumpInfo(name: String, mainInfo: String = "", attrInfo: String = "", children: Iterable[(String, Dumpable)] = Vector.empty) {
-  def getNamePlusMainInfo = if(name.nonEmpty && mainInfo.nonEmpty) name + " " + mainInfo else name + mainInfo
+  def getNamePlusMainInfo: lang.String = if(name.nonEmpty && mainInfo.nonEmpty) name + " " + mainInfo else name + mainInfo
 }
 
 object DumpInfo {
   def simpleNameFor(cl: Class[_]): String = cl.getName.replaceFirst(".*\\.", "")
 
-  def highlight(s: String) = cGreen + s + cNormal
+  def highlight(s: String): lang.String = cGreen + s + cNormal
 }
 
 /** Create a wrapper for a `Dumpable` to omit some nodes. */
 object Ellipsis {
   def apply(n: Dumpable, poss: List[Int]*): Dumpable = new Dumpable {
-    def getDumpInfo = {
+    def getDumpInfo: DumpInfo = {
       val parent = n.getDumpInfo
       if(poss.isEmpty) parent
       else if(poss contains Nil) DumpInfo("...")

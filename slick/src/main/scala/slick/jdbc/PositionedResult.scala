@@ -5,24 +5,26 @@ import scala.collection.generic.CanBuildFrom
 import java.sql.{ResultSet, Blob, Clob, Date, Time, Timestamp}
 import java.io.Closeable
 import slick.util.{ReadAheadIterator, CloseableIterator}
+import java.lang
+import slick.jdbc.PositionedResult
 
 /**
  * A database result positioned at a row and column.
  */
 abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
-  protected[this] var pos = Int.MaxValue
+  protected[this] var pos: Int = Int.MaxValue
   protected[this] val startPos = 0
 
-  lazy val numColumns = rs.getMetaData().getColumnCount()
+  lazy val numColumns: Int = rs.getMetaData().getColumnCount()
 
-  final def currentPos = pos
-  final def hasMoreColumns = pos < numColumns
+  final def currentPos: Int = pos
+  final def hasMoreColumns: Boolean = pos < numColumns
 
-  final def skip = { pos += 1; this }
-  final def restart = { pos = startPos; this }
-  final def rewind = { pos = Int.MinValue; this }
+  final def skip: PositionedResult = { pos += 1; this }
+  final def restart: PositionedResult = { pos = startPos; this }
+  final def rewind: PositionedResult = { pos = Int.MinValue; this }
 
-  def nextRow = {
+  def nextRow: Boolean = {
     val ret = (pos == Int.MinValue) || rs.next
     pos = startPos
     ret
@@ -31,41 +33,41 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
   final def << [T](implicit f: GetResult[T]): T = f(this)
   final def <<? [T](implicit f: GetResult[Option[T]]): Option[T] = if(hasMoreColumns) this.<< else None
 
-  final def nextBoolean()    = { val npos = pos + 1; val r = rs getBoolean    npos; pos = npos; r }
-  final def nextBigDecimal() = { val npos = pos + 1; val r = rs getBigDecimal npos; pos = npos; if(r eq null) null else BigDecimal(r) }
-  final def nextBlob()       = { val npos = pos + 1; val r = rs getBlob       npos; pos = npos; r }
-  final def nextByte()       = { val npos = pos + 1; val r = rs getByte       npos; pos = npos; r }
-  final def nextBytes()      = { val npos = pos + 1; val r = rs getBytes      npos; pos = npos; r }
-  final def nextClob()       = { val npos = pos + 1; val r = rs getClob       npos; pos = npos; r }
-  final def nextDate()       = { val npos = pos + 1; val r = rs getDate       npos; pos = npos; r }
-  final def nextDouble()     = { val npos = pos + 1; val r = rs getDouble     npos; pos = npos; r }
-  final def nextFloat()      = { val npos = pos + 1; val r = rs getFloat      npos; pos = npos; r }
-  final def nextInt()        = { val npos = pos + 1; val r = rs getInt        npos; pos = npos; r }
-  final def nextLong()       = { val npos = pos + 1; val r = rs getLong       npos; pos = npos; r }
-  final def nextObject()     = { val npos = pos + 1; val r = rs getObject     npos; pos = npos; r }
-  final def nextShort()      = { val npos = pos + 1; val r = rs getShort      npos; pos = npos; r }
-  final def nextString()     = { val npos = pos + 1; val r = rs getString     npos; pos = npos; r }
-  final def nextTime()       = { val npos = pos + 1; val r = rs getTime       npos; pos = npos; r }
-  final def nextTimestamp()  = { val npos = pos + 1; val r = rs getTimestamp  npos; pos = npos; r }
+  final def nextBoolean(): Boolean    = { val npos = pos + 1; val r = rs getBoolean    npos; pos = npos; r }
+  final def nextBigDecimal(): math.BigDecimal = { val npos = pos + 1; val r = rs getBigDecimal npos; pos = npos; if(r eq null) null else BigDecimal(r) }
+  final def nextBlob(): Blob       = { val npos = pos + 1; val r = rs getBlob       npos; pos = npos; r }
+  final def nextByte(): Byte       = { val npos = pos + 1; val r = rs getByte       npos; pos = npos; r }
+  final def nextBytes(): Array[Byte]      = { val npos = pos + 1; val r = rs getBytes      npos; pos = npos; r }
+  final def nextClob(): Clob       = { val npos = pos + 1; val r = rs getClob       npos; pos = npos; r }
+  final def nextDate(): Date       = { val npos = pos + 1; val r = rs getDate       npos; pos = npos; r }
+  final def nextDouble(): Double     = { val npos = pos + 1; val r = rs getDouble     npos; pos = npos; r }
+  final def nextFloat(): Float      = { val npos = pos + 1; val r = rs getFloat      npos; pos = npos; r }
+  final def nextInt(): Int        = { val npos = pos + 1; val r = rs getInt        npos; pos = npos; r }
+  final def nextLong(): Long       = { val npos = pos + 1; val r = rs getLong       npos; pos = npos; r }
+  final def nextObject(): Object     = { val npos = pos + 1; val r = rs getObject     npos; pos = npos; r }
+  final def nextShort(): Short      = { val npos = pos + 1; val r = rs getShort      npos; pos = npos; r }
+  final def nextString(): lang.String     = { val npos = pos + 1; val r = rs getString     npos; pos = npos; r }
+  final def nextTime(): Time       = { val npos = pos + 1; val r = rs getTime       npos; pos = npos; r }
+  final def nextTimestamp(): Timestamp  = { val npos = pos + 1; val r = rs getTimestamp  npos; pos = npos; r }
 
-  final def wasNull() = rs.wasNull
+  final def wasNull(): Boolean = rs.wasNull
 
-  final def nextBooleanOption()    = { val npos = pos + 1; val r = rs getBoolean    npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextBigDecimalOption() = { val npos = pos + 1; val r = rs getBigDecimal npos; val rr = (if(rs.wasNull) None else Some(BigDecimal(r))); pos = npos; rr }
-  final def nextBlobOption()       = { val npos = pos + 1; val r = rs getBlob       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextByteOption()       = { val npos = pos + 1; val r = rs getByte       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextBytesOption()      = { val npos = pos + 1; val r = rs getBytes      npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextClobOption()       = { val npos = pos + 1; val r = rs getClob       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextDateOption()       = { val npos = pos + 1; val r = rs getDate       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextDoubleOption()     = { val npos = pos + 1; val r = rs getDouble     npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextFloatOption()      = { val npos = pos + 1; val r = rs getFloat      npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextIntOption()        = { val npos = pos + 1; val r = rs getInt        npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextLongOption()       = { val npos = pos + 1; val r = rs getLong       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextObjectOption()     = { val npos = pos + 1; val r = rs getObject     npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextShortOption()      = { val npos = pos + 1; val r = rs getShort      npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextStringOption()     = { val npos = pos + 1; val r = rs getString     npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextTimeOption()       = { val npos = pos + 1; val r = rs getTime       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
-  final def nextTimestampOption()  = { val npos = pos + 1; val r = rs getTimestamp  npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextBooleanOption(): Option[Boolean]    = { val npos = pos + 1; val r = rs getBoolean    npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextBigDecimalOption(): Option[math.BigDecimal] = { val npos = pos + 1; val r = rs getBigDecimal npos; val rr = (if(rs.wasNull) None else Some(BigDecimal(r))); pos = npos; rr }
+  final def nextBlobOption(): Option[Blob]       = { val npos = pos + 1; val r = rs getBlob       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextByteOption(): Option[Byte]       = { val npos = pos + 1; val r = rs getByte       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextBytesOption(): Option[Array[Byte]]      = { val npos = pos + 1; val r = rs getBytes      npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextClobOption(): Option[Clob]       = { val npos = pos + 1; val r = rs getClob       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextDateOption(): Option[Date]       = { val npos = pos + 1; val r = rs getDate       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextDoubleOption(): Option[Double]     = { val npos = pos + 1; val r = rs getDouble     npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextFloatOption(): Option[Float]      = { val npos = pos + 1; val r = rs getFloat      npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextIntOption(): Option[Int]        = { val npos = pos + 1; val r = rs getInt        npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextLongOption(): Option[Long]       = { val npos = pos + 1; val r = rs getLong       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextObjectOption(): Option[Object]     = { val npos = pos + 1; val r = rs getObject     npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextShortOption(): Option[Short]      = { val npos = pos + 1; val r = rs getShort      npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextStringOption(): Option[lang.String]     = { val npos = pos + 1; val r = rs getString     npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextTimeOption(): Option[Time]       = { val npos = pos + 1; val r = rs getTime       npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
+  final def nextTimestampOption(): Option[Timestamp]  = { val npos = pos + 1; val r = rs getTimestamp  npos; val rr = (if(rs.wasNull) None else Some(r)); pos = npos; rr }
 
   final def updateBoolean(v: Boolean)       { val npos = pos + 1; rs.updateBoolean   (npos, v); pos = npos }
   final def updateBlob(v: Blob)             { val npos = pos + 1; rs.updateBlob      (npos, v); pos = npos }
@@ -115,10 +117,10 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
    * at discriminatorPos) returns false or when this PositionedResult ends.
    */
   def view(discriminatorPos: Int, dataPos: Int, discriminator: (PositionedResult => Boolean)): PositionedResult = new PositionedResult(rs) {
-    override protected[this] val startPos = dataPos
+    override protected[this] val startPos: Int = dataPos
     pos = Int.MinValue
     def close() {}
-    override def nextRow = {
+    override def nextRow: Boolean = {
       def disc = {
         pos = discriminatorPos
         val ret = discriminator(this)
@@ -153,10 +155,10 @@ abstract class PositionedResult(val rs: ResultSet) extends Closeable { outer =>
     b.result()
   }
 
-  final def to[C[_]] = new To[C]()
+  final def to[C[_]]: PositionedResult.this.To[C] = new To[C]()
 
   final class To[C[_]] private[PositionedResult] () {
-    def apply[R](gr: GetResult[R])(implicit session: JdbcBackend#Session, canBuildFrom: CanBuildFrom[Nothing, R, C[R]]) =
+    def apply[R](gr: GetResult[R])(implicit session: JdbcBackend#Session, canBuildFrom: CanBuildFrom[Nothing, R, C[R]]): C[R] =
       build[C, R](gr)
   }
 }
@@ -169,7 +171,7 @@ abstract class PositionedResultIterator[+T](val pr: PositionedResult, maxRows: I
   private[this] var closed = false
   private[this] var readRows = 0
 
-  def rs = pr.rs
+  def rs: ResultSet = pr.rs
 
   protected def fetchNext(): T = {
     if((readRows < maxRows || maxRows <= 0) && pr.nextRow) {

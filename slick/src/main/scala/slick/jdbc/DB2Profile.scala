@@ -10,6 +10,8 @@ import slick.lifted._
 import slick.relational.RelationalCapabilities
 import slick.basic.Capability
 import slick.util.MacroSupport.macroSupportInterpolation
+import java.lang
+import slick.compiler.QueryCompiler
 
 /** Slick profile for IBM DB2 UDB.
   *
@@ -51,10 +53,10 @@ trait DB2Profile extends JdbcProfile {
   override protected lazy val useServerSideUpsertReturning = false
   override protected val invokerMutateType: ResultSetType = ResultSetType.ScrollSensitive
 
-  override protected def computeQueryCompiler =
+  override protected def computeQueryCompiler: QueryCompiler =
     (super.computeQueryCompiler.addAfter(Phase.removeTakeDrop, Phase.expandSums)
       + Phase.rewriteBooleans)
-  override val columnTypes = new JdbcTypes
+  override val columnTypes: DB2Profile.this.JdbcTypes = new JdbcTypes
   override def createQueryBuilder(n: Node, state: CompilerState): QueryBuilder = new QueryBuilder(n, state)
   override def createTableDDLBuilder(table: Table[_]): TableDDLBuilder = new TableDDLBuilder(table)
   override def createColumnDDLBuilder(column: FieldSymbol, table: Table[_]): ColumnDDLBuilder = new ColumnDDLBuilder(column)
@@ -68,7 +70,7 @@ trait DB2Profile extends JdbcProfile {
     case _ => super.defaultSqlTypeName(tmd, sym)
   }
 
-  override val scalarFrom = Some("sysibm.sysdummy1")
+  override val scalarFrom: Some[lang.String] = Some("sysibm.sysdummy1")
 
   class QueryBuilder(tree: Node, state: CompilerState) extends super.QueryBuilder(tree, state) {
 
@@ -108,7 +110,7 @@ trait DB2Profile extends JdbcProfile {
       if(o.direction.desc) b += " desc"
     }
 
-    override protected def buildForUpdateClause(forUpdate: Boolean) = {
+    override protected def buildForUpdateClause(forUpdate: Boolean): Unit = {
       super.buildForUpdateClause(forUpdate)
       if(forUpdate) {
         b" with RS "
@@ -117,7 +119,7 @@ trait DB2Profile extends JdbcProfile {
   }
 
   class TableDDLBuilder(table: Table[_]) extends super.TableDDLBuilder(table) {
-    override protected def createIndex(idx: Index) = {
+    override protected def createIndex(idx: Index): String = {
       if(idx.unique) {
         /* Create a UNIQUE CONSTRAINT (with an automatically generated backing
          * index) because DB2 does not allow a FOREIGN KEY CONSTRAINT to
@@ -133,7 +135,7 @@ trait DB2Profile extends JdbcProfile {
 
     //For compatibility with all versions of DB2 
     //http://stackoverflow.com/questions/3006999/sql-query-to-truncate-table-in-ibm-db2
-    override def truncateTable = s"DELETE FROM ${quoteTableName(tableNode)}"
+    override def truncateTable: String = s"DELETE FROM ${quoteTableName(tableNode)}"
   }
 
   class ColumnDDLBuilder(column: FieldSymbol) extends super.ColumnDDLBuilder(column) {
@@ -162,11 +164,11 @@ trait DB2Profile extends JdbcProfile {
   }
 
   class JdbcTypes extends super.JdbcTypes {
-    override val booleanJdbcType = new BooleanJdbcType
-    override val uuidJdbcType = new UUIDJdbcType
+    override val booleanJdbcType: JdbcTypes.this.BooleanJdbcType = new BooleanJdbcType
+    override val uuidJdbcType: JdbcTypes.this.UUIDJdbcType = new UUIDJdbcType
 
     class UUIDJdbcType extends super.UUIDJdbcType {
-      override def sqlType = java.sql.Types.CHAR
+      override def sqlType: Int = java.sql.Types.CHAR
       override def sqlTypeName(sym: Option[FieldSymbol]) = "CHAR(16) FOR BIT DATA"
     }
 
@@ -174,7 +176,7 @@ trait DB2Profile extends JdbcProfile {
      * a constrained CHAR with constants 1 and 0 for TRUE and FALSE. */
     class BooleanJdbcType extends super.BooleanJdbcType {
       override def sqlTypeName(sym: Option[FieldSymbol]) = "CHAR(1)"
-      override def valueToSQLLiteral(value: Boolean) = if(value) "1" else "0"
+      override def valueToSQLLiteral(value: Boolean): String = if(value) "1" else "0"
     }
   }
 }

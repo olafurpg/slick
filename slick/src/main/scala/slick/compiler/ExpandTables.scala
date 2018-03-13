@@ -6,6 +6,7 @@ import TypeUtil._
 import slick.util.ConstArray
 
 import scala.collection.mutable
+import slick.compiler.CompilerState
 
 /** Expand table-valued expressions in the result type to their star projection and compute the
   * missing structural expansions of table types. After this phase the AST should always be
@@ -13,7 +14,7 @@ import scala.collection.mutable
 class ExpandTables extends Phase {
   val name = "expandTables"
 
-  def apply(state: CompilerState) = {
+  def apply(state: CompilerState): CompilerState = {
     var createdOption = false
 
     /** Create an expression that copies a structured value, expanding tables in it. */

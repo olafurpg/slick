@@ -1,10 +1,11 @@
 package slick.collection.heterogeneous
 
 /** Extra syntax for heterogenous collections. */
+import slick.collection.heterogeneous.HCons
 object syntax {
   // Use :: for types and extractors
   type :: [+H, +T <: HList] = HCons[H, T]
-  val :: = HCons
+  val :: : HCons.type = HCons
 
   type Zero = slick.collection.heterogeneous.Zero.type
   type HNil = slick.collection.heterogeneous.HNil.type

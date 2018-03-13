@@ -3,6 +3,7 @@ package slick.util
 import org.slf4j.{Logger => Slf4jLogger, LoggerFactory}
 
 import scala.reflect.ClassTag
+import slick.util.SlickLogger
 
 final class SlickLogger(val slf4jLogger: Slf4jLogger) {
   @inline
@@ -13,7 +14,7 @@ final class SlickLogger(val slf4jLogger: Slf4jLogger) {
     debug(msg+"\n"+SlickLogger.treePrinter.copy(mark = mark).get(n))
 
   @inline
-  def isDebugEnabled = slf4jLogger.isDebugEnabled()
+  def isDebugEnabled: Boolean = slf4jLogger.isDebugEnabled()
 
   @inline
   def error(msg: => String) { if (slf4jLogger.isErrorEnabled) slf4jLogger.error(msg) }
@@ -58,7 +59,7 @@ object SlickLogger {
 }
 
 trait Logging {
-  protected[this] lazy val logger = {
+  protected[this] lazy val logger: SlickLogger = {
     val n = getClass.getName
     val cln = if(n endsWith "$") n.substring(0, n.length-1) else n
     new SlickLogger(LoggerFactory.getLogger(cln))

@@ -15,6 +15,10 @@ import slick.basic.{DatabaseConfig, StaticDatabaseConfigMacros}
 import slick.dbio.{NoStream, Effect}
 import slick.sql.{SqlAction, SqlStreamingAction}
 import slick.util.ClassLoaderUtil
+import scala.`package`.Vector
+import scala.collection.immutable
+import scala.collection.mutable.Builder
+import slick.jdbc.StatementInvoker
 
 class ActionBasedSQLInterpolation(val s: StringContext) extends AnyVal {
   import ActionBasedSQLInterpolation._
@@ -93,16 +97,16 @@ case class SQLActionBuilder(queryParts: Seq[Any], unitPConv: SetParameter[Unit])
       if(queryParts.length == 1 && queryParts(0).isInstanceOf[String]) queryParts(0).asInstanceOf[String]
       else queryParts.iterator.map(String.valueOf).mkString
     new StreamingInvokerAction[Vector[R], R, Effect] {
-      def statements = List(query)
-      protected[this] def createInvoker(statements: Iterable[String]) = new StatementInvoker[R] {
-        val getStatement = statements.head
-        protected def setParam(st: PreparedStatement) = unitPConv((), new PositionedParameters(st))
+      def statements: immutable.List[String] = List(query)
+      protected[this] def createInvoker(statements: Iterable[String]): StatementInvoker[R] { val getStatement: String } = new StatementInvoker[R] {
+        val getStatement: String = statements.head
+        protected def setParam(st: PreparedStatement): Unit = unitPConv((), new PositionedParameters(st))
         protected def extractValue(rs: PositionedResult): R = rconv(rs)
       }
-      protected[this] def createBuilder = Vector.newBuilder[R]
+      protected[this] def createBuilder: Builder[R, immutable.Vector[R]] = Vector.newBuilder[R]
     }
   }
-  def asUpdate = as[Int](GetResult.GetUpdateValue).head
+  def asUpdate: SqlStreamingAction[Vector[Int], Int, Effect]#ResultAction[Int, NoStream, Effect] = as[Int](GetResult.GetUpdateValue).head
   def stripMargin(marginChar: Char): SQLActionBuilder =
     copy(queryParts.map(_.asInstanceOf[String].stripMargin(marginChar)))
   def stripMargin: SQLActionBuilder = copy(queryParts.map(_.asInstanceOf[String].stripMargin))

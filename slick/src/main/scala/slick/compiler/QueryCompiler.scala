@@ -5,20 +5,23 @@ import slick.SlickException
 import slick.util._
 import slick.ast.{SymbolNamer, Node}
 import org.slf4j.LoggerFactory
+import scala.collection.immutable
+import slick.compiler.{ AssignUniqueSymbols, CompilerState, CreateAggregates, CreateResultSetMapping, ExpandRecords, ExpandSums, ExpandTables, FixRowNumberOrdering, FlattenProjections, ForceOuterBinds, HoistClientOps, InferTypes, MergeToComprehensions, OptimizeScalar, Phase, PruneProjections, QueryCompiler, RelabelUnions, RemoveFieldNames, RemoveMappedTypes, RemoveTakeDrop, ReorderOperations, ResolveZipJoins, RewriteBooleans, RewriteDistinct, RewriteJoins, SpecializeParameters, UnrollTailBinds, VerifySymbols }
+import slick.util.SlickLogger
 
 /** An immutable, stateless query compiler consisting of a series of phases */
 class QueryCompiler(val phases: Vector[Phase]) extends Logging {
-  protected[this] lazy val benchmarkLogger = new SlickLogger(LoggerFactory.getLogger(getClass.getName+"Benchmark"))
+  protected[this] lazy val benchmarkLogger: SlickLogger = new SlickLogger(LoggerFactory.getLogger(getClass.getName+"Benchmark"))
 
   /** Return a new compiler with the new phase added at the end. */
-  def + (p: Phase) = new QueryCompiler(phases :+ p)
+  def + (p: Phase): QueryCompiler = new QueryCompiler(phases :+ p)
 
   /** Return a new compiler with the new phases added at the end. */
-  def ++ (ps: Seq[Phase]) = new QueryCompiler(phases ++ ps)
+  def ++ (ps: Seq[Phase]): QueryCompiler = new QueryCompiler(phases ++ ps)
 
   /** Return a new compiler with the new phase added directly after another
    * phase (or a different implementation of the same phase name). */
-  def addAfter(p: Phase, after: Phase) = new QueryCompiler({
+  def addAfter(p: Phase, after: Phase): QueryCompiler = new QueryCompiler({
     val i = phases.lastIndexWhere(_.name == after.name)
     if(i == -1) throw new SlickException("Previous phase "+after.name+" not found")
     else phases.patch(i+1, Seq(p), 0)
@@ -26,7 +29,7 @@ class QueryCompiler(val phases: Vector[Phase]) extends Logging {
 
   /** Return a new compiler with the new phase added directly before another
     * phase (or a different implementation of the same phase name). */
-  def addBefore(p: Phase, before: Phase) = new QueryCompiler({
+  def addBefore(p: Phase, before: Phase): QueryCompiler = new QueryCompiler({
     val i = phases.indexWhere(_.name == before.name)
     if(i == -1) throw new SlickException("Following phase "+before.name+" not found")
     else phases.patch(i, Seq(p), 0)
@@ -34,12 +37,12 @@ class QueryCompiler(val phases: Vector[Phase]) extends Logging {
 
   /** Return a new compiler without the given phase (or a different
    * implementation of the same phase name. */
-  def - (p: Phase) = new QueryCompiler(phases.filterNot(_.name == p.name))
+  def - (p: Phase): QueryCompiler = new QueryCompiler(phases.filterNot(_.name == p.name))
 
   /** Return a new compiler that replaces an existing phase by a new one with
    * the same name. The new phase must have a State that is assignable to the
    * original phase's state. */
-  def replace(p: Phase) = new QueryCompiler(phases.map(o => if(o.name == p.name) p else o))
+  def replace(p: Phase): QueryCompiler = new QueryCompiler(phases.map(o => if(o.name == p.name) p else o))
 
   /** Compile an AST with a new `CompilerState`. */
   def run(tree: Node): CompilerState = {
@@ -103,7 +106,7 @@ class QueryCompiler(val phases: Vector[Phase]) extends Logging {
 
 object QueryCompiler {
   /** The standard phases of the query compiler */
-  val standardPhases = Vector(
+  val standardPhases: immutable.Vector[Phase] = Vector(
     /* Clean up trees from the lifted embedding */
     Phase.assignUniqueSymbols,
     Phase.unrollTailBinds,
@@ -125,7 +128,7 @@ object QueryCompiler {
   )
 
   /** Extra phases for translation to SQL comprehensions */
-  val sqlPhases = Vector(
+  val sqlPhases: immutable.Vector[Phase] = Vector(
     // optional access:existsToCount goes here
     Phase.createAggregates,
     Phase.resolveZipJoins,
@@ -143,17 +146,17 @@ object QueryCompiler {
   )
 
   /** Extra phases needed for the QueryInterpreter */
-  val interpreterPhases = Vector(
+  val interpreterPhases: immutable.Vector[Phase] = Vector(
     Phase.pruneProjections,
     Phase.createResultSetMapping,
     Phase.removeFieldNames
   )
 
   /** The default compiler */
-  val standard = new QueryCompiler(standardPhases)
+  val standard: QueryCompiler = new QueryCompiler(standardPhases)
 
   /** Construct a new `QueryCompiler` with the given phases */
-  def apply(phases: Phase*) = new QueryCompiler(phases.toVector)
+  def apply(phases: Phase*): QueryCompiler = new QueryCompiler(phases.toVector)
 }
 
 /** A phase of the query compiler, identified by a unique name */
@@ -172,35 +175,35 @@ trait Phase extends (CompilerState => CompilerState) with Logging {
   * the standard phases of the query compiler */
 object Phase {
   /* The standard phases of the query compiler */
-  val unrollTailBinds = new UnrollTailBinds
-  val assignUniqueSymbols = new AssignUniqueSymbols
-  val inferTypes = new InferTypes
-  val expandTables = new ExpandTables
-  val forceOuterBinds = new ForceOuterBinds
-  val removeMappedTypes = new RemoveMappedTypes
-  val expandSums = new ExpandSums
-  val expandRecords = new ExpandRecords
-  val flattenProjections = new FlattenProjections
-  val createAggregates = new CreateAggregates
-  val rewriteJoins = new RewriteJoins
-  val verifySymbols = new VerifySymbols
-  val resolveZipJoins = new ResolveZipJoins
-  val createResultSetMapping = new CreateResultSetMapping
-  val hoistClientOps = new HoistClientOps
-  val reorderOperations = new ReorderOperations
-  val relabelUnions = new RelabelUnions
-  val mergeToComprehensions = new MergeToComprehensions
-  val optimizeScalar = new OptimizeScalar
-  val fixRowNumberOrdering = new FixRowNumberOrdering
-  val pruneProjections = new PruneProjections
-  val rewriteDistinct = new RewriteDistinct
-  val removeFieldNames = new RemoveFieldNames
+  val unrollTailBinds: UnrollTailBinds = new UnrollTailBinds
+  val assignUniqueSymbols: AssignUniqueSymbols = new AssignUniqueSymbols
+  val inferTypes: InferTypes = new InferTypes
+  val expandTables: ExpandTables = new ExpandTables
+  val forceOuterBinds: ForceOuterBinds = new ForceOuterBinds
+  val removeMappedTypes: RemoveMappedTypes = new RemoveMappedTypes
+  val expandSums: ExpandSums = new ExpandSums
+  val expandRecords: ExpandRecords = new ExpandRecords
+  val flattenProjections: FlattenProjections = new FlattenProjections
+  val createAggregates: CreateAggregates = new CreateAggregates
+  val rewriteJoins: RewriteJoins = new RewriteJoins
+  val verifySymbols: VerifySymbols = new VerifySymbols
+  val resolveZipJoins: ResolveZipJoins = new ResolveZipJoins
+  val createResultSetMapping: CreateResultSetMapping = new CreateResultSetMapping
+  val hoistClientOps: HoistClientOps = new HoistClientOps
+  val reorderOperations: ReorderOperations = new ReorderOperations
+  val relabelUnions: RelabelUnions = new RelabelUnions
+  val mergeToComprehensions: MergeToComprehensions = new MergeToComprehensions
+  val optimizeScalar: OptimizeScalar = new OptimizeScalar
+  val fixRowNumberOrdering: FixRowNumberOrdering = new FixRowNumberOrdering
+  val pruneProjections: PruneProjections = new PruneProjections
+  val rewriteDistinct: RewriteDistinct = new RewriteDistinct
+  val removeFieldNames: RemoveFieldNames = new RemoveFieldNames
 
   /* Extra phases that are not enabled by default */
-  val removeTakeDrop = new RemoveTakeDrop
-  val resolveZipJoinsRownumStyle = new ResolveZipJoins(rownumStyle = true)
-  val rewriteBooleans = new RewriteBooleans
-  val specializeParameters = new SpecializeParameters
+  val removeTakeDrop: RemoveTakeDrop = new RemoveTakeDrop
+  val resolveZipJoinsRownumStyle: ResolveZipJoins = new ResolveZipJoins(rownumStyle = true)
+  val rewriteBooleans: RewriteBooleans = new RewriteBooleans
+  val specializeParameters: SpecializeParameters = new SpecializeParameters
 }
 
 /** The current state of a compiler run, consisting of the current AST and
@@ -216,16 +219,16 @@ class CompilerState private (val compiler: QueryCompiler, val symbolNamer: Symbo
   def get[P <: Phase](p: P): Option[p.State] = state.get(p.name).asInstanceOf[Option[p.State]]
 
   /** Return a new `CompilerState` with the given mapping of phase to phase state */
-  def + [S, P <: Phase { type State = S }](t: (P, S)) =
+  def + [S, P <: Phase { type State = S }](t: (P, S)): CompilerState =
     new CompilerState(compiler, symbolNamer, tree, state + (t._1.name -> t._2), wellTyped)
 
   /** Return a new `CompilerState` which encapsulates the specified AST */
-  def withNode(tree: Node) = new CompilerState(compiler, symbolNamer, tree, state, wellTyped)
+  def withNode(tree: Node): CompilerState = new CompilerState(compiler, symbolNamer, tree, state, wellTyped)
 
   /** Return a new `CompilerState` which indicates whether or not the AST should be well-typed
     * after every phase. */
-  def withWellTyped(wellTyped: Boolean) = new CompilerState(compiler, symbolNamer, tree, state, wellTyped)
+  def withWellTyped(wellTyped: Boolean): CompilerState = new CompilerState(compiler, symbolNamer, tree, state, wellTyped)
 
   /** Return a new `CompilerState` with a transformed AST */
-  def map(f: Node => Node) = withNode(f(tree))
+  def map(f: Node => Node): CompilerState = withNode(f(tree))
 }

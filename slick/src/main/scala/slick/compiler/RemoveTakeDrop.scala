@@ -7,13 +7,14 @@ import TypeUtil._
 import QueryParameter.constOp
 
 import scala.collection.mutable
+import slick.compiler.CompilerState
 
 /** Replace all occurrences of `Take` and `Drop` with row number computations based on
   * `zipWithIndex` operations. */
 class RemoveTakeDrop(val translateTake: Boolean = true, val translateDrop: Boolean = true) extends Phase {
   val name = "removeTakeDrop"
 
-  def apply(state: CompilerState) = state.map { n =>
+  def apply(state: CompilerState): CompilerState = state.map { n =>
     val invalid = mutable.Set[TypeSymbol]()
     def tr(n: Node): Node = n.replace {
       case n @ TakeDrop(from, t, d) if (translateTake && t.isDefined) || (translateDrop && d.isDefined) =>

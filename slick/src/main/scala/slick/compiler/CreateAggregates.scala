@@ -5,12 +5,13 @@ import slick.ast.TypeUtil._
 import slick.ast.Util._
 import slick.ast._
 import slick.util.ConstArray
+import slick.compiler.CompilerState
 
 /** Rewrite aggregation function calls to Aggregate nodes. */
 class CreateAggregates extends Phase {
   val name = "createAggregates"
 
-  def apply(state: CompilerState) = {
+  def apply(state: CompilerState): CompilerState = {
     if(state.get(Phase.assignUniqueSymbols).map(_.aggregate).getOrElse(true))
       state.map(_.replace({
         case n @ Apply(f: AggregateFunctionSymbol, ConstArray(from)) =>

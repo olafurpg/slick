@@ -3,13 +3,14 @@ package slick.compiler
 import slick.SlickTreeException
 import slick.ast.Util._
 import slick.ast._
+import slick.compiler.CompilerState
 
 /** Verify that all monadic joins have been transformed into applicative joins and that the
   * resulting tree does not contain references to unreachable symbols. */
 class VerifySymbols extends Phase {
   val name = "verifySymbols"
 
-  def apply(state: CompilerState) = state.map { n2 =>
+  def apply(state: CompilerState): CompilerState = state.map { n2 =>
     def verifyScoping(n: Node, syms: Set[TermSymbol]): Unit = n match {
       case FwdPath(s :: _) if !syms.contains(s) =>
         val all = n2.collectAll[(TermSymbol, Node)] { case d: DefNode => d.generators }.toMap

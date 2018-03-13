@@ -3,12 +3,13 @@ package slick.compiler
 import slick.ast.Util._
 import slick.ast._
 import slick.util.ConstArray
+import slick.compiler.CompilerState
 
 /** Optimize scalar expressions */
 class OptimizeScalar extends Phase {
   val name = "optimizeScalar"
 
-  def apply(state: CompilerState) = state.map(_.tree.replace({
+  def apply(state: CompilerState): CompilerState = state.map(_.tree.replace({
     case n @ Library.==(IfThenElse(ConstArray(p, Const(a), Const(b))), LiteralNode(null)) =>
       logger.debug("Optimizing: (if(p) a else b).isNull", n)
       val (checkTrue, checkFalse) = (a.isEmpty, b.isEmpty)

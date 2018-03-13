@@ -2,6 +2,8 @@ package slick.util
 
 import java.io.Closeable
 import scala.util.control.NonFatal
+import slick.util.CloseableIterator
+import slick.util.CloseableIterator.Close
 
 /**
  * An Iterator with a `close` method to close the underlying data source.
@@ -16,9 +18,9 @@ trait CloseableIterator[+T] extends Iterator[T] with Closeable { self =>
   override def close(): Unit
 
   override def map[B](f: T => B): CloseableIterator[B] = new CloseableIterator[B] {
-    def hasNext = self.hasNext
-    def next() = f(self.next())
-    def close() = self.close()
+    def hasNext: Boolean = self.hasNext
+    def next(): B = f(self.next())
+    def close(): Unit = self.close()
   }
 
   final def use[R](f: (Iterator[T] => R)): R =
@@ -32,12 +34,12 @@ trait CloseableIterator[+T] extends Iterator[T] with Closeable { self =>
    * object when itself gets closed.
    */
   final def thenClose(c: Closeable): CloseableIterator[T] = new CloseableIterator[T] {
-    def hasNext = self.hasNext
-    def next() = self.next()
-    def close() = try self.close() finally c.close()
+    def hasNext: Boolean = self.hasNext
+    def next(): T = self.next()
+    def close(): Unit = try self.close() finally c.close()
   }
 
-  protected final def noNext = throw new NoSuchElementException("next on empty iterator")
+  protected final def noNext: Nothing = throw new NoSuchElementException("next on empty iterator")
 }
 
 object CloseableIterator {
@@ -47,7 +49,7 @@ object CloseableIterator {
    */
   val empty: CloseableIterator[Nothing] = new CloseableIterator[Nothing] {
     def hasNext = false
-    def next() = noNext
+    def next(): Nothing = noNext
     def close() {}
   }
 
@@ -56,8 +58,8 @@ object CloseableIterator {
    */
   class Single[+T](item: T) extends CloseableIterator[T] {
     private var more = true
-    def hasNext = more
-    def next() = if(more) { more = false; item } else noNext
+    def hasNext: Boolean = more
+    def next(): T = if(more) { more = false; item } else noNext
     def close {}
   }
 
@@ -67,10 +69,10 @@ object CloseableIterator {
    * itself gets closed. If the function terminates abnormally, the resource is
    * closed immediately.
    */
-  def close[C <: Closeable](makeC: => C) = new Close[C](makeC)
+  def close[C <: Closeable](makeC: => C): Close[C] = new Close[C](makeC)
 
   final class Close[C <: Closeable](makeC: => C) {
-    def after[T](f: C => CloseableIterator[T]) = {
+    def after[T](f: C => CloseableIterator[T]): CloseableIterator[T] = {
       val c = makeC
       (try f(c) catch { case NonFatal(e) =>
         try c.close() catch ignoreFollowOnError

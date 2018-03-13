@@ -9,6 +9,7 @@ import slick.lifted._
 import slick.util.GlobalConfig
 
 import com.typesafe.config.Config
+import java.lang
 
 /** The basic functionality that has to be implemented by all profiles. */
 trait BasicProfile extends BasicActionComponent { self: BasicProfile =>
@@ -41,7 +42,7 @@ trait BasicProfile extends BasicActionComponent { self: BasicProfile =>
 
   trait API extends Aliases with ExtensionMethodConversions {
     type Database = Backend#Database
-    val Database = backend.Database
+    val Database: backend.DatabaseFactory = backend.Database
     type Session = Backend#Session
     type SlickException = slick.SlickException
 
@@ -114,7 +115,7 @@ trait BasicProfile extends BasicActionComponent { self: BasicProfile =>
     GlobalConfig.profileConfig(findConfigName(Vector(getClass)).get)
   }
 
-  override def toString = {
+  override def toString: lang.String = {
     val n = getClass.getName
     if(n.startsWith("slick.") && n.endsWith("Profile$")) n
     else super.toString

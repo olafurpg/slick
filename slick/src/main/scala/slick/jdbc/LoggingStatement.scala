@@ -43,7 +43,7 @@ class LoggingStatement(st: Statement) extends Statement {
     params = null
   }
 
-  protected[this] def logged[T](sql: String, what: String = "statement")(f: =>T) = {
+  protected[this] def logged[T](sql: String, what: String = "statement")(f: =>T): T = {
     if(doStatement && (sql ne null)) JdbcBackend.statementLogger.debug("Executing "+what+": "+sql)
     if(doParameter && (paramss ne null) && paramss.nonEmpty) {
       // like s.groupBy but only group adjacent elements and keep the ordering
@@ -94,7 +94,7 @@ class LoggingStatement(st: Statement) extends Statement {
     else (ns / 1000000000L) + "s"
   }
 
-  def addBatch(sql: String) = {
+  def addBatch(sql: String): Unit = {
     if(doStatement) JdbcBackend.statementLogger.debug("Adding to batch: "+sql)
     st.addBatch(sql)
   }
@@ -109,35 +109,35 @@ class LoggingStatement(st: Statement) extends Statement {
   def executeUpdate(sql: String): Int = logged(sql, "update") { st.executeUpdate(sql) }
   def executeBatch(): Array[Int] = logged(null, "batch") { st.executeBatch() }
 
-  def setMaxFieldSize(max: Int) = st.setMaxFieldSize(max)
-  def clearWarnings() = st.clearWarnings()
-  def getMoreResults(current: Int) = st.getMoreResults(current)
+  def setMaxFieldSize(max: Int): Unit = st.setMaxFieldSize(max)
+  def clearWarnings(): Unit = st.clearWarnings()
+  def getMoreResults(current: Int): Boolean = st.getMoreResults(current)
   def getMoreResults: Boolean = st.getMoreResults
   def getGeneratedKeys: ResultSet = st.getGeneratedKeys
-  def cancel() = st.cancel()
+  def cancel(): Unit = st.cancel()
   def getResultSet: ResultSet = st.getResultSet
-  def setPoolable(poolable: Boolean) = st.setPoolable(poolable)
+  def setPoolable(poolable: Boolean): Unit = st.setPoolable(poolable)
   def isPoolable: Boolean = st.isPoolable
-  def setCursorName(name: String) = st.setCursorName(name)
+  def setCursorName(name: String): Unit = st.setCursorName(name)
   def getUpdateCount: Int = st.getUpdateCount
   def getMaxRows: Int = st.getMaxRows
   def getResultSetType: Int = st.getResultSetType
   def unwrap[T](iface: Class[T]): T = st.unwrap(iface)
-  def setMaxRows(max: Int) = st.setMaxRows(max)
+  def setMaxRows(max: Int): Unit = st.setMaxRows(max)
   def getFetchSize: Int = st.getFetchSize
   def getResultSetHoldability: Int = st.getResultSetHoldability
-  def setFetchDirection(direction: Int) = st.setFetchDirection(direction)
+  def setFetchDirection(direction: Int): Unit = st.setFetchDirection(direction)
   def getFetchDirection: Int = st.getFetchDirection
   def getResultSetConcurrency: Int = st.getResultSetConcurrency
   def isWrapperFor(iface: Class[_]): Boolean = st.isWrapperFor(iface)
-  def clearBatch() = st.clearBatch()
-  def close() = st.close()
+  def clearBatch(): Unit = st.clearBatch()
+  def close(): Unit = st.close()
   def isClosed: Boolean = st.isClosed
   def getWarnings: SQLWarning = st.getWarnings
   def getQueryTimeout: Int = st.getQueryTimeout
-  def setQueryTimeout(seconds: Int) = st.setQueryTimeout(seconds)
-  def setFetchSize(rows: Int) = st.setFetchSize(rows)
-  def setEscapeProcessing(enable: Boolean) = st.setEscapeProcessing(enable)
+  def setQueryTimeout(seconds: Int): Unit = st.setQueryTimeout(seconds)
+  def setFetchSize(rows: Int): Unit = st.setFetchSize(rows)
+  def setEscapeProcessing(enable: Boolean): Unit = st.setEscapeProcessing(enable)
   def getConnection: Connection = st.getConnection
   def getMaxFieldSize: Int = st.getMaxFieldSize
   def closeOnCompletion(): Unit =

@@ -6,6 +6,9 @@ import slick.ast._
 import slick.compiler.{CompilerState, CodeGen}
 import slick.relational._
 import slick.util.SQLBuilder
+import slick.ast.CompiledStatement
+import slick.jdbc.JdbcResultConverterDomain
+import slick.relational.{ CompiledMapping, ResultConverter }
 
 /** JDBC profile component which contains the mapping compiler and insert compiler */
 trait JdbcMappingCompilerComponent { self: JdbcProfile =>
@@ -31,17 +34,17 @@ trait JdbcMappingCompilerComponent { self: JdbcProfile =>
       else createBaseResultConverter(ti, column.fold("<computed>")(_.name), idx)
     }
 
-    override def createGetOrElseResultConverter[T](rc: ResultConverter[JdbcResultConverterDomain, Option[T]], default: () => T) = rc match {
+    override def createGetOrElseResultConverter[T](rc: ResultConverter[JdbcResultConverterDomain, Option[T]], default: () => T): ResultConverter[JdbcResultConverterDomain, T] = rc match {
       case rc: OptionResultConverter[_] => rc.getOrElse(default)
       case _ => super.createGetOrElseResultConverter[T](rc, default)
     }
 
-    override def createIsDefinedResultConverter[T](rc: ResultConverter[JdbcResultConverterDomain, Option[T]]) = rc match {
+    override def createIsDefinedResultConverter[T](rc: ResultConverter[JdbcResultConverterDomain, Option[T]]): ResultConverter[JdbcResultConverterDomain, Boolean] = rc match {
       case rc: OptionResultConverter[_] => rc.isDefined
       case _ => super.createIsDefinedResultConverter(rc)
     }
 
-    override def createTypeMappingResultConverter(rc: ResultConverter[JdbcResultConverterDomain, Any], mapper: MappedScalaType.Mapper) = {
+    override def createTypeMappingResultConverter(rc: ResultConverter[JdbcResultConverterDomain, Any], mapper: MappedScalaType.Mapper): ResultConverter[JdbcResultConverterDomain, Any] = {
       val tm = new TypeMappingResultConverter(rc, mapper.toBase, mapper.toMapped)
       mapper.fastPath match {
         case Some(f) => f(tm).asInstanceOf[ResultConverter[JdbcResultConverterDomain, Any]]
@@ -52,7 +55,7 @@ trait JdbcMappingCompilerComponent { self: JdbcProfile =>
 
   /** Code generator phase for queries on JdbcProfile. */
   class JdbcCodeGen(f: QueryBuilder => SQLBuilder.Result) extends CodeGen {
-    def compileServerSideAndMapping(serverSide: Node, mapping: Option[Node], state: CompilerState) = {
+    def compileServerSideAndMapping(serverSide: Node, mapping: Option[Node], state: CompilerState): (CompiledStatement, Option[CompiledMapping]) = {
       val (tree, tpe) = treeAndType(serverSide)
       val sbr = f(self.createQueryBuilder(tree, state))
       (CompiledStatement(sbr.sql, sbr, tpe).infer(), mapping.map(mappingCompiler.compileMapping))
@@ -61,7 +64,7 @@ trait JdbcMappingCompilerComponent { self: JdbcProfile =>
 
   /** Code generator phase for inserts on JdbcProfile. */
   class JdbcInsertCodeGen(f: Insert => InsertBuilder) extends CodeGen {
-    def compileServerSideAndMapping(serverSide: Node, mapping: Option[Node], state: CompilerState) = {
+    def compileServerSideAndMapping(serverSide: Node, mapping: Option[Node], state: CompilerState): (CompiledStatement, Option[CompiledMapping]) = {
       val ib = f(serverSide.asInstanceOf[Insert])
       val ibr = ib.buildInsert
       (CompiledStatement(ibr.sql, ibr, serverSide.nodeType).infer(), mapping.map(n => mappingCompiler.compileMapping(ib.transformMapping(n))))

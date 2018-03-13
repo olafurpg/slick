@@ -4,13 +4,14 @@ import slick.ast._
 import Util._
 import TypeUtil._
 import slick.util.ConstArray
+import slick.compiler.CompilerState
 
 /** Convert unreferenced StructNodes to single columns or ProductNodes (which is needed for
   * aggregation functions and at the top level). */
 class RemoveFieldNames(val alwaysKeepSubqueryNames: Boolean = false) extends Phase {
   val name = "removeFieldNames"
 
-  def apply(state: CompilerState) = state.map { n => ClientSideOp.mapResultSetMapping(n, true) { rsm =>
+  def apply(state: CompilerState): CompilerState = state.map { n => ClientSideOp.mapResultSetMapping(n, true) { rsm =>
     val CollectionType(_, NominalType(top, StructType(fdefs))) = rsm.from.nodeType
     val requiredSyms = rsm.map.collect[TermSymbol]({
       case Select(Ref(s), f) if s == rsm.generator => f

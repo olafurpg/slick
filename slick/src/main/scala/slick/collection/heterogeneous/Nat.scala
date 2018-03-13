@@ -3,6 +3,9 @@ package slick.collection.heterogeneous
 import scala.language.higherKinds
 import scala.language.experimental.macros
 import scala.reflect.macros.whitebox.Context
+import java.lang
+import slick.collection.heterogeneous.{ Succ, Zero }
+import slick.collection.heterogeneous.Nat.{ _1, _10, _2, _3, _4, _5, _6, _7, _8, _9 }
 
 /** Natural numbers for indexing in HLists.
   *
@@ -25,7 +28,7 @@ abstract class Nat {
   type ++ = Succ[Self]
 
   /** Increment this Nat. */
-  def ++ = Nat._unsafe[++](value+1)
+  def ++ : Nat.this.++ = Nat._unsafe[++](value+1)
   /** Add another Nat to this one. */
   def + [T <: Nat](n: T): +[T] = Nat._unsafe[+[T]](value + n.value)
   /** Multiply another Nat with this one. */
@@ -37,12 +40,12 @@ abstract class Nat {
   /** This Nat, typed as Self. */
   def self: Self
 
-  override def toString = value.toString
-  override def equals(o: Any) = o match {
+  override def toString: lang.String = value.toString
+  override def equals(o: Any): Boolean = o match {
     case n: Nat => value == n.value
     case _ => false
   }
-  override def hashCode = value
+  override def hashCode: Int = value
 
   /** Multiply this Nat by 10. */
   type _0 = Self # * [Nat._10]
@@ -65,29 +68,29 @@ abstract class Nat {
   /** Multiply this Nat by 10, then add 9. */
   type _9 = _0 # + [Nat._9]
   /** Multiply this Nat by 10. */
-  def _0 = (self * Nat._10): _0
+  def _0: Nat.this._0 = (self * Nat._10): _0
   /** Multiply this Nat by 10, then add 1. */
-  def _1 = (_0 + Nat._1): _1
+  def _1: Nat.this._1 = (_0 + Nat._1): _1
   /** Multiply this Nat by 10, then add 2. */
-  def _2 = (_0 + Nat._2): _2
+  def _2: Nat.this._2 = (_0 + Nat._2): _2
   /** Multiply this Nat by 10, then add 3. */
-  def _3 = (_0 + Nat._3): _3
+  def _3: Nat.this._3 = (_0 + Nat._3): _3
   /** Multiply this Nat by 10, then add 4. */
-  def _4 = (_0 + Nat._4): _4
+  def _4: Nat.this._4 = (_0 + Nat._4): _4
   /** Multiply this Nat by 10, then add 5. */
-  def _5 = (_0 + Nat._5): _5
+  def _5: Nat.this._5 = (_0 + Nat._5): _5
   /** Multiply this Nat by 10, then add 6. */
-  def _6 = (_0 + Nat._6): _6
+  def _6: Nat.this._6 = (_0 + Nat._6): _6
   /** Multiply this Nat by 10, then add 7. */
-  def _7 = (_0 + Nat._7): _7
+  def _7: Nat.this._7 = (_0 + Nat._7): _7
   /** Multiply this Nat by 10, then add 8. */
-  def _8 = (_0 + Nat._8): _8
+  def _8: Nat.this._8 = (_0 + Nat._8): _8
   /** Multiply this Nat by 10, then add 9. */
-  def _9 = (_0 + Nat._9): _9
+  def _9: Nat.this._9 = (_0 + Nat._9): _9
 }
 
 object Nat {
-  def _unsafe[T <: Nat](value: Int) =
+  def _unsafe[T <: Nat](value: Int): T =
     (if(value < cached.length) cached(value) else new Succ(value)).asInstanceOf[T]
   /** The cached Nat type for 0. */
   type _0 = Zero.type
@@ -114,25 +117,25 @@ object Nat {
   /** The cached Nat value for 0. */
   val _0: _0 = Zero
   /** The cached Nat value for 1. */
-  val _1 = new Succ(1).asInstanceOf[_1]
+  val _1: _1 = new Succ(1).asInstanceOf[_1]
   /** The cached Nat value for 2. */
-  val _2 = new Succ(2).asInstanceOf[_2]
+  val _2: _2 = new Succ(2).asInstanceOf[_2]
   /** The cached Nat value for 3. */
-  val _3 = new Succ(3).asInstanceOf[_3]
+  val _3: _3 = new Succ(3).asInstanceOf[_3]
   /** The cached Nat value for 4. */
-  val _4 = new Succ(4).asInstanceOf[_4]
+  val _4: _4 = new Succ(4).asInstanceOf[_4]
   /** The cached Nat value for 5. */
-  val _5 = new Succ(5).asInstanceOf[_5]
+  val _5: _5 = new Succ(5).asInstanceOf[_5]
   /** The cached Nat value for 6. */
-  val _6 = new Succ(6).asInstanceOf[_6]
+  val _6: _6 = new Succ(6).asInstanceOf[_6]
   /** The cached Nat value for 7. */
-  val _7 = new Succ(7).asInstanceOf[_7]
+  val _7: _7 = new Succ(7).asInstanceOf[_7]
   /** The cached Nat value for 8. */
-  val _8 = new Succ(8).asInstanceOf[_8]
+  val _8: _8 = new Succ(8).asInstanceOf[_8]
   /** The cached Nat value for 9. */
-  val _9 = new Succ(9).asInstanceOf[_9]
+  val _9: _9 = new Succ(9).asInstanceOf[_9]
   /** The cached Nat value for 10. */
-  val _10 = new Succ(10).asInstanceOf[_10]
+  val _10: _10 = new Succ(10).asInstanceOf[_10]
   private[this] val cached = Array(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10)
 
   /** Get a `Nat` for an `Int`. If the Int is a literal, the Nat will have
@@ -168,7 +171,7 @@ final object Zero extends Nat {
   type * [_ <: Nat] = Nat._0
   type Flip_^ [_ <: Nat] = Nat._1
   def value = 0
-  def self = this
+  def self: Zero.this.type = this
 }
 
 /** A successor of another `Nat` */
@@ -181,5 +184,5 @@ final class Succ[N <: Nat] private[heterogeneous] (val value: Int) extends Nat {
   type * [X <: Nat] = (N # * [X]) # + [X]
   type Flip_^ [X <: Nat] = (N # Flip_^ [X]) # * [X]
   def -- : -- = Nat._unsafe[--](value-1)
-  def self = this
+  def self: Succ[N] = this
 }

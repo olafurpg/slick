@@ -6,13 +6,14 @@ import slick.ast._
 import slick.util.{Dumpable, RefId}
 
 import scala.collection.mutable
+import slick.compiler.CompilerState
 
 /** Optional phase which verifies that retyping the tree does not change any types. Useful for
   * debugging type-related problems with large trees. */
 class VerifyTypes(after: Option[Phase] = None) extends Phase {
   val name = "verifyTypes"
 
-  def apply(state: CompilerState) = state.map { tree =>
+  def apply(state: CompilerState): CompilerState = state.map { tree =>
     logger.debug(s"Verifying types")
     check(tree)
   }

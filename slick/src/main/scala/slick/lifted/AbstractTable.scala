@@ -3,6 +3,8 @@ package slick.lifted
 import slick.ast._
 import slick.ast.Util.nodeToNodeOps
 import slick.model.ForeignKeyAction
+import slick.ast.{ Node, TableNode }
+import slick.lifted.{ AbstractTable, Index }
 
 /** A Tag marks a specific row represented by an AbstractTable instance. */
 sealed trait Tag {
@@ -24,9 +26,9 @@ abstract class AbstractTable[T](val tableTag: Tag, val schemaName: Option[String
 
   def tableIdentitySymbol: TableIdentitySymbol
 
-  lazy val tableNode = TableNode(schemaName, tableName, tableIdentitySymbol, tableIdentitySymbol)(this)
+  lazy val tableNode: TableNode = TableNode(schemaName, tableName, tableIdentitySymbol, tableIdentitySymbol)(this)
 
-  def encodeRef(path: Node) = tableTag.taggedAs(path).asInstanceOf[AbstractTable[T]]
+  def encodeRef(path: Node): AbstractTable[T] = tableTag.taggedAs(path).asInstanceOf[AbstractTable[T]]
 
   /** The * projection of the table used as default for queries and inserts.
     * Should include all columns as a tuple, HList or custom shape and optionally
@@ -37,7 +39,7 @@ abstract class AbstractTable[T](val tableTag: Tag, val schemaName: Option[String
     * parameter. */
   def * : ProvenShape[T]
 
-  override def toNode = tableTag match {
+  override def toNode: Node = tableTag match {
     case _: BaseTag =>
       val sym = new AnonSymbol
       TableExpansion(sym, tableNode, tableTag.taggedAs(Ref(sym)).*.toNode)
@@ -97,7 +99,7 @@ abstract class AbstractTable[T](val tableTag: Tag, val schemaName: Option[String
     tableConstraints.collect{ case k: PrimaryKey => k }.toIndexedSeq.sortBy(_.name)
 
   /** Define an index or a unique constraint. */
-  def index[T](name: String, on: T, unique: Boolean = false)(implicit shape: Shape[_ <: FlatShapeLevel, T, _, _]) = new Index(name, this, ForeignKey.linearizeFieldRefs(shape.toNode(on)), unique)
+  def index[T](name: String, on: T, unique: Boolean = false)(implicit shape: Shape[_ <: FlatShapeLevel, T, _, _]): Index = new Index(name, this, ForeignKey.linearizeFieldRefs(shape.toNode(on)), unique)
 
   def indexes: Iterable[Index] = (for {
       m <- getClass().getMethods.view

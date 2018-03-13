@@ -3,6 +3,11 @@ package slick.ast
 import TypeUtil.typeToTypeUtil
 import Util._
 import slick.util.ConstArray
+import java.lang
+import scala.`package`.Iterable
+import scala.collection.immutable
+import slick.ast.{ Comprehension, Node, RowNumber, ScalaNumericType, TermSymbol }
+import slick.util.DumpInfo
 
 /** A SQL comprehension */
 final case class Comprehension(sym: TermSymbol, from: Node, select: Node, where: Option[Node] = None,
@@ -13,8 +18,8 @@ final case class Comprehension(sym: TermSymbol, from: Node, select: Node, where:
                                offset: Option[Node] = None,
                                forUpdate: Boolean = false) extends DefNode {
   type Self = Comprehension
-  lazy val children = (ConstArray.newBuilder() + from + select ++ where ++ groupBy ++ orderBy.map(_._1) ++ having ++ distinct ++ fetch ++ offset).result
-  override def childNames =
+  lazy val children: ConstArray[Node] = (ConstArray.newBuilder() + from + select ++ where ++ groupBy ++ orderBy.map(_._1) ++ having ++ distinct ++ fetch ++ offset).result
+  override def childNames: Iterable[String] =
     Seq("from "+sym, "select") ++
     where.map(_ => "where") ++
     groupBy.map(_ => "groupBy") ++
@@ -23,7 +28,7 @@ final case class Comprehension(sym: TermSymbol, from: Node, select: Node, where:
     distinct.map(_ => "distinct") ++
     fetch.map(_ => "fetch") ++
     offset.map(_ => "offset")
-  protected[this] def rebuild(ch: ConstArray[Node]) = {
+  protected[this] def rebuild(ch: ConstArray[Node]): Comprehension = {
     val newFrom = ch(0)
     val newSelect = ch(1)
     val whereOffset = 2
@@ -52,8 +57,8 @@ final case class Comprehension(sym: TermSymbol, from: Node, select: Node, where:
       offset = newOffset.headOption
     )
   }
-  def generators = ConstArray((sym, from))
-  protected[this] def rebuildWithSymbols(gen: ConstArray[TermSymbol]) = copy(sym = gen.head)
+  def generators: ConstArray[(TermSymbol, Node)] = ConstArray((sym, from))
+  protected[this] def rebuildWithSymbols(gen: ConstArray[TermSymbol]): Comprehension = copy(sym = gen.head)
   def withInferredType(scope: Type.Scope, typeChildren: Boolean): Self = {
     // Assign type to "from" Node and compute the resulting scope
     val f2 = from.infer(scope, typeChildren)
@@ -93,10 +98,10 @@ final case class Comprehension(sym: TermSymbol, from: Node, select: Node, where:
 /** The row_number window function */
 final case class RowNumber(by: ConstArray[(Node, Ordering)] = ConstArray.empty) extends SimplyTypedNode {
   type Self = RowNumber
-  def buildType = ScalaBaseType.longType
-  lazy val children = by.map(_._1)
-  protected[this] def rebuild(ch: ConstArray[Node]) =
+  def buildType: ScalaNumericType[Long] = ScalaBaseType.longType
+  lazy val children: ConstArray[Node] = by.map(_._1)
+  protected[this] def rebuild(ch: ConstArray[Node]): RowNumber =
     copy(by = by.zip(ch).map{ case ((_, o), n) => (n, o) })
-  override def childNames = by.zipWithIndex.map("by" + _._2).toSeq
-  override def getDumpInfo = super.getDumpInfo.copy(mainInfo = "")
+  override def childNames: immutable.IndexedSeq[lang.String] = by.zipWithIndex.map("by" + _._2).toSeq
+  override def getDumpInfo: DumpInfo = super.getDumpInfo.copy(mainInfo = "")
 }

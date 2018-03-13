@@ -7,6 +7,7 @@ import slick.ast.QueryParameter.constOp
 import slick.ast.Util._
 import slick.ast.TypeUtil._
 import slick.util.{ConstArray, Ellipsis}
+import slick.compiler.CompilerState
 
 /** This phase merges nested nodes of types Bind, Filter, GroupBy, SortBy, Take, Drop,
   * CollectionCast and Distinct to Comprehension nodes. Nodes can be merged if they occur in the
@@ -25,7 +26,7 @@ class MergeToComprehensions extends Phase {
 
   type Mappings = ConstArray[((TypeSymbol, TermSymbol), List[TermSymbol])]
 
-  def apply(state: CompilerState) = state.map(n => ClientSideOp.mapResultSetMapping(n, keepType = false) { rsm =>
+  def apply(state: CompilerState): CompilerState = state.map(n => ClientSideOp.mapResultSetMapping(n, keepType = false) { rsm =>
     rsm.copy(from = convert(rsm.from), map = rsm.map.replace { case r: Ref => r.untyped })
   }.infer())
 

@@ -2,6 +2,8 @@ package slick.util
 
 import java.sql.PreparedStatement
 import scala.collection.mutable.ArrayBuffer
+import slick.util.SQLBuilder
+import slick.util.SQLBuilder.Result
 
 final class SQLBuilder { self =>
   import SQLBuilder._
@@ -10,11 +12,11 @@ final class SQLBuilder { self =>
   private val setters = new ArrayBuffer[Setter]
   private var currentIndentLevel: Int = 0
 
-  def +=(s: String) = { sb append s; this }
+  def +=(s: String): SQLBuilder = { sb append s; this }
 
-  def +=(c: Char) = { sb append c; this }
+  def +=(c: Char): SQLBuilder = { sb append c; this }
 
-  def +?=(f: Setter) = { setters append f; sb append '?'; this }
+  def +?=(f: Setter): SQLBuilder = { setters append f; sb append '?'; this }
 
   def sep[T](sequence: Traversable[T], separator: String)(f: T => Unit) {
     var first = true
@@ -33,7 +35,7 @@ final class SQLBuilder { self =>
     }
   }
 
-  def build = Result(sb.toString, { (p: PreparedStatement, idx: Int, param: Any) =>
+  def build: Result = Result(sb.toString, { (p: PreparedStatement, idx: Int, param: Any) =>
     var i = idx
     for(s <- setters) {
       s(p, i, param)

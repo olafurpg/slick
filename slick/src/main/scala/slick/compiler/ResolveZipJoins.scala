@@ -3,6 +3,7 @@ package slick.compiler
 import slick.ast._
 import Util._
 import slick.util.ConstArray
+import slick.compiler.CompilerState
 
 /** Rewrite zip joins into a form suitable for SQL using inner joins and RowNumber columns.
   *
@@ -19,7 +20,7 @@ class ResolveZipJoins(rownumStyle: Boolean = false) extends Phase {
   val condAbove: Subquery.Condition = if(rownumStyle) Subquery.AboveRownum else Subquery.AboveRowNumber
   val condBelow: Subquery.Condition = if(rownumStyle) Subquery.BelowRownum else Subquery.BelowRowNumber
 
-  def apply(state: CompilerState) = {
+  def apply(state: CompilerState): CompilerState = {
     val n2 = state.tree.replace({
       case b @ Bind(s1,
           Join(_, _, Bind(ls, from, Pure(StructNode(defs), _)), RangeFrom(offset), JoinType.Zip, LiteralNode(true)),

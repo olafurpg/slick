@@ -5,6 +5,7 @@ import slick.util.ConstArray
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import slick.ast._
 import TypeUtil._
+import slick.compiler.CompilerState
 
 /** Flatten all `Pure` node contents into a single `StructNode`.
   *
@@ -13,7 +14,7 @@ import TypeUtil._
 class FlattenProjections extends Phase {
   val name = "flattenProjections"
 
-  def apply(state: CompilerState) = state.map { tree =>
+  def apply(state: CompilerState): CompilerState = state.map { tree =>
     val translations = new HashMap[TypeSymbol, Map[List[TermSymbol], TermSymbol]]
     def tr(n: Node, topLevel: Boolean): Node = n match {
       case Pure(v, ts) =>

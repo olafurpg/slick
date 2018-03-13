@@ -7,11 +7,12 @@ import slick.SlickException
 import slick.ast._
 import TypeUtil._
 import Util._
+import slick.compiler.CompilerState
 
 class UnrollTailBinds extends Phase {
   val name = "unrollTailBinds"
 
-  def apply(state: CompilerState) = state.map(tr(_))
+  def apply(state: CompilerState): CompilerState = state.map(tr(_))
 
   def tr(n: Node): Node = {
     n match {

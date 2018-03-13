@@ -18,13 +18,14 @@ import org.reactivestreams._
 import slick.SlickException
 import slick.dbio._
 import slick.util._
+import slick.util.SlickLogger
 
 /** Backend for the basic database and session handling features.
   * Concrete backends like `JdbcBackend` extend this type and provide concrete
   * types for `Database`, `DatabaseFactory` and `Session`. */
 trait BasicBackend { self =>
-  protected lazy val actionLogger = new SlickLogger(LoggerFactory.getLogger(classOf[BasicBackend].getName+".action"))
-  protected lazy val streamLogger = new SlickLogger(LoggerFactory.getLogger(classOf[BasicBackend].getName+".stream"))
+  protected lazy val actionLogger: SlickLogger = new SlickLogger(LoggerFactory.getLogger(classOf[BasicBackend].getName+".action"))
+  protected lazy val streamLogger: SlickLogger = new SlickLogger(LoggerFactory.getLogger(classOf[BasicBackend].getName+".stream"))
 
   type This >: this.type <: BasicBackend
   /** The type of database objects used by this backend. */
@@ -103,7 +104,7 @@ trait BasicBackend { self =>
 
     /** Create a Reactive Streams `Publisher` using the given context factory. */
     protected[this] def createPublisher[T](a: DBIOAction[_, Streaming[T], Nothing], createCtx: Subscriber[_ >: T] => StreamingContext): DatabasePublisher[T] = new DatabasePublisher[T] {
-      def subscribe(s: Subscriber[_ >: T]) = {
+      def subscribe(s: Subscriber[_ >: T]): Unit = {
         if(s eq null) throw new NullPointerException("Subscriber is null")
         val ctx = createCtx(s)
         if(streamLogger.isDebugEnabled) streamLogger.debug(s"Signaling onSubscribe($ctx)")
@@ -148,7 +149,7 @@ trait BasicBackend { self =>
       } else {
         val promise = Promise[R]
         val runnable = new Runnable {
-          override def run() = {
+          override def run(): Unit = {
             try {
               promise.completeWith(runInContextInline(a, ctx, streaming, topLevel, stackLevel = 1))
             } catch {
@@ -262,7 +263,7 @@ trait BasicBackend { self =>
     protected[this] def runSynchronousDatabaseAction[R](a: SynchronousDatabaseAction[R, NoStream, This, _], ctx: Context, continuation: Boolean): Future[R] = {
       val promise = Promise[R]()
       ctx.getEC(synchronousExecutionContext).prepare.execute(new AsyncExecutor.PrioritizedRunnable {
-        def priority = {
+        def priority: Priority = {
           ctx.readSync
           ctx.priority(continuation)
         }
@@ -300,7 +301,7 @@ trait BasicBackend { self =>
       ctx.getEC(synchronousExecutionContext).prepare.execute(new AsyncExecutor.PrioritizedRunnable {
         private[this] def str(l: Long) = if(l != Long.MaxValue) l else if(GlobalConfig.unicodeDump) "\u221E" else "oo"
 
-        def priority = {
+        def priority: Priority = {
           ctx.readSync
           ctx.priority(continuation)
         }
@@ -453,7 +454,7 @@ trait BasicBackend { self =>
     @volatile private[this] var cancelRequested = false
 
     /** The Promise to complete when streaming has finished. */
-    val streamingResultPromise = Promise[Null]()
+    val streamingResultPromise: Promise[Null] = Promise[Null]()
 
     /** Indicate that the specified number of elements has been delivered. Returns the remaining
       * demand. This is an atomic operation. It must only be called from the synchronous action
@@ -505,7 +506,7 @@ trait BasicBackend { self =>
       }
     }
 
-    def subscription = this
+    def subscription: BasicBackend.this.BasicStreamingActionContext = this
 
     ////////////////////////////////////////////////////////////////////////// Subscription methods
 

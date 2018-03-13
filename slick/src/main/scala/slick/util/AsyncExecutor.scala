@@ -10,6 +10,7 @@ import scala.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
 import scala.util.control.NonFatal
+import scala.concurrent.ExecutionContextExecutor
 
 /** A connection pool for asynchronous execution of blocking I/O actions.
   * This is used for the asynchronous query execution API on top of blocking back-ends like JDBC. */
@@ -64,7 +65,7 @@ object AsyncExecutor extends Logging {
       logger.warn("Having maxConnection > maxThreads can result in deadlocks if transactions or database locks are used.")
     }
 
-    lazy val executionContext = {
+    lazy val executionContext: AnyRef with ExecutionContextExecutor {} = {
       if(!state.compareAndSet(0, 1))
         throw new IllegalStateException("Cannot initialize ExecutionContext; AsyncExecutor already shut down")
       val queue: BlockingQueue[Runnable] = queueSize match {
@@ -140,10 +141,10 @@ object AsyncExecutor extends Logging {
           else {
             logger.debug(s"Registering MBean $mbeanName")
             mbeanServer.registerMBean(new AsyncExecutorMXBean {
-              def getMaxQueueSize = queueSize
-              def getQueueSize = queue.size()
-              def getMaxThreads = maxThreads
-              def getActiveThreads = executor.getActiveCount
+              def getMaxQueueSize: Int = queueSize
+              def getQueueSize: Int = queue.size()
+              def getMaxThreads: Int = maxThreads
+              def getActiveThreads: Int = executor.getActiveCount
             }, mbeanName)
           }
         } catch { case NonFatal(ex) => logger.error("Error registering MBean", ex) }

@@ -1,6 +1,7 @@
 package slick
 
 import slick.basic.BasicProfile
+import slick.basic
 
 package object backend {
   @deprecated("Use type `slick.basic.BasicBackend` instead of `slick.backend.DatabaseComponent`", "3.2")
@@ -15,7 +16,7 @@ package object backend {
   @deprecated("Use type `slick.basic.DatabaseConfig` instead of `slick.backend.DatabaseConfig`", "3.2")
   type DatabaseConfig[P <: BasicProfile] = slick.basic.DatabaseConfig[P]
   @deprecated("Use object `slick.basic.DatabaseConfig` instead of `slick.backend.DatabaseConfig`", "3.2")
-  val DatabaseConfig = slick.basic.DatabaseConfig
+  val DatabaseConfig: basic.DatabaseConfig.type = slick.basic.DatabaseConfig
 
   @deprecated("Use type `slick.basic.StaticDatabaseConfig` instead of `slick.backend.StaticDatabaseConfig`", "3.2")
   type StaticDatabaseConfig = slick.basic.StaticDatabaseConfig

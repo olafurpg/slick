@@ -8,7 +8,7 @@ import slick.util.SlickLogger
 abstract class CodeGen extends Phase {
   val name = "codeGen"
 
-  override protected[this] lazy val logger = SlickLogger[CodeGen]
+  override protected[this] lazy val logger: SlickLogger = SlickLogger[CodeGen]
 
   def apply(state: CompilerState): CompilerState = state.map(n => apply(n, state))
 

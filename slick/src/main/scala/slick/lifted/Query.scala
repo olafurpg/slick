@@ -9,6 +9,8 @@ import scala.reflect.macros.blackbox.Context
 import slick.ast.{Join => AJoin, _}
 import FunctionSymbolExtensionMethods._
 import ScalaBaseType._
+import slick.ast.{ CollectionCast, Node }
+import slick.lifted.{ AbstractTable, BaseJoinQuery, LiteralColumn, Query, Rep, Shape, ShapedValue }
 
 sealed trait QueryBase[T] extends Rep[T]
 
@@ -22,7 +24,7 @@ sealed trait QueryBase[T] extends Rep[T]
   */
 sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
   def shaped: ShapedValue[_ <: E, U]
-  final lazy val packed = shaped.toNode
+  final lazy val packed: Node = shaped.toNode
 
   /** Build a new query by applying a function to all elements of this query
     * and using the elements of the resulting queries. This corresponds to an
@@ -57,11 +59,11 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
   /** Select all elements of this query which satisfy a predicate. This method
     * is used when desugaring for-comprehensions over queries. There is no
     * reason to call it directly because it is the same as `filter`. */
-  def withFilter[T : CanBeQueryCondition](f: E => T) = filterHelper(f, identity)
+  def withFilter[T : CanBeQueryCondition](f: E => T): Query[E, U, C] = filterHelper(f, identity)
 
   /** Join two queries with a cross join or inner join.
     * An optional join predicate can be specified later by calling `on`. */
-  def join[E2, U2, D[_]](q2: Query[E2, U2, D]) = {
+  def join[E2, U2, D[_]](q2: Query[E2, U2, D]): BaseJoinQuery[E, E2, U, U2, C, E, E2] = {
     val leftGen, rightGen = new AnonSymbol
     val aliased1 = shaped.encodeRef(Ref(leftGen))
     val aliased2 = q2.shaped.encodeRef(Ref(rightGen))
@@ -74,7 +76,7 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
     * The right side of the join is lifted to an `Option`. If at least one element on the right
     * matches, all matching elements are returned as `Some`, otherwise a single `None` row is
     * returned. */
-  def joinLeft[E2, U2, D[_], O2](q2: Query[E2, _, D])(implicit ol: OptionLift[E2, O2], sh: Shape[FlatShapeLevel, O2, U2, _]) = {
+  def joinLeft[E2, U2, D[_], O2](q2: Query[E2, _, D])(implicit ol: OptionLift[E2, O2], sh: Shape[FlatShapeLevel, O2, U2, _]): BaseJoinQuery[E, O2, U, U2, C, E, E2] = {
     val leftGen, rightGen = new AnonSymbol
     val aliased1 = shaped.encodeRef(Ref(leftGen))
     val aliased2 = ShapedValue(ol.lift(q2.shaped.value), sh).encodeRef(Ref(rightGen))
@@ -87,7 +89,7 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
     * The left side of the join is lifted to an `Option`. If at least one element on the left
     * matches, all matching elements are returned as `Some`, otherwise a single `None` row is
     * returned. */
-  def joinRight[E1 >: E, E2, U2, D[_], O1, U1](q2: Query[E2, U2, D])(implicit ol: OptionLift[E1, O1], sh: Shape[FlatShapeLevel, O1, U1, _]) = {
+  def joinRight[E1 >: E, E2, U2, D[_], O1, U1](q2: Query[E2, U2, D])(implicit ol: OptionLift[E1, O1], sh: Shape[FlatShapeLevel, O1, U1, _]): BaseJoinQuery[O1, E2, U1, U2, C, E, E2] = {
     val leftGen, rightGen = new AnonSymbol
     val aliased1 = ShapedValue(ol.lift(shaped.value), sh).encodeRef(Ref(leftGen))
     val aliased2 = q2.shaped.encodeRef(Ref(rightGen))
@@ -100,7 +102,7 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
     * Both sides of the join are lifted to an `Option`. If at least one element on either side
     * matches the other side, all matching elements are returned as `Some`, otherwise a single
     * `None` row is returned. */
-  def joinFull[E1 >: E, E2, U2, D[_], O1, U1, O2](q2: Query[E2, _, D])(implicit ol1: OptionLift[E1, O1], sh1: Shape[FlatShapeLevel, O1, U1, _], ol2: OptionLift[E2, O2], sh2: Shape[FlatShapeLevel, O2, U2, _]) = {
+  def joinFull[E1 >: E, E2, U2, D[_], O1, U1, O2](q2: Query[E2, _, D])(implicit ol1: OptionLift[E1, O1], sh1: Shape[FlatShapeLevel, O1, U1, _], ol2: OptionLift[E2, O2], sh2: Shape[FlatShapeLevel, O2, U2, _]): BaseJoinQuery[O1, O2, U1, U2, C, E, E2] = {
     val leftGen, rightGen = new AnonSymbol
     val aliased1 = ShapedValue(ol1.lift(shaped.value), sh1).encodeRef(Ref(leftGen))
     val aliased2 = ShapedValue(ol2.lift(q2.shaped.value), sh2).encodeRef(Ref(rightGen))
@@ -126,7 +128,7 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
     standardJoin(q2, JoinType.Zip).map[F, G, T](x => f(x._1, x._2))
 
   /** Zip this query with its indices (starting at 0). */
-  def zipWithIndex = {
+  def zipWithIndex: BaseJoinQuery[E, Rep[Long], U, Long, C, E, Rep[Long]] = {
     val leftGen, rightGen = new AnonSymbol
     val aliased1 = shaped.encodeRef(Ref(leftGen))
     val aliased2 = ShapedValue(Rep.forNode[Long](Ref(rightGen)), Shape.repColumnShape[Long, FlatShapeLevel])
@@ -161,8 +163,8 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
     new WrappingQuery[E, U, C](ForUpdate(generator, toNode), shaped)
   }
   def encodeRef(path: Node): Query[E, U, C] = new Query[E, U, C] {
-    val shaped = self.shaped.encodeRef(path)
-    def toNode = path
+    val shaped: slick.lifted.ShapedValue[_ <: E, U] = self.shaped.encodeRef(path)
+    def toNode: Node = path
   }
 
   /** Return a new query containing the elements from both operands. Duplicate
@@ -177,24 +179,24 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
 
   /** Return a new query containing the elements from both operands. Duplicate
     * elements are preserved. */
-  def ++[O >: E, R, D[_]](other: Query[O, U, D]) = unionAll(other)
+  def ++[O >: E, R, D[_]](other: Query[O, U, D]): Query[O, U, C] = unionAll(other)
 
   /** The total number of elements (i.e. rows). */
   def length: Rep[Int] = Library.CountAll.column(toNode)
   /** The total number of elements (i.e. rows). */
-  def size = length
+  def size: Rep[Int] = length
 
   /** The number of distinct elements of the query. */
   @deprecated("Use `length` on `distinct` or `distinctOn` instead of `countDistinct`", "3.2")
   def countDistinct: Rep[Int] = Library.CountDistinct.column(toNode)
 
   /** Test whether this query is non-empty. */
-  def exists = Library.Exists.column[Boolean](toNode)
+  def exists: Rep[Boolean] = Library.Exists.column[Boolean](toNode)
 
   def pack[R](implicit packing: Shape[_ <: FlatShapeLevel, E, _, R]): Query[R, U, C] =
     new Query[R, U, C] {
       val shaped: ShapedValue[_ <: R, U] = self.shaped.packedValue(packing)
-      def toNode = self.toNode
+      def toNode: Node = self.toNode
     }
 
   /** Select the first `num` elements. */
@@ -226,8 +228,8 @@ sealed abstract class Query[+E, U, C[_]] extends QueryBase[C[U]] { self =>
 
   /** Change the collection type to build when executing the query. */
   def to[D[_]](implicit ctc: TypedCollectionTypeConstructor[D]): Query[E, U, D] = new Query[E, U, D] {
-    val shaped = self.shaped
-    def toNode = CollectionCast(self.toNode, ctc)
+    val shaped: slick.lifted.ShapedValue[_ <: E, U] = self.shaped
+    def toNode: CollectionCast = CollectionCast(self.toNode, ctc)
   }
 
   /** Force a subquery to be created when using this Query as part of a larger Query. This method
@@ -247,11 +249,11 @@ object Query {
 
   /** The empty Query. */
   def empty: Query[Unit, Unit, Seq] = new Query[Unit, Unit, Seq] {
-    val toNode = shaped.toNode
-    def shaped = ShapedValue((), Shape.unitShape[FlatShapeLevel])
+    val toNode: Node = shaped.toNode
+    def shaped: ShapedValue[Unit, Unit] = ShapedValue((), Shape.unitShape[FlatShapeLevel])
   }
 
-  @inline implicit def queryShape[Level >: NestedShapeLevel <: ShapeLevel, T, Q <: QueryBase[_]](implicit ev: Q <:< Rep[T]) = RepShape[Level, Q, T]
+  @inline implicit def queryShape[Level >: NestedShapeLevel <: ShapeLevel, T, Q <: QueryBase[_]](implicit ev: Q <:< Rep[T]): Shape[Level, Q, T, Q] = RepShape[Level, Q, T]
 }
 
 /** A typeclass for types that can be used as predicates in `filter` calls. */
@@ -264,15 +266,15 @@ object CanBeQueryCondition {
   // See https://github.com/slick/slick/pull/217
   implicit val BooleanColumnCanBeQueryCondition : CanBeQueryCondition[Rep[Boolean]] =
     new CanBeQueryCondition[Rep[Boolean]] {
-      def apply(value: Rep[Boolean]) = value
+      def apply(value: Rep[Boolean]): Rep[Boolean] = value
     }
   implicit val BooleanOptionColumnCanBeQueryCondition : CanBeQueryCondition[Rep[Option[Boolean]]] =
     new CanBeQueryCondition[Rep[Option[Boolean]]] {
-      def apply(value: Rep[Option[Boolean]]) = value
+      def apply(value: Rep[Option[Boolean]]): Rep[Option[Boolean]] = value
     }
   implicit val BooleanCanBeQueryCondition : CanBeQueryCondition[Boolean] =
     new CanBeQueryCondition[Boolean] {
-      def apply(value: Boolean) = new LiteralColumn(value)
+      def apply(value: Boolean): LiteralColumn[Boolean] = new LiteralColumn(value)
     }
 }
 
@@ -289,16 +291,16 @@ final class BaseJoinQuery[+E1, +E2, U1, U2, C[_], +B1, +B2](leftGen: TermSymbol,
   * for operations that can be performed on tables but not on arbitrary
   * queries, e.g. getting the table DDL. */
 class TableQuery[E <: AbstractTable[_]](cons: Tag => E) extends Query[E, E#TableElementType, Seq] {
-  lazy val shaped = {
+  lazy val shaped: ShapedValue[E, AbstractTable#TableElementType] = {
     val baseTable = cons(new BaseTag { base =>
       def taggedAs(path: Node): AbstractTable[_] = cons(new RefTag(path) {
-        def taggedAs(path: Node) = base.taggedAs(path)
+        def taggedAs(path: Node): slick.lifted.AbstractTable[_] = base.taggedAs(path)
       })
     })
     ShapedValue(baseTable, RepShape[FlatShapeLevel, E, E#TableElementType])
   }
 
-  lazy val toNode = shaped.toNode
+  lazy val toNode: Node = shaped.toNode
 
   /** Get the "raw" table row that represents the table itself, as opposed to
     * a Path for a variable of the table's type. This method should generally

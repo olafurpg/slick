@@ -1,13 +1,15 @@
 package slick.jdbc.meta
 
 import slick.jdbc.PositionedResult
+import java.lang
+import slick.jdbc.meta.MQName
 
 /** A qualified name with an optional catalog and schema. */
 case class MQName(catalog: Option[String], schema: Option[String], name: String) {
-  override def toString = "MQName(" + catalog.map(_ + ".").getOrElse("") + schema.map(_ + ".").getOrElse("") + name + ")"
+  override def toString: lang.String = "MQName(" + catalog.map(_ + ".").getOrElse("") + schema.map(_ + ".").getOrElse("") + name + ")"
 
-  def catalog_? = catalog.orNull
-  def schema_? = schema.orNull
+  def catalog_? : String = catalog.orNull
+  def schema_? : String = schema.orNull
 }
 
 object MQName {
@@ -19,5 +21,5 @@ object MQName {
     r.nextStringOption map (MQName(cat, schema, _))
   }
 
-  def local(name: String) = MQName(Some(""), Some(""), name)
+  def local(name: String): MQName = MQName(Some(""), Some(""), name)
 }

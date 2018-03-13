@@ -8,8 +8,8 @@ class TableDump(maxColumnWidth: Int = 20) {
   protected[this] val box: IndexedSeq[String] =
     (if(GlobalConfig.unicodeDump) "\u2501\u250f\u2533\u2513\u2523\u254b\u252b\u2517\u253b\u251b\u2503" else "-/+\\|+|\\+/|").map(_.toString)
 
-  protected[this] val dashes = Iterator.fill(maxColumnWidth+2)(box(0)).mkString
-  protected[this] val spaces = Iterator.fill(maxColumnWidth+2)(' ').mkString
+  protected[this] val dashes: String = Iterator.fill(maxColumnWidth+2)(box(0)).mkString
+  protected[this] val spaces: String = Iterator.fill(maxColumnWidth+2)(' ').mkString
 
   protected[this] def formatLine(line: IndexedSeq[Any]): IndexedSeq[String] = line.map { v =>
     val s = if(v == null) "NULL" else v.toString

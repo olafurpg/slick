@@ -4,6 +4,7 @@ import slick.ast.Library.AggregateFunctionSymbol
 
 import scala.collection.mutable.HashMap
 import slick.ast._
+import slick.compiler.CompilerState
 
 /** Ensure that all symbol definitions in a tree are unique. The same symbol can initially occur in
   * multiple sub-trees when some part of a query is reused multiple times. This phase assigns new,
@@ -19,7 +20,7 @@ class AssignUniqueSymbols extends Phase {
 
   type State = UsedFeatures
 
-  def apply(state: CompilerState) = {
+  def apply(state: CompilerState): CompilerState = {
     var hasDistinct, hasTypeMapping, hasAggregate, hasNonPrimitiveOption = false
     val s2 = state.map { tree =>
       val replace = new HashMap[TermSymbol, AnonSymbol]

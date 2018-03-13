@@ -13,6 +13,9 @@ import slick.basic.BasicBackend
 import slick.util.{DumpInfo, Dumpable, ignoreFollowOnError}
 import scala.util.{Try, Failure, Success}
 import scala.util.control.NonFatal
+import scala.`package`.{ Seq, Throwable }
+import scala.collection.immutable
+import slick.dbio.{ AndThenAction, DBIOAction, NoStream, SequenceAction }
 
 /** A Database I/O Action that can be executed on a database. The DBIOAction type allows a
   * separation of execution logic and resource usage management logic from composition logic.
@@ -51,7 +54,7 @@ sealed trait DBIOAction[+R, +S <: NoStream, -E <: Effect] extends Dumpable {
   /** Creates a new DBIOAction with one level of nesting flattened, this method is equivalent
     * to `flatMap(identity)`.
     */
-  def flatten[R2, S2 <: NoStream, E2 <: Effect](implicit ev : R <:< DBIOAction[R2,S2,E2]) = flatMap(ev)(DBIO.sameThreadExecutionContext)
+  def flatten[R2, S2 <: NoStream, E2 <: Effect](implicit ev : R <:< DBIOAction[R2,S2,E2]): DBIOAction[R2, S2, E with E2 {}] = flatMap(ev)(DBIO.sameThreadExecutionContext)
 
   /** Run another action after this action, if it completed successfully, and return the result
     * of the second action. If either of the two actions fails, the resulting action also fails. */
@@ -181,12 +184,12 @@ object DBIOAction {
     def sequenceGroupAsM(g: Vector[DBIOAction[R, NoStream, E]]): DBIOAction[M[R], NoStream, E] = {
       if(g.head.isInstanceOf[SynchronousDatabaseAction[_, _, _, _]]) { // fuse synchronous group
         new SynchronousDatabaseAction.Fused[M[R], NoStream, BasicBackend, E] {
-          def run(context: BasicBackend#Context) = {
+          def run(context: BasicBackend#Context): M[R] = {
             val b = cbf()
             g.foreach(a => b += a.asInstanceOf[SynchronousDatabaseAction[R, NoStream, BasicBackend, E]].run(context))
             b.result()
           }
-          override def nonFusedEquivalentAction = SequenceAction[R, M[R], E](g)
+          override def nonFusedEquivalentAction: SequenceAction[R, M[R], E] = SequenceAction[R, M[R], E](g)
         }
       } else SequenceAction[R, M[R], E](g)
     }
@@ -194,20 +197,20 @@ object DBIOAction {
       if(g.length == 1) {
         if(g.head.isInstanceOf[SynchronousDatabaseAction[_, _, _, _]]) { // fuse synchronous group
           new SynchronousDatabaseAction.Fused[Seq[R], NoStream, BasicBackend, E] {
-            def run(context: BasicBackend#Context) =
+            def run(context: BasicBackend#Context): immutable.List[R] =
               g.head.asInstanceOf[SynchronousDatabaseAction[R, NoStream, BasicBackend, E]].run(context) :: Nil
-            override def nonFusedEquivalentAction = g.head.map(_ :: Nil)
+            override def nonFusedEquivalentAction: DBIOAction[immutable.List[R], NoStream, E] = g.head.map(_ :: Nil)
           }
         } else g.head.map(_ :: Nil)
       } else {
         if(g.head.isInstanceOf[SynchronousDatabaseAction[_, _, _, _]]) { // fuse synchronous group
           new SynchronousDatabaseAction.Fused[Seq[R], NoStream, BasicBackend, E] {
-            def run(context: BasicBackend#Context) = {
+            def run(context: BasicBackend#Context): ArrayBuffer[R] = {
               val b = new ArrayBuffer[R](g.length)
               g.foreach(a => b += a.asInstanceOf[SynchronousDatabaseAction[R, NoStream, BasicBackend, E]].run(context))
               b
             }
-            override def nonFusedEquivalentAction = SequenceAction[R, Seq[R], E](g)
+            override def nonFusedEquivalentAction: SequenceAction[R, Seq[R], E] = SequenceAction[R, Seq[R], E](g)
           }
         } else SequenceAction[R, Seq[R], E](g)
       }
@@ -235,10 +238,10 @@ object DBIOAction {
     }
     def sequenceSync(g: Vector[DBIOAction[Any, NoStream, E]]): DBIOAction[Unit, NoStream, E] = {
       new SynchronousDatabaseAction.Fused[Unit, NoStream, BasicBackend, E] {
-        def run(context: BasicBackend#Context) = {
+        def run(context: BasicBackend#Context): Unit = {
           g.foreach(_.asInstanceOf[SynchronousDatabaseAction[Any, NoStream, BasicBackend, E]].run(context))
         }
-        override def nonFusedEquivalentAction = AndThenAction[Unit, NoStream, E](g)
+        override def nonFusedEquivalentAction: AndThenAction[Unit, NoStream, E] = AndThenAction[Unit, NoStream, E](g)
       }
     }
     if(actions.isEmpty) DBIO.successful(()) else {
@@ -261,13 +264,13 @@ object DBIOAction {
   /** A DBIOAction that pins the current session */
   private[slick] object Pin extends SynchronousDatabaseAction[Unit, NoStream, BasicBackend, Effect] {
     def run(context: BasicBackend#Context): Unit = context.pin
-    def getDumpInfo = DumpInfo(name = "SynchronousDatabaseAction.Pin")
+    def getDumpInfo: DumpInfo = DumpInfo(name = "SynchronousDatabaseAction.Pin")
   }
 
   /** A DBIOAction that unpins the current session */
   private[slick] object Unpin extends SynchronousDatabaseAction[Unit, NoStream, BasicBackend, Effect] {
     def run(context: BasicBackend#Context): Unit = context.unpin
-    def getDumpInfo = DumpInfo(name = "SynchronousDatabaseAction.Unpin")
+    def getDumpInfo: DumpInfo = DumpInfo(name = "SynchronousDatabaseAction.Unpin")
   }
 
   /** An ExecutionContext used internally for executing plumbing operations during DBIOAction
@@ -309,31 +312,31 @@ trait DatabaseAction[+R, +S <: NoStream, -E <: Effect] extends DBIOAction[R, S, 
 
 /** A DBIOAction that returns a constant value. */
 case class SuccessAction[+R](value: R) extends SynchronousDatabaseAction[R, NoStream, BasicBackend, Effect] {
-  def getDumpInfo = DumpInfo("success", String.valueOf(value))
+  def getDumpInfo: DumpInfo = DumpInfo("success", String.valueOf(value))
   def run(ctx: BasicBackend#Context): R = value
 }
 
 /** A DBIOAction that fails. */
 case class FailureAction(t: Throwable) extends SynchronousDatabaseAction[Nothing, NoStream, BasicBackend, Effect] {
-  def getDumpInfo = DumpInfo("failure", String.valueOf(t))
+  def getDumpInfo: DumpInfo = DumpInfo("failure", String.valueOf(t))
   def run(ctx: BasicBackend#Context): Nothing = throw t
 }
 
 /** An asynchronous DBIOAction that returns the result of a Future. */
 case class FutureAction[+R](f: Future[R]) extends DBIOAction[R, NoStream, Effect] {
-  def getDumpInfo = DumpInfo("future", String.valueOf(f))
+  def getDumpInfo: DumpInfo = DumpInfo("future", String.valueOf(f))
   override def isLogged = true
 }
 
 /** A DBIOAction that represents a `flatMap` operation for sequencing in the DBIOAction monad. */
 case class FlatMapAction[+R, +S <: NoStream, P, -E <: Effect](base: DBIOAction[P, NoStream, E], f: P => DBIOAction[R, S, E], executor: ExecutionContext) extends DBIOAction[R, S, E] {
-  def getDumpInfo = DumpInfo("flatMap", String.valueOf(f), children = Vector(("base", base)))
+  def getDumpInfo: DumpInfo = DumpInfo("flatMap", String.valueOf(f), children = Vector(("base", base)))
 }
 
 /** A DBIOAction that represents a `seq` or `andThen` operation for sequencing in the DBIOAction
   * monad. Unlike `SequenceAction` it only keeps the last result. */
 case class AndThenAction[R, +S <: NoStream, -E <: Effect](as: IndexedSeq[DBIOAction[Any, NoStream, E]]) extends DBIOAction[R, S, E] {
-  def getDumpInfo = DumpInfo("andThen", children = as.zipWithIndex.map { case (a, i) => (String.valueOf(i+1), a) })
+  def getDumpInfo: DumpInfo = DumpInfo("andThen", children = as.zipWithIndex.map { case (a, i) => (String.valueOf(i+1), a) })
 
   override def andThen[R2, S2 <: NoStream, E2 <: Effect](a: DBIOAction[R2, S2, E2]): DBIOAction[R2, S2, E with E2] = a match {
     case AndThenAction(as2) => AndThenAction[R2, S2, E with E2](as ++ as2)
@@ -343,27 +346,27 @@ case class AndThenAction[R, +S <: NoStream, -E <: Effect](as: IndexedSeq[DBIOAct
 
 /** A DBIOAction that represents a `sequence` or operation for sequencing in the DBIOAction monad. */
 case class SequenceAction[R, +R2, -E <: Effect](as: IndexedSeq[DBIOAction[R, NoStream, E]])(implicit val cbf: CanBuild[R, R2]) extends DBIOAction[R2, NoStream, E] {
-  def getDumpInfo = DumpInfo("sequence", children = as.zipWithIndex.map { case (a, i) => (String.valueOf(i+1), a) })
+  def getDumpInfo: DumpInfo = DumpInfo("sequence", children = as.zipWithIndex.map { case (a, i) => (String.valueOf(i+1), a) })
 }
 
 /** A DBIOAction that represents a `cleanUp` operation for sequencing in the DBIOAction monad. */
 case class CleanUpAction[+R, +S <: NoStream, -E <: Effect](base: DBIOAction[R, S, E], f: Option[Throwable] => DBIOAction[_, NoStream, E], keepFailure: Boolean, executor: ExecutionContext) extends DBIOAction[R, S, E] {
-  def getDumpInfo = DumpInfo("cleanUp", children = Vector(("try", base)))
+  def getDumpInfo: DumpInfo = DumpInfo("cleanUp", children = Vector(("try", base)))
 }
 
 /** A DBIOAction that represents a `failed` operation. */
 case class FailedAction[-E <: Effect](a: DBIOAction[_, NoStream, E]) extends DBIOAction[Throwable, NoStream, E] {
-  def getDumpInfo = DumpInfo("failed", children = Vector(("base", a)))
+  def getDumpInfo: DumpInfo = DumpInfo("failed", children = Vector(("base", a)))
 }
 
 /** A DBIOAction that represents an `asTry` operation. */
 case class AsTryAction[+R, -E <: Effect](a: DBIOAction[R, NoStream, E]) extends DBIOAction[Try[R], NoStream, E] {
-  def getDumpInfo = DumpInfo("asTry")
+  def getDumpInfo: DumpInfo = DumpInfo("asTry")
 }
 
 /** A DBIOAction that attaches a name for logging purposes to another action. */
 case class NamedAction[+R, +S <: NoStream, -E <: Effect](a: DBIOAction[R, S, E], name: String) extends DBIOAction[R, S, E] {
-  def getDumpInfo = DumpInfo("named", mainInfo = DumpInfo.highlight(name))
+  def getDumpInfo: DumpInfo = DumpInfo("named", mainInfo = DumpInfo.highlight(name))
   override def isLogged = true
 }
 
@@ -373,7 +376,7 @@ trait ActionContext {
   private[this] var stickiness = 0
 
   /** Check if the session is pinned. May only be called from a synchronous action context. */
-  final def isPinned = stickiness > 0
+  final def isPinned: Boolean = stickiness > 0
 
   /** Pin the current session. Multiple calls to `pin` may be nested. The same number of calls
     * to `unpin` is required in order to mark the session as not pinned anymore. A pinned
@@ -491,7 +494,7 @@ trait SynchronousDatabaseAction[+R, +S <: NoStream, -B <: BasicBackend, -E <: Ef
       context.unpin
       res
     }
-    override def nonFusedEquivalentAction = superWithPinnedSession
+    override def nonFusedEquivalentAction: DBIOAction[R, S, E] = superWithPinnedSession
   }
 
   private[this] def superFailed: DBIOAction[Throwable, NoStream, E] = super.failed
@@ -506,7 +509,7 @@ trait SynchronousDatabaseAction[+R, +S <: NoStream, -B <: BasicBackend, -E <: Ef
         case NonFatal(ex) if !ok => ex
       }
     }
-    override def nonFusedEquivalentAction = superFailed
+    override def nonFusedEquivalentAction: DBIOAction[Throwable, NoStream, E] = superFailed
   }
 
   private[this] def superAsTry: DBIOAction[Try[R], NoStream, E] = super.asTry
@@ -516,14 +519,14 @@ trait SynchronousDatabaseAction[+R, +S <: NoStream, -B <: BasicBackend, -E <: Ef
         case NonFatal(ex) => Failure(ex)
       }
     }
-    override def nonFusedEquivalentAction = superAsTry
+    override def nonFusedEquivalentAction: DBIOAction[Try[R], NoStream, E] = superAsTry
   }
 }
 
 object SynchronousDatabaseAction {
   /** A fused SynchronousDatabaseAction */
   trait Fused[+R, +S <: NoStream, B <: BasicBackend, -E <: Effect] extends SynchronousDatabaseAction[R, S, B, E] {
-    def getDumpInfo = DumpInfo(name = "SynchronousDatabaseAction.Fused", children = Vector(("non-fused", nonFusedEquivalentAction)))
+    def getDumpInfo: DumpInfo = DumpInfo(name = "SynchronousDatabaseAction.Fused", children = Vector(("non-fused", nonFusedEquivalentAction)))
     override def supportsStreaming: Boolean = false
   }
 
@@ -560,7 +563,7 @@ object SynchronousDatabaseAction {
             val a2 = f(b)
             a2.asInstanceOf[SynchronousDatabaseAction[R, S, BasicBackend, E]].run(context)
           }
-          override def nonFusedEquivalentAction = a
+          override def nonFusedEquivalentAction: DBIOAction[R, S, E] = a
         }
 
       case CleanUpAction(base: SynchronousDatabaseAction[_, _, _, _], f, keepFailure, ec) if ec eq DBIO.sameThreadExecutionContext =>
@@ -579,7 +582,7 @@ object SynchronousDatabaseAction {
             a2.asInstanceOf[SynchronousDatabaseAction[Any, NoStream, BasicBackend, Effect]].run(context)
             res
           }
-          override def nonFusedEquivalentAction = a
+          override def nonFusedEquivalentAction: DBIOAction[R, S, E] = a
         }
 
       case a => a

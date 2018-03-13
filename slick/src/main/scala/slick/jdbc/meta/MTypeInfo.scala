@@ -2,6 +2,11 @@ package slick.jdbc.meta
 
 import java.sql._
 import slick.jdbc.{ResultSetAction, JdbcTypesComponent}
+import java.lang
+import scala.`package`.Vector
+import slick.basic.BasicStreamingAction
+import slick.dbio.Effect.Read
+import slick.jdbc.meta.MTypeInfo
 
 /** A wrapper for a row in the ResultSet returned by DatabaseMetaData.getTypeInfo(). */
 case class MTypeInfo(
@@ -10,11 +15,11 @@ case class MTypeInfo(
   unsignedAttribute: Boolean, fixedPrecScale: Boolean, autoIncrement: Boolean, localTypeName: Option[String],
   minScale: Short, maxScale: Short, numPrecRadix: Int) {
 
-  def sqlTypeName = JdbcTypesComponent.typeNames.get(sqlType)
+  def sqlTypeName: Option[lang.String] = JdbcTypesComponent.typeNames.get(sqlType)
 }
 
 object MTypeInfo {
-  def getTypeInfo = ResultSetAction[MTypeInfo](_.metaData.getTypeInfo()) { r =>
+  def getTypeInfo: BasicStreamingAction[Vector[MTypeInfo], MTypeInfo, Read] = ResultSetAction[MTypeInfo](_.metaData.getTypeInfo()) { r =>
       MTypeInfo(r.<<, r.<<, r.<<, r.<<, r.<<, r.<<, r.nextInt match {
           case DatabaseMetaData.columnNoNulls => Some(false)
           case DatabaseMetaData.columnNullable => Some(true)

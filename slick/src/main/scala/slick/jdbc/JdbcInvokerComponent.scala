@@ -5,6 +5,7 @@ import java.sql.PreparedStatement
 import slick.ast.{CompiledStatement, ResultSetMapping, Node, ParameterSwitch}
 import slick.util.SQLBuilder
 import slick.relational.{ResultConverter, CompiledMapping}
+import slick.jdbc.JdbcResultConverterDomain
 
 trait JdbcInvokerComponent { self: JdbcProfile =>
 
@@ -22,7 +23,7 @@ trait JdbcInvokerComponent { self: JdbcProfile =>
 
   class QueryInvokerImpl[R](tree: Node, param: Any, overrideSql: String) extends QueryInvoker[R] {
     protected[this] val ResultSetMapping(_, compiled, CompiledMapping(_converter, _)) = tree
-    protected[this] val converter = _converter.asInstanceOf[ResultConverter[JdbcResultConverterDomain, R]]
+    protected[this] val converter: ResultConverter[JdbcResultConverterDomain, R] = _converter.asInstanceOf[ResultConverter[JdbcResultConverterDomain, R]]
     protected[this] val CompiledStatement(_, sres: SQLBuilder.Result, _) = findCompiledStatement(compiled)
 
     protected[this] def findCompiledStatement(n: Node): CompiledStatement = n match {
@@ -31,9 +32,9 @@ trait JdbcInvokerComponent { self: JdbcProfile =>
         findCompiledStatement(cases.find { case (f, n) => f(param) }.map(_._2).getOrElse(default))
     }
 
-    protected def getStatement = if(overrideSql ne null) overrideSql else sres.sql
+    protected def getStatement: String = if(overrideSql ne null) overrideSql else sres.sql
     protected def setParam(st: PreparedStatement): Unit = sres.setter(st, 1, param)
     def extractValue(pr: PositionedResult): R = converter.read(pr.rs)
-    def updateRowValues(pr: PositionedResult, value: R) = converter.update(value, pr.rs)
+    def updateRowValues(pr: PositionedResult, value: R): Unit = converter.update(value, pr.rs)
   }
 }

@@ -2,6 +2,11 @@ package slick.jdbc.meta
 
 import java.sql._
 import slick.jdbc.{ResultSetAction, JdbcTypesComponent}
+import java.lang
+import scala.`package`.Vector
+import slick.basic.BasicStreamingAction
+import slick.dbio.Effect.Read
+import slick.jdbc.meta.MFunctionColumn
 
 /** A wrapper for a row in the ResultSet returned by DatabaseMetaData.getFunctionColumns(). */
 case class MFunctionColumn(
@@ -10,11 +15,11 @@ case class MFunctionColumn(
   nullable: Option[Boolean], remarks: String, charOctetLength: Option[Int],
   ordinalPosition: Int, isNullable: Option[Boolean], specificName: String) {
 
-  def sqlTypeName = JdbcTypesComponent.typeNames.get(sqlType)
+  def sqlTypeName: Option[lang.String] = JdbcTypesComponent.typeNames.get(sqlType)
 }
 
 object MFunctionColumn {
-  def getFunctionColumns(functionPattern: MQName, columnNamePattern: String = "%") = {
+  def getFunctionColumns(functionPattern: MQName, columnNamePattern: String = "%"): BasicStreamingAction[Vector[MFunctionColumn], MFunctionColumn, Read] = {
     ResultSetAction[MFunctionColumn] { s =>
       try s.metaData.getFunctionColumns(functionPattern.catalog_?, functionPattern.schema_?,
                                        functionPattern.name, columnNamePattern)

@@ -3,6 +3,7 @@ package slick.lifted
 import scala.language.existentials
 import slick.ast._
 import slick.SlickException
+import slick.ast.Node
 
 /** Common base trait for all lifted values, including columns.
   *
@@ -28,12 +29,12 @@ trait Rep[T] {
   /** Get the Node for this Rep. */
   def toNode: Node
 
-  override def toString = s"Rep($toNode)"
+  override def toString: String = s"Rep($toNode)"
 }
 
 object Rep {
-  def forNode[T : TypedType](n: Node): Rep[T] = new TypedRep[T] { def toNode = n }
-  def forNodeUntyped[T](n: Node): Rep[T] = new UntypedRep[T] { def toNode = n }
+  def forNode[T : TypedType](n: Node): Rep[T] = new TypedRep[T] { def toNode: Node = n }
+  def forNodeUntyped[T](n: Node): Rep[T] = new UntypedRep[T] { def toNode: Node = n }
 
   abstract class TypedRep[T](implicit final val tpe: TypedType[T]) extends Rep[T] {
     def encodeRef(path: Node): Rep[T] = forNode(path)
@@ -45,7 +46,7 @@ object Rep {
 
   def columnPlaceholder[T : TypedType]: Rep[T] = new Rep[T] {
     def encodeRef(path: Node): Rep[T] = Rep.forNode[T](path)
-    def toNode = throw new SlickException("Internal error: Cannot get Node from Rep.columnPlaceholder")
+    def toNode: Nothing = throw new SlickException("Internal error: Cannot get Node from Rep.columnPlaceholder")
   }
 
   /** Lift a value inside a `Rep` into a `Some` Option value. */

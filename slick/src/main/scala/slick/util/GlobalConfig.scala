@@ -6,6 +6,8 @@ import scala.language.implicitConversions
 import com.typesafe.config._
 import java.util.concurrent.TimeUnit
 import java.util.Properties
+import com.typesafe.config.Config
+import java.lang
 
 /** Singleton object with Slick's configuration, loaded from the application config.
   * This includes configuration for the global profile objects and settings for debug logging.
@@ -19,22 +21,22 @@ object GlobalConfig {
   private[this] val config = ConfigFactory.load()
 
   /** Dump individual `Select` and `Ref` nodes instead of a single `Path` */
-  val dumpPaths = config.getBooleanOr("slick.dumpPaths", false)
+  val dumpPaths: Boolean = config.getBooleanOr("slick.dumpPaths", false)
 
   /** Use ANSI color sequences in tree dumps */
-  val ansiDump = config.getBooleanOr("slick.ansiDump", false)
+  val ansiDump: Boolean = config.getBooleanOr("slick.ansiDump", false)
 
   /** Use Unixode box characters in table dumps */
-  val unicodeDump = config.getBooleanOr("slick.unicodeDump", false)
+  val unicodeDump: Boolean = config.getBooleanOr("slick.unicodeDump", false)
 
   /** Use multi-line, indented formatting for SQL statements */
-  val sqlIndent = config.getBooleanOr("slick.sqlIndent", false)
+  val sqlIndent: Boolean = config.getBooleanOr("slick.sqlIndent", false)
 
   /** Verify types after every query compiler phase */
-  val verifyTypes = config.getBooleanOr("slick.verifyTypes", false)
+  val verifyTypes: Boolean = config.getBooleanOr("slick.verifyTypes", false)
 
   /** Detect unnecessary rebuilding of the AST after every query compiler phase */
-  val detectRebuild = config.getBooleanOr("slick.detectRebuild", false)
+  val detectRebuild: Boolean = config.getBooleanOr("slick.detectRebuild", false)
 
   /** Get a `Config` object for a Slick profile */
   @deprecated("Use `profileConfig` instead of `driverConfig`", "3.2")
@@ -51,13 +53,13 @@ object GlobalConfig {
 class ConfigExtensionMethods(val c: Config) extends AnyVal {
   import scala.collection.JavaConverters._
 
-  def getBooleanOr(path: String, default: => Boolean = false) = if(c.hasPath(path)) c.getBoolean(path) else default
-  def getIntOr(path: String, default: => Int = 0) = if(c.hasPath(path)) c.getInt(path) else default
-  def getStringOr(path: String, default: => String = null) = if(c.hasPath(path)) c.getString(path) else default
-  def getConfigOr(path: String, default: => Config = ConfigFactory.empty()) = if(c.hasPath(path)) c.getConfig(path) else default
+  def getBooleanOr(path: String, default: => Boolean = false): Boolean = if(c.hasPath(path)) c.getBoolean(path) else default
+  def getIntOr(path: String, default: => Int = 0): Int = if(c.hasPath(path)) c.getInt(path) else default
+  def getStringOr(path: String, default: => String = null): lang.String = if(c.hasPath(path)) c.getString(path) else default
+  def getConfigOr(path: String, default: => Config = ConfigFactory.empty()): Config = if(c.hasPath(path)) c.getConfig(path) else default
 
-  def getMillisecondsOr(path: String, default: => Long = 0L) = if(c.hasPath(path)) c.getDuration(path, TimeUnit.MILLISECONDS) else default
-  def getDurationOr(path: String, default: => Duration = Duration.Zero) =
+  def getMillisecondsOr(path: String, default: => Long = 0L): Long = if(c.hasPath(path)) c.getDuration(path, TimeUnit.MILLISECONDS) else default
+  def getDurationOr(path: String, default: => Duration = Duration.Zero): Duration =
     if(c.hasPath(path)) Duration(c.getDuration(path, TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS) else default
 
   def getPropertiesOr(path: String, default: => Properties = null): Properties =
@@ -80,8 +82,8 @@ class ConfigExtensionMethods(val c: Config) extends AnyVal {
 
   def getBooleanOpt(path: String): Option[Boolean] = if(c.hasPath(path)) Some(c.getBoolean(path)) else None
   def getIntOpt(path: String): Option[Int] = if(c.hasPath(path)) Some(c.getInt(path)) else None
-  def getStringOpt(path: String) = Option(getStringOr(path))
-  def getPropertiesOpt(path: String) = Option(getPropertiesOr(path))
+  def getStringOpt(path: String): Option[lang.String] = Option(getStringOr(path))
+  def getPropertiesOpt(path: String): Option[Properties] = Option(getPropertiesOr(path))
 }
 
 object ConfigExtensionMethods {

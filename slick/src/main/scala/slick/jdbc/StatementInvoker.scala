@@ -7,8 +7,8 @@ import scala.collection.mutable.ArrayBuffer
 
 private[jdbc] object StatementInvoker {
   val maxLogResults = 5
-  lazy val tableDump = new TableDump(20)
-  lazy val resultLogger = new SlickLogger(LoggerFactory.getLogger(classOf[StatementInvoker[_]].getName+".result"))
+  lazy val tableDump: TableDump = new TableDump(20)
+  lazy val resultLogger: SlickLogger = new SlickLogger(LoggerFactory.getLogger(classOf[StatementInvoker[_]].getName+".result"))
 }
 
 /** An invoker which executes an SQL statement through JDBC. */
@@ -47,7 +47,7 @@ abstract class StatementInvoker[+R] extends Invoker[R] { self =>
         val logBuffer = if(doLogResult) new ArrayBuffer[ArrayBuffer[Any]] else null
         var rowCount = 0
         val pr = new PositionedResult(rs) {
-          def close() = {
+          def close(): Unit = {
             st.close()
             if(doLogResult) {
               StatementInvoker.tableDump(logHeader, logBuffer).foreach(s => StatementInvoker.resultLogger.debug(s))
@@ -57,7 +57,7 @@ abstract class StatementInvoker[+R] extends Invoker[R] { self =>
           }
         }
         val pri = new PositionedResultIterator[R](pr, maxRows, autoClose) {
-          def extractValue(pr: PositionedResult) = {
+          def extractValue(pr: PositionedResult): R = {
             if(doLogResult) {
               if(logBuffer.length < StatementInvoker.maxLogResults)
                 logBuffer += 1.to(logHeader(0).length).map(idx => rs.getObject(idx) : Any).to[ArrayBuffer]

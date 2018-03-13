@@ -6,13 +6,14 @@ import Util._
 import TypeUtil._
 
 import scala.collection.mutable.ArrayBuffer
+import slick.compiler.CompilerState
 
 /** Rewrite monadic joins to applicative joins. After this phase all `Bind` nodes are of the
   * form `Bind(_, _, Pure(_, _))` (i.e. `flatMap` has been reduced to `map`). */
 class RewriteJoins extends Phase {
   val name = "rewriteJoins"
 
-  def apply(state: CompilerState) = state.map(tr _)
+  def apply(state: CompilerState): CompilerState = state.map(tr _)
 
   def tr(n: Node): Node = n.mapChildren(tr, keepType = true) match {
     case n @ Bind(s1, f1, Bind(s2, Pure(StructNode(ConstArray()), _), select)) =>

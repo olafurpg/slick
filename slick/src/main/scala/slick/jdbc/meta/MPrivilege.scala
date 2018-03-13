@@ -1,6 +1,10 @@
 package slick.jdbc.meta
 
 import slick.jdbc.{PositionedResult, ResultSetAction}
+import scala.`package`.Vector
+import slick.basic.BasicStreamingAction
+import slick.dbio.Effect.Read
+import slick.jdbc.meta.{ MColumnPrivilege, MTablePrivilege }
 
 /** A common privilege type which is used by MTablePrivilege and MColumnPrivilege. */
 case class MPrivilege(grantor: Option[String], grantee: String, privilege: String, grantable: Option[Boolean])
@@ -13,7 +17,7 @@ object MPrivilege {
 case class MTablePrivilege(table: MQName, privilege: MPrivilege)
 
 object MTablePrivilege {
-  def getTablePrivileges(tablePattern: MQName) = ResultSetAction[MTablePrivilege](
+  def getTablePrivileges(tablePattern: MQName): BasicStreamingAction[Vector[MTablePrivilege], MTablePrivilege, Read] = ResultSetAction[MTablePrivilege](
       _.metaData.getTablePrivileges(tablePattern.catalog_?, tablePattern.schema_?, tablePattern.name)) { r =>
       MTablePrivilege(MQName.from(r), MPrivilege.from(r))
   }
@@ -23,7 +27,7 @@ object MTablePrivilege {
 case class MColumnPrivilege(table: MQName, column: String, privilege: MPrivilege)
 
 object MColumnPrivilege {
-  def getColumnPrivileges(tablePattern: MQName, columnPattern: String) = ResultSetAction[MColumnPrivilege](
+  def getColumnPrivileges(tablePattern: MQName, columnPattern: String): BasicStreamingAction[Vector[MColumnPrivilege], MColumnPrivilege, Read] = ResultSetAction[MColumnPrivilege](
       _.metaData.getColumnPrivileges(tablePattern.catalog_?, tablePattern.schema_?, tablePattern.name, columnPattern)) { r =>
       MColumnPrivilege(MQName.from(r), r.<<, MPrivilege.from(r))
   }

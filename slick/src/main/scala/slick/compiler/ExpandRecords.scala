@@ -2,13 +2,14 @@ package slick.compiler
 
 import slick.ast._
 import Util._
+import slick.compiler.CompilerState
 
 /** Expand paths of record types to reference all fields individually and
   * recreate the record structure at the call site. */
 class ExpandRecords extends Phase {
   val name = "expandRecords"
 
-  def apply(state: CompilerState) = state.map(_.replace({ case n: PathElement => expandPath(n) }).infer())
+  def apply(state: CompilerState): CompilerState = state.map(_.replace({ case n: PathElement => expandPath(n) }).infer())
 
   def expandPath(n: Node): Node = n.nodeType.structural match {
     case StructType(ch) =>
