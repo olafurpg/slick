@@ -291,7 +291,9 @@ final class BaseJoinQuery[+E1, +E2, U1, U2, C[_], +B1, +B2](leftGen: TermSymbol,
   * for operations that can be performed on tables but not on arbitrary
   * queries, e.g. getting the table DDL. */
 class TableQuery[E <: AbstractTable[_]](cons: Tag => E) extends Query[E, E#TableElementType, Seq] {
-  lazy val shaped: ShapedValue[E, AbstractTable#TableElementType] = {
+  // scalafix bug
+  // lazy val shaped: ShapedValue[E, AbstractTable#TableElementType] = {
+  lazy val shaped = {
     val baseTable = cons(new BaseTag { base =>
       def taggedAs(path: Node): AbstractTable[_] = cons(new RefTag(path) {
         def taggedAs(path: Node): slick.lifted.AbstractTable[_] = base.taggedAs(path)

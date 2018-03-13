@@ -8,6 +8,7 @@ import scala.reflect.macros.blackbox.Context
 /** AST builder used by the SQL interpolation macros. */
 private[jdbc] class MacroTreeBuilder[C <: Context](val c: C)(paramsList: List[C#Expr[Any]]) {
   import c.universe._
+  import c.universe // scalafix bug
 
   def abort(msg: String): Nothing = c.abort(c.enclosingPosition, msg)
 
@@ -60,7 +61,9 @@ private[jdbc] class MacroTreeBuilder[C <: Context](val c: C)(paramsList: List[C#
   /**
    * Creates the tree for GetResult[] of the tsql macro
    */
-  def rconvTree(resultTypes: Vector[ClassTag[_]]): universe.GenericApply with Trees.this.< refinement > {} = {
+   // scalafix bug
+  // def rconvTree(resultTypes: Vector[ClassTag[_]]): c.universe.GenericApply with Trees.this.< refinement > {} = {
+  def rconvTree(resultTypes: Vector[ClassTag[_]]) = {
     val resultTypeTrees = resultTypes.map (_.runtimeClass.getCanonicalName match {
       case "int" => TypeTree(typeOf[Int])
       case "byte" => TypeTree(typeOf[Byte])
